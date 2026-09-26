@@ -26,6 +26,7 @@ add_executable(${PROJECT_NAME})
 
 set(SOURCES
     src/main.cpp
+    src/cpu.cpp
 )
 
 target_sources(${PROJECT_NAME}
