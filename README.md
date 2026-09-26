@@ -2,11 +2,30 @@
 A GameBoy emulator for our Drexel Senior capstone project
 
 # Build Instructions
-Open a terminal window and navigate to the project root directory and follow the respective instructions.
 
-### Building The Project:
-1. run `cmake -S . -B build`.
-2. run `cmake --build build`.
+Open a terminal in the project root directory.
 
-### Cleaning The Project:
-1. run `cmake --build build -- target clean`.
+## Building
+
+First build:
+
+```
+cmake -S . -B build
+cmake --build build
+```
+
+Subsequent builds:
+
+```
+cmake --build build
+```
+
+## Cleaning
+
+Clean compiled files:
+
+```
+cmake --build build --target clean
+```
+
+To fully rebuild, delete the `build/` directory and run the first-build commands again.
