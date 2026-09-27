@@ -16,6 +16,9 @@ class CPU{
 
     const byte ZERO_FLAG = 7, SUB_FLAG = 6, HALF_CARRY_FLAG = 5, CARRY_FLAG = 4;
 
+    void pop(Reg& src);
+    void push(const Reg& src);
+    void anda(const byte& src);
     void ora(const byte& src);
     void xora(const byte& src);
 public:

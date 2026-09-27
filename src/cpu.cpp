@@ -2,13 +2,36 @@
 
 CPU::CPU(Memory& memory) : memory {memory}, tCycles {0} {}
 
-void CPU::ora(const byte &src) {
+void CPU::pop(Reg& src) {
+    const word address = static_cast<word>(sp);
+    src.low = memory.read(address);
+    src.high = memory.read(address + 1);
+    ++sp;
+    ++sp;
+}
+
+void CPU::push(const Reg& src) {
+    const word address = static_cast<word>(sp);
+    memory.write(address - 1, src.high);
+    memory.write(address - 2, src.low);
+    --sp;
+    --sp;
+}
+
+void CPU::anda(const byte& src) {
+    af.high &= src;
+    af.low = 0;
+    af.setBit(af.low, ZERO_FLAG, af.high == 0);
+    af.setBit(af.low, HALF_CARRY_FLAG, true);
+}
+
+void CPU::ora(const byte& src) {
     af.high |= src;
     af.low = 0;
     af.setBit(af.low, ZERO_FLAG, af.high == 0);
 }
 
-void CPU::xora(const byte &src) {
+void CPU::xora(const byte& src) {
     af.high ^= src;
     af.low = 0;
     af.setBit(af.low, ZERO_FLAG, af.high == 0);
