@@ -8,19 +8,51 @@ namespace gbdmge {
     using word = std::uint16_t;
     using qword = std::uint64_t;
 
-    class Reg {
+    template <typename T>
+    class AbsReg {
     public:
+        virtual ~AbsReg() = default;
+
+        void setBit(byte& value, const byte pos, const bool set) {
+            const byte mask = static_cast<byte>(1) << pos;
+
+            if (set) {
+                value |= mask;
+            }else {
+                value &= ~mask;
+            }
+        }
+
+        void clearBit(byte& value, const byte pos) {
+            value &= ~(static_cast<byte>(1) << pos);
+        }
+
+        bool isBitSet(const byte& value, const byte pos) {
+            return (value & static_cast<byte>(1) << pos) != 0;
+        }
+
+        virtual T get() = 0;
+        virtual void set(T value) = 0;
+        virtual void inc() = 0;
+        virtual void dec() = 0;
+    };
+
+    class Reg : public AbsReg<word> {
         byte low;
         byte high;
-
+    public:
         Reg();
-        explicit operator word() const;
-        Reg& operator=(word value);
-        Reg& operator++();
-        Reg operator++(int);
-        Reg& operator--();
-        Reg operator--(int);
-        void setBit(byte& value, byte pos, bool set);
+
+        word get() override;
+        void set(word value) override;
+        void inc() override;
+        void dec() override;
+
+        [[nodiscard]] byte& getLow();
+        [[nodiscard]] byte& getHigh();
+
+        void setLow(byte value);
+        void setHigh(byte value);
     };
 }
 

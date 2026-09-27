@@ -3,44 +3,36 @@
 namespace gbdmge {
     Reg::Reg() : low(0), high(0) {}
 
-    Reg::operator word() const {
+    word Reg::get() {
         return static_cast<word>(low) | static_cast<word>(high) << 8;
     }
 
-    Reg &Reg::operator=(const word value) {
+    void Reg::set(const word value) {
         low = static_cast<byte>(value);
         high = static_cast<byte>(value >> 8);
-        return *this;
     }
 
-    Reg &Reg::operator++() {
-        *this = static_cast<word>(*this) + 1;
-        return *this;
+    void Reg::inc() {
+        set(get() + 1);
     }
 
-    Reg Reg::operator++(int) {
-        const Reg old {*this};
-        ++*this;
-        return old;
+    void Reg::dec() {
+        set(get() - 1);
     }
 
-    Reg &Reg::operator--() {
-        *this = static_cast<word>(*this) - 1;
-        return *this;
+    byte& Reg::getLow() {
+        return low;
     }
 
-    Reg Reg::operator--(int){
-        const Reg old {*this};
-        --*this;
-        return old;
+    byte& Reg::getHigh() {
+        return high;
     }
 
-    void Reg::setBit(byte& value, const byte pos, const bool set) {
-        const byte mask = 1 << pos;
-        if (set) {
-            value |= mask;
-        }else {
-            value &= ~mask;
-        }
+    void Reg::setLow(const byte value) {
+        low = value;
+    }
+
+    void Reg::setHigh(const byte value) {
+        high = value;
     }
 }

@@ -1,11 +1,13 @@
+#include <stdexcept>
 #include "memory.h"
 
 namespace gbdmge {
     byte Memory::read(word address) {
-        return 0;
+        throw std::logic_error("not implemented");
     }
 
     void Memory::write(word address, byte value) {
+        throw std::logic_error("not implemented");
 
     }
 }

@@ -1,5 +1,5 @@
-#ifndef GBDMGE_MEMORY_H_
-#define GBDMGE_MEMORY_H_
+#ifndef GBDMGE_MEMORY_H
+#define GBDMGE_MEMORY_H
 
 #include "types.h"
 
