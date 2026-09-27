@@ -1,10 +1,14 @@
-#pragma once
+#ifndef GBDMGE_MEMORY_H_
+#define GBDMGE_MEMORY_H_
 
 #include "types.h"
 
-class Memory{
+namespace gbdmge {
+    class Memory{
 
-public:
-    void write(word address, byte value);
-    byte read(word address);
-};
+    public:
+        void write(word address, byte value);
+        byte read(word address);
+    };
+}
+#endif
