@@ -4,8 +4,7 @@
 
 class Memory{
 
-
 public:
+    void write(word address, byte value);
     byte read(word address);
-    void write(word address, byte data);
 };

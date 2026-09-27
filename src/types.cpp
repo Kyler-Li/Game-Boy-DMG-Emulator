@@ -1,23 +1,45 @@
 #include "types.h"
 
-void RegPair::set(byte upper, byte lower) {
-    this->upper = upper;
-    this->lower = lower;
+Reg::Reg() : low(0), high(0) {}
+
+Reg::operator word() const {
+    return static_cast<word>(low) | static_cast<word>(high) << 8;
 }
 
-void RegPair::set(word value) {
-    upper = (value >> 8) & 0xFF;
-    lower = value & 0xFF;
+Reg &Reg::operator=(const word value) {
+    low = static_cast<byte>(value);
+    high = static_cast<byte>(value >> 8);
+    return *this;
 }
 
-word RegPair::get() {
-    return (static_cast<word>(upper) << 8) | static_cast<word>(lower);
+Reg &Reg::operator++() {
+    *this = static_cast<word>(*this) + 1;
+    return *this;
 }
 
-byte RegPair::getUpper() {
-    return upper;
+Reg Reg::operator++(int) {
+    const Reg old {*this};
+    ++*this;
+    return old;
 }
 
-byte RegPair::getLower() {
-    return lower;
+Reg &Reg::operator--() {
+    *this = static_cast<word>(*this) - 1;
+    return *this;
 }
+
+Reg Reg::operator--(int){
+    const Reg old {*this};
+    --*this;
+    return old;
+}
+
+void Reg::setBit(byte& value, const byte pos, const bool set) {
+    const byte mask = 1 << pos;
+    if (set) {
+        value |= mask;
+    }else {
+        value &= ~mask;
+    }
+}
+
