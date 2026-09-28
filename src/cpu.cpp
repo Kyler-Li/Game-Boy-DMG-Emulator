@@ -46,11 +46,11 @@ namespace gbdmge {
         const sdword a = af.getHigh(), sB = b;
         const sdword diff = a - sB;
 
-        byte& high = af.getHigh();
-        af.setBit(high, ZERO_FLAG, diff == 0);
-        af.setBit(high, SUB_FLAG, true);
-        af.setBit(high, HALF_CARRY_FLAG, (a & 0x0F) - (b & 0x0F) < 0);
-        af.setBit(high, CARRY_FLAG, diff < 0);
+        byte& low = af.getLow();
+        af.setBit(low, ZERO_FLAG, diff == 0);
+        af.setBit(low, SUB_FLAG, true);
+        af.setBit(low, HALF_CARRY_FLAG, (a & 0x0F) - (b & 0x0F) < 0);
+        af.setBit(low, CARRY_FLAG, diff < 0);
     }
 
     void CPU::cp(Reg& b) {
@@ -58,6 +58,35 @@ namespace gbdmge {
         cp(value);
     }
 
+    void CPU::jpz(word address) {
+        jpCond(address, af.bitIsSet(af.getLow(), ZERO_FLAG));
+    }
+
+    void CPU::jpnz(const word address) {
+        jpCond(address, !af.bitIsSet(af.getLow(), ZERO_FLAG));
+    }
+
+    void CPU::jpc(const word address) {
+        jpCond(address, af.bitIsSet(af.getLow(), CARRY_FLAG));
+    }
+
+    void CPU::jpnc(const word address) {
+        jpCond(address, !af.bitIsSet(af.getLow(), CARRY_FLAG));
+    }
+
+    void CPU::jp(Reg& dst) {
+        jpCond(dst.get(), true);
+    }
+
+    void CPU::jp(const word address) {
+        jpCond(address, true);
+    }
+
+    void CPU::jpCond(const word address, const bool cond) {
+        if (cond) {
+            pc.set(address);
+        }
+    }
 
     void CPU::reset() {
         // Initialize registers to post boot ROM values

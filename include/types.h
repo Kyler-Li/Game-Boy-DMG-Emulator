@@ -29,7 +29,7 @@ namespace gbdmge {
             value &= ~(static_cast<byte>(1) << pos);
         }
 
-        bool isBitSet(const byte& value, const byte pos) {
+        bool bitIsSet(const byte& value, const byte pos) {
             return (value & static_cast<byte>(1) << pos) != 0;
         }
 

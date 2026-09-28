@@ -8,8 +8,8 @@ namespace gbdmge {
     }
 
     void Reg::set(const word value) {
-        low = static_cast<byte>(value);
         high = static_cast<byte>(value >> 8);
+        low = static_cast<byte>(value);
     }
 
     void Reg::inc() {

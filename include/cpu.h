@@ -7,6 +7,10 @@
 namespace gbdmge {
     class CPU{
         Memory& memory;
+
+        // For each Reg, the rightmost letter represents low byte,
+        // leftmost letter represents high byte. For example, the f register
+        // would be accessed as using getLow method.
         Reg af;
         Reg bc;
         Reg de;
@@ -20,11 +24,21 @@ namespace gbdmge {
 
         void pop(Reg& src);
         void push(Reg& src);
+
         void anda(byte src);
         void ora(byte src);
         void xora(byte src);
+
         void cp(byte b);
         void cp(Reg& b);
+
+        void jpz(word address);
+        void jpnz(word address);
+        void jpc(word address);
+        void jpnc(word address);
+        void jp(Reg& dst);
+        void jp(word address);
+        void jpCond(word address, bool cond);
     public:
         explicit CPU(Memory& memory);
         byte fetch();
