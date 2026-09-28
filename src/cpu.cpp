@@ -88,6 +88,14 @@ namespace gbdmge {
         }
     }
 
+    void CPU::nop() {
+        pc.inc();
+    }
+
+    void CPU::cpl() {
+        af.setHigh(~af.getHigh());
+    }
+
     void CPU::reset() {
         // Initialize registers to post boot ROM values
         af.set(0x01B0);

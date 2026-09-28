@@ -39,6 +39,8 @@ namespace gbdmge {
         void jp(Reg& dst);
         void jp(word address);
         void jpCond(word address, bool cond);
+        void nop();
+        void cpl();
     public:
         explicit CPU(Memory& memory);
         byte fetch();
