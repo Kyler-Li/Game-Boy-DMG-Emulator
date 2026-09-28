@@ -49,7 +49,7 @@ namespace gbdmge {
         byte& low = af.getLow();
         af.setBit(low, ZERO_FLAG, diff == 0);
         af.setBit(low, SUB_FLAG, true);
-        af.setBit(low, HALF_CARRY_FLAG, (a & 0x0F) - (b & 0x0F) < 0);
+        af.setBit(low, HALF_CARRY_FLAG, (a & 0x0F) < (b & 0x0F));
         af.setBit(low, CARRY_FLAG, diff < 0);
     }
 
