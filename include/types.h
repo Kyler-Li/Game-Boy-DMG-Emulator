@@ -6,6 +6,9 @@
 namespace gbdmge {
     using byte = std::uint8_t;
     using word = std::uint16_t;
+    using sword = std::int16_t;
+    using dword = std::uint32_t;
+    using sdword = std::int32_t;
     using qword = std::uint64_t;
 
     template <typename T>
@@ -15,7 +18,6 @@ namespace gbdmge {
 
         void setBit(byte& value, const byte pos, const bool set) {
             const byte mask = static_cast<byte>(1) << pos;
-
             if (set) {
                 value |= mask;
             }else {

@@ -1,6 +1,5 @@
 #include "cpu.h"
 
-#include <exception>
 #include <stdexcept>
 
 namespace gbdmge {
@@ -22,7 +21,7 @@ namespace gbdmge {
         sp.dec();
     }
 
-    void CPU::anda(const byte& src) {
+    void CPU::anda(const byte src) {
         af.setHigh(af.getHigh() & src);
         af.setLow(0);
 
@@ -31,17 +30,34 @@ namespace gbdmge {
         af.setBit(low, HALF_CARRY_FLAG, true);
     }
 
-    void CPU::ora(const byte& src) {
+    void CPU::ora(const byte src) {
         af.setHigh(af.getHigh() | src);
         af.setLow(0);
         af.setBit(af.getLow(), ZERO_FLAG, af.getHigh() == 0);
     }
 
-    void CPU::xora(const byte& src) {
+    void CPU::xora(const byte src) {
         af.setHigh(af.getHigh() ^ src);
         af.setLow(0);
         af.setBit(af.getLow(), ZERO_FLAG, af.getHigh() == 0);
     }
+
+    void CPU::cp(const byte b) {
+        const sdword a = af.getHigh(), sB = b;
+        const sdword diff = a - sB;
+
+        byte& high = af.getHigh();
+        af.setBit(high, ZERO_FLAG, diff == 0);
+        af.setBit(high, SUB_FLAG, true);
+        af.setBit(high, HALF_CARRY_FLAG, (a & 0x0F) - (b & 0x0F) < 0);
+        af.setBit(high, CARRY_FLAG, diff < 0);
+    }
+
+    void CPU::cp(Reg& b) {
+        const byte value = memory.read(b.get());
+        cp(value);
+    }
+
 
     void CPU::reset() {
         // Initialize registers to post boot ROM values

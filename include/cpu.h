@@ -20,9 +20,11 @@ namespace gbdmge {
 
         void pop(Reg& src);
         void push(Reg& src);
-        void anda(const byte& src);
-        void ora(const byte& src);
-        void xora(const byte& src);
+        void anda(byte src);
+        void ora(byte src);
+        void xora(byte src);
+        void cp(byte b);
+        void cp(Reg& b);
     public:
         explicit CPU(Memory& memory);
         byte fetch();
