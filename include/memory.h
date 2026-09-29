@@ -1,22 +1,21 @@
 #ifndef GBDMGE_MEMORY_H
 #define GBDMGE_MEMORY_H
 
-#include <array>
+#include <memory>
 #include <vector>
 #include "types.h"
 
 namespace gbdmge {
     // Memory bank controller
+    // Handles external RAM and ROM banks
     class MemoryBC {
-
-    };
-
-    // Memory bank manager
-    class MemoryBM{
         std::vector<byte> rom;
+        std::vector<byte> eram;
     public:
-        void write(word address, byte value);
-        void read(word address);
+        explicit MemoryBC(const std::vector<byte>& romData);
+        virtual void write(word address, byte value) = 0;
+        virtual byte read(word address) = 0;
+        virtual ~MemoryBC() = default;
     };
 
     class Memory{
@@ -25,6 +24,7 @@ namespace gbdmge {
         // A000 - BFFF, external RAM
         // These regions are managed by a Memory Bank Controller
         // depending on the size of the game ROM to be loaded
+        std::unique_ptr<MemoryBC> memoryBC;
 
         const word VW_RANGE_MASK = 0x1FFF;
         std::vector<byte> vram; // Video ram, 8000 - 9FFF
@@ -52,11 +52,13 @@ namespace gbdmge {
         MemoryReg lcdc, ly, lyc, scy, scx, bgp, obp0, obp1; // LCD control
         MemoryReg stat, wy, wx; // LCD control
         MemoryReg dma; // Direct memory access
+
         friend class CPU;
     public:
         Memory();
         void write(word address, byte value);
         [[nodiscard]] byte read(word address) const;
+        void loadRom(const std::string& romFileName);
         void reset();
     };
 }

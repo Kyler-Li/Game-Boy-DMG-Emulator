@@ -1,9 +1,14 @@
 #include <stdexcept>
+#include <fstream>
 #include "memory.h"
 
 namespace gbdmge {
+    // The largest size external RAM can be is 128KiB, assume this as opposed to manual calculation.
+    MemoryBC::MemoryBC(const std::vector<byte>& romData) : rom(romData), eram(0x20000, 0) {}
+
     Memory::Memory()
     :
+    memoryBC {nullptr},
     vram(0x2000, 0),
     wram(0x2000, 0),
     oram(0x0100, 0),
@@ -64,7 +69,7 @@ namespace gbdmge {
             case 0x5000:
             case 0x6000:
             case 0x7000:
-                throw std::logic_error("reading from rom banks not implemented");
+                return memoryBC->read(address);
 
             case 0x8000:
             case 0x9000:
@@ -72,8 +77,7 @@ namespace gbdmge {
 
             case 0xA000:
             case 0xB000:
-                // External RAM
-                throw std::logic_error("reading from external ram not implemented");
+                return memoryBC->read(address); // External RAM
 
             case 0xC000:
             case 0xD000:
@@ -88,7 +92,7 @@ namespace gbdmge {
                 }
 
                 if (address < 0xFF00) {
-                    throw std::logic_error("reading from unusable memory");
+                    throw std::logic_error("Reading from unusable memory");
                 }
 
                 if (address >= 0xFF30 && address < 0xFF40) {
@@ -97,7 +101,7 @@ namespace gbdmge {
 
                 return ioram[address & OZ_RANGE_MASK]; // I/O, HRAM, IE
             default:
-                throw std::logic_error("error, unmatched address");
+                throw std::logic_error("Error, unmatched address");
         }
     }
 
@@ -107,11 +111,11 @@ namespace gbdmge {
 
     void Memory::reset() {
         // Initialize registers to post boot ROM values
-        std::fill(vram.begin(), vram.end(), 0);
-        std::fill(wram.begin(), wram.end(), 0);
-        std::fill(oram.begin(), oram.end(), 0);
-        std::fill(ioram.begin(), ioram.end(), 0);
-        std::fill(wavePattern.begin(), wavePattern.end(), 0);
+        std::ranges::fill(vram, 0);
+        std::ranges::fill(wram, 0);
+        std::ranges::fill(oram, 0);
+        std::ranges::fill(ioram, 0);
+        std::ranges::fill(wavePattern, 0);
 
         p1.set(0xCF);
         sb.set(0x00);
@@ -155,5 +159,14 @@ namespace gbdmge {
         wy.set(0x00);
         wx.set(0x00);
         ie.set(0x00);
+    }
+
+    void Memory::loadRom(const std::string& romFileName) {
+        if (std::ifstream romFile {romFileName, std::ios::binary};
+            romFile.is_open()) {
+            throw std::invalid_argument("Cannot open rom file for reading!");
+        }
+
+
     }
 }
