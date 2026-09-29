@@ -4,6 +4,8 @@
 namespace gbdmge {
     Memory::Memory()
     :
+    vram {},
+    oram {},
     zram {},
     joyp {zram[0x0]},
     sb {zram[0x1]},

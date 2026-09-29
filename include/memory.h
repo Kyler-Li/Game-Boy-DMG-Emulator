@@ -5,9 +5,14 @@
 
 namespace gbdmge {
     class Memory{
+        // Need to add:
+        // 0000 - 7FFF, ROM banks
+        // A000 - BFFF, external RAM
 
-        // Need to add other sections of RAM
-        byte zram[0x100]; // FF00 - FFFF
+        byte vram[0x2000]; // Video ram, 8000 - 9FFF
+        byte wram[0x2000]; // Work ram, C000 - DFFF
+        byte oram[0x0100]; // FE00 - FE9F
+        byte zram[0x0100]; // FF00 - FFFF
 
         // IO Registers, which are mapped to address in range FF00 - FFFF
         MemoryReg joyp; // Joy pad
