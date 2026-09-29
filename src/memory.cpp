@@ -1,5 +1,6 @@
 #include <stdexcept>
 #include <fstream>
+#include <iostream>
 #include "memory.h"
 
 namespace gbdmge {
@@ -198,6 +199,13 @@ namespace gbdmge {
             case 0x12:
             case 0x13:
                 throw std::logic_error("MemoryBC3 not implemented!");
+            case 0x19:
+            case 0x1A:
+            case 0x1B:
+            case 0x1C:
+            case 0x1D:
+            case 0x1E:
+                throw std::logic_error("MemoryBC5 not implemented!");
             default:
                 throw std::logic_error(romFileName + " not supported!");
         }
