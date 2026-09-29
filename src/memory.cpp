@@ -51,13 +51,16 @@ namespace gbdmge {
     boot {zram[0x50]}
     {}
 
-
     byte Memory::read(word address) {
         throw std::logic_error("not implemented");
     }
 
     void Memory::write(word address, byte value) {
         throw std::logic_error("not implemented");
+    }
 
+    void Memory::reset() {
+        // Initialize registers to post boot ROM values
+        throw std::logic_error("not implemented");
     }
 }

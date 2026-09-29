@@ -3,7 +3,12 @@
 #include <stdexcept>
 
 namespace gbdmge {
-    CPU::CPU(Memory& memory) : memory {memory}, tCycles {0} {}
+    CPU::CPU(Memory& memory)
+    :
+    ime {false}, // Interrupts are disabled on boot
+    memory {memory},
+    tCycles {0}
+    {}
 
     void CPU::pop(Reg& src) {
         const word address = sp.get();
@@ -43,19 +48,17 @@ namespace gbdmge {
     }
 
     void CPU::cp(const byte b) {
-        const sdword a = af.getHigh(), sB = b;
-        const sdword diff = a - sB;
+        const byte a = af.getHigh();
 
         byte& low = af.getLow();
-        af.setBit(low, ZERO_FLAG, diff == 0);
+        af.setBit(low, ZERO_FLAG, a == b);
         af.setBit(low, SUB_FLAG, true);
         af.setBit(low, HALF_CARRY_FLAG, (a & 0x0F) < (b & 0x0F));
-        af.setBit(low, CARRY_FLAG, diff < 0);
+        af.setBit(low, CARRY_FLAG, a < b);
     }
 
     void CPU::cp(Reg& b) {
-        const byte value = memory.read(b.get());
-        cp(value);
+        cp(memory.read(b.get()));
     }
 
     void CPU::jpz(word address) {
@@ -89,15 +92,27 @@ namespace gbdmge {
     }
 
     void CPU::nop() {
-        pc.inc();
+
     }
 
     void CPU::cpl() {
         af.setHigh(~af.getHigh());
+        byte& low = af.getLow();
+        af.setBit(low, HALF_CARRY_FLAG, true);
+        af.setBit(low, SUB_FLAG, true);
+    }
+
+    void CPU::ei() {
+        ime = true;
+    }
+
+    void CPU::di() {
+        ime = false;
     }
 
     void CPU::reset() {
-        // Initialize registers to post boot ROM values
+        // Initialize to post boot ROM values
+        ime = false;
         af.set(0x01B0);
         bc.set(0x0013);
         de.set(0x00D8);

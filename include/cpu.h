@@ -6,11 +6,16 @@
 
 namespace gbdmge {
     class CPU{
+        bool ime;
         Memory& memory;
 
         // For each Reg, the rightmost letter represents low byte,
-        // leftmost letter represents high byte. For example, the f register
-        // would be accessed as using getLow method.
+        // leftmost letter represents high byte. For example:
+        // high byte    | low byte
+        // a            | f
+        // b            | c
+        // d            | e
+        // ...
         Reg af;
         Reg bc;
         Reg de;
@@ -41,6 +46,8 @@ namespace gbdmge {
         void jpCond(word address, bool cond);
         void nop();
         void cpl();
+        void ei();
+        void di();
     public:
         explicit CPU(Memory& memory);
         byte fetch();

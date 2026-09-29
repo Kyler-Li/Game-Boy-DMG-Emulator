@@ -33,6 +33,7 @@ namespace gbdmge {
         Memory();
         void write(word address, byte value);
         byte read(word address);
+        void reset();
     };
 }
 #endif
