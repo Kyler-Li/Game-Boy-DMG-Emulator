@@ -12,6 +12,11 @@ namespace gbdmge {
         low = static_cast<byte>(value);
     }
 
+    void Reg::clear() {
+        high = 0;
+        low = 0;
+    }
+
     void Reg::inc() {
         set(get() + 1);
     }
@@ -34,5 +39,27 @@ namespace gbdmge {
 
     void Reg::setHigh(const byte value) {
         high = value;
+    }
+
+    MemoryReg::MemoryReg(byte& value) : data(value) {}
+
+    byte MemoryReg::get() {
+        return data;
+    }
+
+    void MemoryReg::set(const byte value) {
+        data = value;
+    }
+
+    void MemoryReg::clear() {
+        data = 0;
+    }
+
+    void MemoryReg::inc() {
+        data++;
+    }
+
+    void MemoryReg::dec() {
+        data--;
     }
 }

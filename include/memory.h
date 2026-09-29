@@ -6,6 +6,7 @@
 namespace gbdmge {
     class Memory{
 
+        friend class CPU;
     public:
         void write(word address, byte value);
         byte read(word address);

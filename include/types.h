@@ -25,16 +25,13 @@ namespace gbdmge {
             }
         }
 
-        void clearBit(byte& value, const byte pos) {
-            value &= ~(static_cast<byte>(1) << pos);
-        }
-
         bool bitIsSet(const byte& value, const byte pos) {
             return (value & static_cast<byte>(1) << pos) != 0;
         }
 
         virtual T get() = 0;
         virtual void set(T value) = 0;
+        virtual void clear() = 0;
         virtual void inc() = 0;
         virtual void dec() = 0;
     };
@@ -47,6 +44,7 @@ namespace gbdmge {
 
         word get() override;
         void set(word value) override;
+        void clear() override;
         void inc() override;
         void dec() override;
 
@@ -56,6 +54,19 @@ namespace gbdmge {
         void setLow(byte value);
         void setHigh(byte value);
     };
+
+    class MemoryReg : public AbsReg<byte> {
+        byte& data;
+    public:
+        explicit MemoryReg(byte& value);
+
+        byte get() override;
+        void set(byte value) override;
+        void clear() override;
+        void inc() override;
+        void dec() override;
+    };
+
 }
 
 #endif
