@@ -10,12 +10,12 @@ namespace gbdmge {
         // A000 - BFFF, external RAM
 
         const word VW_RANGE_MASK = 0x1FFF;
-        byte vram[0x2000]; // Video ram, 8000 - 9FFF, 0 - 1FFF
-        byte wram[0x2000]; // Work ram, C000 - DFFF, 0 - 1FFF
+        byte vram[0x2000]; // Video ram, 8000 - 9FFF
+        byte wram[0x2000]; // Work ram, C000 - DFFF
 
         const word OZ_RANGE_MASK = 0x00FF;
-        byte oram[0x0100]; // FE00 - FE9F, 0 - FF
-        byte zram[0x0100]; // FF00 - FFFF, 0 - FF
+        byte oram[0x0100]; // FE00 - FE9F
+        byte zram[0x0100]; // FF00 - FFFF
 
         // IO Registers, which are mapped to address in range FF00 - FFFF
         MemoryReg joyp; // Joy pad
@@ -29,6 +29,7 @@ namespace gbdmge {
         MemoryReg nr41, nr42, nr43, nr44; // Sound channel 4 - noise
         MemoryReg nr50, nr51, nr52; // Sound global control
 
+        const word WAVE_RANGE_MASK = 0xF;
         byte wavePattern[0x10]; // Wave pattern
 
         MemoryReg lcdc, ly, lyc, scy, scx, bgp, obp0, obp1; // LCD control

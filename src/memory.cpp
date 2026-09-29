@@ -74,6 +74,7 @@ namespace gbdmge {
             case 0xB000:
                 // External RAM
                 throw std::logic_error("reading from external ram not implemented");
+
             case 0xC000:
             case 0xD000:
             case 0xE000:
@@ -88,6 +89,10 @@ namespace gbdmge {
 
                 if (address < 0xFF00) {
                     throw std::logic_error("reading from unusable memory");
+                }
+
+                if (address >= 0xFF30 && address < 0xFF40) {
+                    return wavePattern[address & WAVE_RANGE_MASK];
                 }
 
                 return zram[address & OZ_RANGE_MASK]; // I/O, HRAM, IE
