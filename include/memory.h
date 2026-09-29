@@ -29,7 +29,7 @@ namespace gbdmge {
         MemoryReg nr41, nr42, nr43, nr44; // Sound channel 4 - noise
         MemoryReg nr50, nr51, nr52; // Sound global control
 
-        const word WAVE_RANGE_MASK = 0xF;
+        const word WAVE_RANGE_MASK = 0x000F;
         byte wavePattern[0x10]; // Wave pattern
 
         MemoryReg lcdc, ly, lyc, scy, scx, bgp, obp0, obp1; // LCD control
