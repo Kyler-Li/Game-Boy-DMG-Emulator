@@ -9,10 +9,13 @@ namespace gbdmge {
         // 0000 - 7FFF, ROM banks
         // A000 - BFFF, external RAM
 
-        byte vram[0x2000]; // Video ram, 8000 - 9FFF
-        byte wram[0x2000]; // Work ram, C000 - DFFF
-        byte oram[0x0100]; // FE00 - FE9F
-        byte zram[0x0100]; // FF00 - FFFF
+        const word VW_RANGE_MASK = 0x1FFF;
+        byte vram[0x2000]; // Video ram, 8000 - 9FFF, 0 - 1FFF
+        byte wram[0x2000]; // Work ram, C000 - DFFF, 0 - 1FFF
+
+        const word OZ_RANGE_MASK = 0x00FF;
+        byte oram[0x0100]; // FE00 - FE9F, 0 - FF
+        byte zram[0x0100]; // FF00 - FFFF, 0 - FF
 
         // IO Registers, which are mapped to address in range FF00 - FFFF
         MemoryReg joyp; // Joy pad
@@ -37,7 +40,7 @@ namespace gbdmge {
     public:
         Memory();
         void write(word address, byte value);
-        byte read(word address);
+        byte read(word address) const;
         void reset();
     };
 }

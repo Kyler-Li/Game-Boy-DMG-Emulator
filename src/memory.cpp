@@ -53,8 +53,47 @@ namespace gbdmge {
     boot {zram[0x50]}
     {}
 
-    byte Memory::read(word address) {
-        throw std::logic_error("not implemented");
+    // Need to add support for ROM banks and external RAM
+    byte Memory::read(const word address) const {
+        switch (address & 0xF000) {
+            case 0x0000:
+            case 0x1000:
+            case 0x2000:
+            case 0x3000:
+            case 0x4000:
+            case 0x5000:
+            case 0x6000:
+            case 0x7000:
+                throw std::logic_error("reading from rom banks not implemented");
+
+            case 0x8000:
+            case 0x9000:
+                return vram[address & VW_RANGE_MASK];
+
+            case 0xA000:
+            case 0xB000:
+                // External RAM
+                throw std::logic_error("reading from external ram not implemented");
+            case 0xC000:
+            case 0xD000:
+            case 0xE000:
+            case 0xF000:
+                if (address < 0xFE00) {
+                    return wram[address & VW_RANGE_MASK]; // Work RAM and echo RAM. Echo RAM is a mirror of work RAM
+                }
+
+                if (address < 0xFEA0) {
+                    return oram[address & OZ_RANGE_MASK];
+                }
+
+                if (address < 0xFF00) {
+                    throw std::logic_error("reading from unusable memory");
+                }
+
+                return zram[address & OZ_RANGE_MASK]; // I/O, HRAM, IE
+            default:
+                throw std::logic_error("error, unmatched address");
+        }
     }
 
     void Memory::write(word address, byte value) {
