@@ -2,11 +2,21 @@
 #define GBDMGE_MEMORY_H
 
 #include <array>
+#include <vector>
 #include "types.h"
 
 namespace gbdmge {
+    // Memory bank controller
     class MemoryBC {
 
+    };
+
+    // Memory bank manager
+    class MemoryBM{
+        std::vector<byte> rom;
+    public:
+        void write(word address, byte value);
+        void read(word address);
     };
 
     class Memory{
@@ -17,12 +27,12 @@ namespace gbdmge {
         // depending on the size of the game ROM to be loaded
 
         const word VW_RANGE_MASK = 0x1FFF;
-        std::array<byte, 0x2000> vram; // Video ram, 8000 - 9FFF
-        std::array<byte, 0x2000> wram; // Work ram, C000 - DFFF
+        std::vector<byte> vram; // Video ram, 8000 - 9FFF
+        std::vector<byte> wram; // Work ram, C000 - DFFF
 
         const word OZ_RANGE_MASK = 0x00FF;
-        std::array<byte, 0x0100> oram; // FE00 - FE9F
-        std::array<byte, 0x0100> ioram; // FF00 - FFFF
+        std::vector<byte> oram; // FE00 - FE9F
+        std::vector<byte> ioram; // FF00 - FFFF
 
         // IO Registers, which are mapped to address in range FF00 - FFFF
         MemoryReg p1; // Joy pad
@@ -37,17 +47,16 @@ namespace gbdmge {
         MemoryReg nr50, nr51, nr52; // Sound global control
 
         const word WAVE_RANGE_MASK = 0x000F;
-        std::array<byte, 0x10> wavePattern; // Wave pattern
+        std::vector<byte> wavePattern; // Wave pattern
 
         MemoryReg lcdc, ly, lyc, scy, scx, bgp, obp0, obp1; // LCD control
         MemoryReg stat, wy, wx; // LCD control
         MemoryReg dma; // Direct memory access
-
         friend class CPU;
     public:
         Memory();
         void write(word address, byte value);
-        byte read(word address) const;
+        [[nodiscard]] byte read(word address) const;
         void reset();
     };
 }

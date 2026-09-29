@@ -4,10 +4,10 @@
 namespace gbdmge {
     Memory::Memory()
     :
-    vram {},
-    wram {},
-    oram {},
-    ioram {},
+    vram(0x2000, 0),
+    wram(0x2000, 0),
+    oram(0x0100, 0),
+    ioram(0x0100, 0),
     p1 {ioram[0x0]},
     sb {ioram[0x1]},
     sc {ioram[0x2]},
@@ -38,7 +38,7 @@ namespace gbdmge {
     nr50 {ioram[0x24]},
     nr51 {ioram[0x25]},
     nr52 {ioram[0x26]},
-    wavePattern {},
+    wavePattern(0x10, 0),
     lcdc {ioram[0x40]},
     ly {ioram[0x44]},
     lyc {ioram[0x45]},
@@ -107,11 +107,11 @@ namespace gbdmge {
 
     void Memory::reset() {
         // Initialize registers to post boot ROM values
-        vram.fill(0);
-        wram.fill(0);
-        oram.fill(0);
-        ioram.fill(0);
-        wavePattern.fill(0);
+        std::fill(vram.begin(), vram.end(), 0);
+        std::fill(wram.begin(), wram.end(), 0);
+        std::fill(oram.begin(), oram.end(), 0);
+        std::fill(ioram.begin(), ioram.end(), 0);
+        std::fill(wavePattern.begin(), wavePattern.end(), 0);
 
         p1.set(0xCF);
         sb.set(0x00);
