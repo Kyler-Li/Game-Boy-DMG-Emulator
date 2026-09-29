@@ -6,6 +6,7 @@
 #include "types.h"
 
 namespace gbdmge {
+    // Need to implement memory bank controller 0, 1, 2, 3
     // Memory bank controller
     // Handles external RAM and ROM banks
     class MemoryBC {
@@ -19,18 +20,11 @@ namespace gbdmge {
     };
 
     class Memory{
-        // Need to add:
-        // 0000 - 7FFF, ROM banks
-        // A000 - BFFF, external RAM
-        // These regions are managed by a Memory Bank Controller
-        // depending on the size of the game ROM to be loaded
         std::unique_ptr<MemoryBC> memoryBC;
 
-        const word VW_RANGE_MASK = 0x1FFF;
         std::vector<byte> vram; // Video ram, 8000 - 9FFF
         std::vector<byte> wram; // Work ram, C000 - DFFF
 
-        const word OZ_RANGE_MASK = 0x00FF;
         std::vector<byte> oram; // FE00 - FE9F
         std::vector<byte> ioram; // FF00 - FFFF
 
@@ -46,14 +40,11 @@ namespace gbdmge {
         MemoryReg nr41, nr42, nr43, nr44; // Sound channel 4 - noise
         MemoryReg nr50, nr51, nr52; // Sound global control
 
-        const word WAVE_RANGE_MASK = 0x000F;
         std::vector<byte> wavePattern; // Wave pattern
 
         MemoryReg lcdc, ly, lyc, scy, scx, bgp, obp0, obp1; // LCD control
         MemoryReg stat, wy, wx; // LCD control
         MemoryReg dma; // Direct memory access
-
-        friend class CPU;
     public:
         Memory();
         void write(word address, byte value);

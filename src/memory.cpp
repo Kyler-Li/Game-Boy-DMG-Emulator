@@ -4,7 +4,8 @@
 
 namespace gbdmge {
     // The largest size external RAM can be is 128KiB, assume this as opposed to manual calculation.
-    MemoryBC::MemoryBC(const std::vector<byte>& romData) : rom(romData), eram(0x20000, 0) {}
+    MemoryBC::MemoryBC(const std::vector<byte>& romData)
+    : rom {romData}, eram(0x20000, 0) {}
 
     Memory::Memory()
     :
@@ -58,7 +59,7 @@ namespace gbdmge {
     dma {ioram[0x46]}
     {}
 
-    // Need to add support for ROM banks and external RAM
+    // Basically finished, should be fully implemented
     byte Memory::read(const word address) const {
         switch (address & 0xF000) {
             case 0x0000:
@@ -73,7 +74,7 @@ namespace gbdmge {
 
             case 0x8000:
             case 0x9000:
-                return vram[address & VW_RANGE_MASK];
+                return vram[address & MASK_13_LOWER];
 
             case 0xA000:
             case 0xB000:
@@ -84,11 +85,11 @@ namespace gbdmge {
             case 0xE000:
             case 0xF000:
                 if (address < 0xFE00) {
-                    return wram[address & VW_RANGE_MASK]; // Work RAM and echo RAM. Echo RAM is a mirror of work RAM
+                    return wram[address & MASK_13_LOWER]; // Work RAM and echo RAM. Echo RAM is a mirror of work RAM
                 }
 
                 if (address < 0xFEA0) {
-                    return oram[address & OZ_RANGE_MASK];
+                    return oram[address & MASK_8_LOWER];
                 }
 
                 if (address < 0xFF00) {
@@ -96,10 +97,10 @@ namespace gbdmge {
                 }
 
                 if (address >= 0xFF30 && address < 0xFF40) {
-                    return wavePattern[address & WAVE_RANGE_MASK];
+                    return wavePattern[address & MASK_4_LOWER];
                 }
 
-                return ioram[address & OZ_RANGE_MASK]; // I/O, HRAM, IE
+                return ioram[address & MASK_8_LOWER]; // I/O, HRAM, IE
             default:
                 throw std::logic_error("Error, unmatched address");
         }
@@ -162,11 +163,43 @@ namespace gbdmge {
     }
 
     void Memory::loadRom(const std::string& romFileName) {
-        if (std::ifstream romFile {romFileName, std::ios::binary};
-            romFile.is_open()) {
+        std::ifstream romFile {romFileName, std::ios::binary};
+        if (!romFile.is_open()) {
             throw std::invalid_argument("Cannot open rom file for reading!");
         }
 
+        romFile.seekg(0, std::ios::end);
 
+        const auto romSize = romFile.tellg();
+        if (romSize == 0) {
+            throw std::invalid_argument("Invalid rom file!");
+        }
+
+        romFile.seekg(0, std::ios::beg);
+
+        std::vector<byte> romData;
+        romData.resize(romSize);
+
+        romFile.read(reinterpret_cast<char*>(romData.data()), romSize);
+
+        switch (romData[0x147]) {
+            case 0x0:
+                throw std::logic_error("MemoryBC0 not implemented!");
+            case 0x1:
+            case 0x2:
+            case 0x3:
+                throw std::logic_error("MemoryBC1 not implemented!");
+            case 0x5:
+            case 0x6:
+                throw std::logic_error("MemoryBC2 not implemented!");
+            case 0x0F:
+            case 0x10:
+            case 0x11:
+            case 0x12:
+            case 0x13:
+                throw std::logic_error("MemoryBC3 not implemented!");
+            default:
+                throw std::logic_error(romFileName + " not supported!");
+        }
     }
 }
