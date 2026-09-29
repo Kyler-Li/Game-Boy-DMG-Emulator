@@ -1,6 +1,7 @@
 #include "types.h"
 
 namespace gbdmge {
+    // CPU Register
     Reg::Reg() : low(0), high(0) {}
 
     word Reg::get() {
@@ -41,6 +42,7 @@ namespace gbdmge {
         high = value;
     }
 
+    // Memory Register
     MemoryReg::MemoryReg(byte& value) : data(value) {}
 
     byte MemoryReg::get() {
