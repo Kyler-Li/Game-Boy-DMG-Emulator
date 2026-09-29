@@ -29,14 +29,11 @@ namespace gbdmge {
 
         void pop(Reg& src);
         void push(Reg& src);
-
         void anda(byte src);
         void ora(byte src);
         void xora(byte src);
-
         void cp(byte b);
         void cp(Reg& b);
-
         void jpz(word address);
         void jpnz(word address);
         void jpc(word address);
@@ -48,6 +45,12 @@ namespace gbdmge {
         void cpl();
         void ei();
         void di();
+        void jrC(byte src);
+        void jrNc(byte src);
+        void jrZ(byte src);
+        void jrNz(byte src);
+        void jr(byte src);
+        void jrCond(byte src, bool cond);
     public:
         explicit CPU(Memory& memory);
         byte fetch();

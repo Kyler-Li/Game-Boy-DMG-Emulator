@@ -110,6 +110,33 @@ namespace gbdmge {
         ime = false;
     }
 
+    void CPU::jrC(const byte src) {
+        jrCond(src, af.bitIsSet(af.getLow(), CARRY_FLAG));
+    }
+
+    void CPU::jrNc(const byte src) {
+        jrCond(src, !af.bitIsSet(af.getLow(), CARRY_FLAG));
+    }
+
+    void CPU::jrZ(const byte src) {
+        jrCond(src, af.bitIsSet(af.getLow(), ZERO_FLAG));
+    }
+
+    void CPU::jrNz(const byte src) {
+        jrCond(src, !af.bitIsSet(af.getLow(), ZERO_FLAG));
+    }
+
+    void CPU::jr(const byte src) {
+        jrCond(src, true);
+    }
+
+    void CPU::jrCond(const byte src, const bool cond) {
+        if (cond) {
+            const sbyte off = static_cast<sbyte>(src);
+            pc.set(pc.get() + off);
+        }
+    }
+
     void CPU::reset() {
         // Initialize to post boot ROM values
         ime = false;
