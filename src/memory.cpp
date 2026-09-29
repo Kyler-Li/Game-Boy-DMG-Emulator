@@ -5,52 +5,52 @@ namespace gbdmge {
     Memory::Memory()
     :
     vram {},
+    wram {},
     oram {},
-    zram {},
-    joyp {zram[0x0]},
-    sb {zram[0x1]},
-    sc {zram[0x2]},
-    div {zram[0x4]},
-    tima {zram[0x5]},
-    tma {zram[0x6]},
-    tac {zram[0x7]},
-    ie {zram[0xFF]},
-    inf {zram[0x0F]},
-    nr10 {zram[0x10]},
-    nr11 {zram[0x11]},
-    nr12 {zram[0x12]},
-    nr13 {zram[0x13]},
-    nr14 {zram[0x14]},
-    nr21 {zram[0x16]},
-    nr22 {zram[0x17]},
-    nr23 {zram[0x18]},
-    nr24 {zram[0x19]},
-    nr30 {zram[0x1A]},
-    nr31 {zram[0x1B]},
-    nr32 {zram[0x1C]},
-    nr33 {zram[0x1D]},
-    nr34 {zram[0x1E]},
-    nr41 {zram[0x20]},
-    nr42 {zram[0x21]},
-    nr43 {zram[0x22]},
-    nr44 {zram[0x23]},
-    nr50 {zram[0x24]},
-    nr51 {zram[0x25]},
-    nr52 {zram[0x26]},
+    ioram {},
+    p1 {ioram[0x0]},
+    sb {ioram[0x1]},
+    sc {ioram[0x2]},
+    div {ioram[0x4]},
+    tima {ioram[0x5]},
+    tma {ioram[0x6]},
+    tac {ioram[0x7]},
+    ie {ioram[0xFF]},
+    inf {ioram[0x0F]},
+    nr10 {ioram[0x10]},
+    nr11 {ioram[0x11]},
+    nr12 {ioram[0x12]},
+    nr13 {ioram[0x13]},
+    nr14 {ioram[0x14]},
+    nr21 {ioram[0x16]},
+    nr22 {ioram[0x17]},
+    nr23 {ioram[0x18]},
+    nr24 {ioram[0x19]},
+    nr30 {ioram[0x1A]},
+    nr31 {ioram[0x1B]},
+    nr32 {ioram[0x1C]},
+    nr33 {ioram[0x1D]},
+    nr34 {ioram[0x1E]},
+    nr41 {ioram[0x20]},
+    nr42 {ioram[0x21]},
+    nr43 {ioram[0x22]},
+    nr44 {ioram[0x23]},
+    nr50 {ioram[0x24]},
+    nr51 {ioram[0x25]},
+    nr52 {ioram[0x26]},
     wavePattern {},
-    lcdc {zram[0x40]},
-    ly {zram[0x44]},
-    lyc {zram[0x45]},
-    scy {zram[0x42]},
-    scx {zram[0x43]},
-    bgp {zram[0x47]},
-    obp0 {zram[0x48]},
-    obp1 {zram[0x49]},
-    stat {zram[0x41]},
-    wy {zram[0x4A]},
-    wx {zram[0x4B]},
-    dma {zram[0x46]},
-    boot {zram[0x50]}
+    lcdc {ioram[0x40]},
+    ly {ioram[0x44]},
+    lyc {ioram[0x45]},
+    scy {ioram[0x42]},
+    scx {ioram[0x43]},
+    bgp {ioram[0x47]},
+    obp0 {ioram[0x48]},
+    obp1 {ioram[0x49]},
+    stat {ioram[0x41]},
+    wy {ioram[0x4A]},
+    wx {ioram[0x4B]},
+    dma {ioram[0x46]}
     {}
 
     // Need to add support for ROM banks and external RAM
@@ -95,7 +95,7 @@ namespace gbdmge {
                     return wavePattern[address & WAVE_RANGE_MASK];
                 }
 
-                return zram[address & OZ_RANGE_MASK]; // I/O, HRAM, IE
+                return ioram[address & OZ_RANGE_MASK]; // I/O, HRAM, IE
             default:
                 throw std::logic_error("error, unmatched address");
         }
@@ -107,6 +107,53 @@ namespace gbdmge {
 
     void Memory::reset() {
         // Initialize registers to post boot ROM values
-        throw std::logic_error("not implemented");
+        vram.fill(0);
+        wram.fill(0);
+        oram.fill(0);
+        ioram.fill(0);
+        wavePattern.fill(0);
+
+        p1.set(0xCF);
+        sb.set(0x00);
+        sc.set(0x7E);
+        div.set(0xAB);
+        tima.set(0x00);
+        tma.set(0x00);
+        tac.set(0xF8);
+        inf.set(0xE1);
+        nr10.set(0x80);
+        nr11.set(0xBF);
+        nr12.set(0xF3);
+        nr13.set(0xFF);
+        nr14.set(0xBF);
+        nr21.set(0x3F);
+        nr22.set(0x00);
+        nr23.set(0xFF);
+        nr24.set(0xBF);
+        nr30.set(0x7F);
+        nr31.set(0xFF);
+        nr32.set(0x9F);
+        nr33.set(0xFF);
+        nr34.set(0xBF);
+        nr41.set(0xFF);
+        nr42.set(0x00);
+        nr43.set(0x00);
+        nr44.set(0xBF);
+        nr50.set(0x77);
+        nr51.set(0xF3);
+        nr52.set(0xF1);
+        lcdc.set(0x91);
+        stat.set(0x85);
+        scy.set(0x00);
+        scx.set(0x00);
+        ly.set(0x00);
+        lyc.set(0x00);
+        dma.set(0xFF);
+        bgp.set(0xFC);
+        obp0.set(0xFF); // Documentation says 0x00 or 0xFF, change later?
+        obp1.set(0xFF); // Documentation says 0x00 or 0xFF, change later?
+        wy.set(0x00);
+        wx.set(0x00);
+        ie.set(0x00);
     }
 }
