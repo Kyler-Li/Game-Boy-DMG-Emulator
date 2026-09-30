@@ -66,18 +66,18 @@ namespace gbdmge {
     }
 
     byte MemoryBC1::read(const word address){
-        // ROM Bank 0
         if (address <= 0x3FFF) {
             return rom[address];
         }
 
-        if (address >= 0x4000 && address <= 0x7FFF) {
-             // return rom[address - 0x4000 + romBankId * 0x4000];
+        if (address <= 0x7FFF) {
+            return rom[address - 0x4000 + bankingNumber * 0x4000];
         }
 
         // External RAM
         if (eRamEnabled && address >= 0xA000 && address <= 0xBFFF) {
-            // return eram[address - 0xA000 + ramBankId * 0x2000];
+            const byte ramBank = bankingMode ? (bankingNumber & MASK_5_6_BYTE) >> 5: 0;
+            return eram[address - 0xA000 + ramBank * 0x2000];
         }
 
         // External RAM is only accessible if RAM is enabled, otherwise reads return open bus values
@@ -267,7 +267,8 @@ namespace gbdmge {
             case 0x1:
             case 0x2:
             case 0x3:
-                throw std::logic_error("MemoryBC1 not implemented!");
+                memoryBC = std::make_unique<MemoryBC1>(romData);
+                break;
             case 0x5:
             case 0x6:
                 throw std::logic_error("MemoryBC2 not implemented!");
