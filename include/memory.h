@@ -43,14 +43,25 @@ namespace gbdmge {
     * Different MBC types (MBC1, MBC2, MBC3, MBC5, etc.) mainly differ in
     * how they interpret these commands and how they perform the bank mapping.
     */
+
     class MemoryBC {
+    protected:
         std::vector<byte> rom;
         std::vector<byte> eram;
+
     public:
         explicit MemoryBC(const std::vector<byte>& romData);
         virtual void write(word address, byte value) = 0;
         virtual byte read(word address) = 0;
         virtual ~MemoryBC() = default;
+    };
+
+    class MemoryBC0 : public MemoryBC {
+    public:
+        explicit MemoryBC0(const std::vector<byte>& romData);
+        void write(word address, byte value) override;
+        byte read(word address) override;
+        ~MemoryBC0() override = default;
     };
 
     class Memory{

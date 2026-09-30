@@ -8,6 +8,26 @@ namespace gbdmge {
     MemoryBC::MemoryBC(const std::vector<byte>& romData)
     : rom {romData}, eram(0x20000, 0) {}
 
+    MemoryBC0::MemoryBC0(const std::vector<byte> &romData) : MemoryBC(romData) {}
+
+    void MemoryBC0::write(const word address, const byte value) {
+        if (address >= 0xA000 && address <= 0xBFFF) {
+            eram[address & MASK_13_LOWER] = value;
+        }
+    }
+
+    byte MemoryBC0::read(const word address) {
+        if (address <= 0x7FFF) {
+            return rom[address];
+        }
+
+        if (address >= 0xA000 && address <= 0xBFFF) {
+            return eram[address & MASK_13_LOWER];
+        }
+
+        throw std::invalid_argument("Invalid read address for MBC0!");
+    }
+
     Memory::Memory()
     :
     memoryBC {nullptr},
@@ -185,7 +205,7 @@ namespace gbdmge {
 
         switch (romData[0x147]) {
             case 0x0:
-                throw std::logic_error("MemoryBC0 not implemented!");
+                memoryBC = std::make_unique<MemoryBC0>(romData);
             case 0x1:
             case 0x2:
             case 0x3:
