@@ -16,6 +16,7 @@ namespace gbdmge {
     static constexpr word MASK_4_UPPER_WORD = 0xF000;
 
     // Masks lower bits
+    static constexpr byte MASK_1_LOWER_BYTE = 0x01;
     static constexpr byte MASK_2_LOWER_BYTE = 0x03;
     static constexpr byte MASK_4_LOWER_BYTE = 0x0F;
     static constexpr byte MASK_5_LOWER_BYTE = 0x1F;
@@ -23,7 +24,7 @@ namespace gbdmge {
     static constexpr word MASK_13_LOWER_WORD = 0x1FFF;
 
     // Mask for specific bits
-    static constexpr byte MASK_6_7_BYTE = 0x60;
+    static constexpr byte MASK_5_6_BYTE = 0x60;
 
     template <typename T>
     class AbsReg {

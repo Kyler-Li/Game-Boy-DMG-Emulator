@@ -28,6 +28,18 @@ namespace gbdmge {
         throw std::invalid_argument("Invalid read address for MBC0!");
     }
 
+    void MemoryBC1::incrementBankingNumber() {
+        switch (bankingNumber) {
+            case 0x0:
+            case 0x20:
+            case 0x40:
+            case 0x60:
+                ++bankingNumber;
+            default:
+                break;
+        }
+    }
+
     MemoryBC1::MemoryBC1(const std::vector<byte>& romData)
     :
     MemoryBC(romData),
@@ -36,30 +48,21 @@ namespace gbdmge {
     bankingMode {false}
     {}
 
-    void MemoryBC1::write(const word address, const byte value){
+    void MemoryBC1::write(const word address, const byte value) {
         if (address <= 0x1FFF) {
-            eRamEnabled = (value & MASK_4_LOWER_BYTE) == 0x000A;
-            return;
+            eRamEnabled = (value & MASK_4_LOWER_BYTE) == 0x0A;
+        }else if (address <= 0x3FFF) {
+            bankingNumber = bankingNumber & MASK_5_6_BYTE | value & MASK_5_LOWER_BYTE;
+            incrementBankingNumber();
+        }else if (address <= 0x5FFF) {
+            bankingNumber = bankingNumber & ~MASK_5_6_BYTE | (value & MASK_2_LOWER_BYTE) << 5;
+            incrementBankingNumber();
+        }else if (address <= 0x7FFF) {
+            bankingMode = value & MASK_1_LOWER_BYTE;
+        }else if (eRamEnabled && address >= 0xA000 && address <= 0xBFFF) {
+            const byte ramBank = bankingMode ? (bankingNumber & MASK_5_6_BYTE) >> 5: 0;
+            eram[address - 0xA000 + ramBank * 0x2000] = value;
         }
-
-        if (address >= 0x2000 && address <= 0x3FFF) {
-            bankingNumber = bankingNumber & MASK_6_7_BYTE | value & MASK_5_LOWER_BYTE;
-        }
-
-        if (address >= 0x4000 && address <= 0x5FFF) {
-
-        }
-
-        if (address >= 0x6000 && address <= 0x7FFF) {
-
-        }
-
-        // External RAM
-        if (eRamEnabled && address >= 0xA000 && address <= 0xBFFF) {
-
-        }
-
-        throw std::logic_error("MemoryBC1::write not fully implemented!");
     }
 
     byte MemoryBC1::read(const word address){
