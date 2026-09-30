@@ -28,6 +28,60 @@ namespace gbdmge {
         throw std::invalid_argument("Invalid read address for MBC0!");
     }
 
+    MemoryBC1::MemoryBC1(const std::vector<byte>& romData)
+    :
+    MemoryBC(romData),
+    eRamEnabled {false},
+    romBank {1},
+    ramBank {0}
+    {}
+
+    void MemoryBC1::write(const word address, const byte value){
+        if (address <= 0x1FFF) {
+            eRamEnabled = (value & 0x000A) == 0x000A;
+        }
+
+        if (address >= 0x2000 && address <= 0x3FFF) {
+
+        }
+
+        if (address >= 0x4000 && address <= 0x5FFF) {
+
+        }
+
+        if (address >= 0x6000 && address <= 0x7FFF) {
+
+        }
+
+        // External RAM
+        if (eRamEnabled && address >= 0xA000 && address <= 0xBFFF) {
+
+        }
+
+        throw std::logic_error("MemoryBC1::write not fully implemented!");
+    }
+
+    byte MemoryBC1::read(const word address){
+        // ROM Bank 0
+        if (address <= 0x3FFF) {
+            return rom[address];
+        }
+
+        if (address >= 0x4000 && address <= 0x7FFF) {
+             return rom[address - 0x4000 + static_cast<word>(romBank) * 0x4000];
+        }
+
+        // External RAM
+        if (eRamEnabled && address >= 0xA000 && address <= 0xBFFF) {
+
+        }
+
+
+        // External RAM is only accessible if RAM is enabled, otherwise reads return open bus values
+        // (often $FF, but not guaranteed) and writes are ignored.
+        return 0xFF;
+    }
+
     Memory::Memory()
     :
     memoryBC {nullptr},

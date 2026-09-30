@@ -14,12 +14,14 @@ namespace gbdmge {
 
     // Masks upper bits
     static constexpr word MASK_4_UPPER = 0xF000;
-    static constexpr word MASK_4_LOWER = 0x000F;
 
     // Masks lower bits
+    static constexpr word MASK_4_LOWER = 0x000F;
+    static constexpr word MASK_5_LOWER = 0x001F;
     static constexpr word MASK_8_LOWER = 0x00FF;
     static constexpr word MASK_13_LOWER = 0x1FFF;
 
+    // Masks select bits
 
     template <typename T>
     class AbsReg {
