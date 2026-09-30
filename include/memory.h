@@ -28,8 +28,11 @@ namespace gbdmge {
 
     class MemoryBC1 : public MemoryBC {
         bool eRamEnabled;
-        byte romBank;
-        byte ramBank;
+        byte bankingNumber;
+        // false = ROM mode, true = RAM mode
+        // In ROM mode, up to 8KByte RAM, 2MByte ROM
+        // In RAM mode, up to 32KByte RAM, 512KByte ROM
+        bool bankingMode;
     public:
         explicit MemoryBC1(const std::vector<byte>& romData);
         void write(word address, byte value) override;

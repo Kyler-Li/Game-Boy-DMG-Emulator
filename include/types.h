@@ -13,15 +13,17 @@ namespace gbdmge {
     using qword = std::uint64_t;
 
     // Masks upper bits
-    static constexpr word MASK_4_UPPER = 0xF000;
+    static constexpr word MASK_4_UPPER_WORD = 0xF000;
 
     // Masks lower bits
-    static constexpr word MASK_4_LOWER = 0x000F;
-    static constexpr word MASK_5_LOWER = 0x001F;
-    static constexpr word MASK_8_LOWER = 0x00FF;
-    static constexpr word MASK_13_LOWER = 0x1FFF;
+    static constexpr byte MASK_2_LOWER_BYTE = 0x03;
+    static constexpr byte MASK_4_LOWER_BYTE = 0x0F;
+    static constexpr byte MASK_5_LOWER_BYTE = 0x1F;
+    static constexpr byte MASK_8_LOWER_BYTE = 0xFF;
+    static constexpr word MASK_13_LOWER_WORD = 0x1FFF;
 
-    // Masks select bits
+    // Mask for specific bits
+    static constexpr byte MASK_6_7_BYTE = 0x60;
 
     template <typename T>
     class AbsReg {

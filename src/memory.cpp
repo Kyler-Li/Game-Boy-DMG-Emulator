@@ -12,7 +12,7 @@ namespace gbdmge {
 
     void MemoryBC0::write(const word address, const byte value) {
         if (address >= 0xA000 && address <= 0xBFFF) {
-            eram[address & MASK_13_LOWER] = value;
+            eram[address & MASK_13_LOWER_WORD] = value;
         }
     }
 
@@ -22,7 +22,7 @@ namespace gbdmge {
         }
 
         if (address >= 0xA000 && address <= 0xBFFF) {
-            return eram[address & MASK_13_LOWER];
+            return eram[address & MASK_13_LOWER_WORD];
         }
 
         throw std::invalid_argument("Invalid read address for MBC0!");
@@ -32,17 +32,18 @@ namespace gbdmge {
     :
     MemoryBC(romData),
     eRamEnabled {false},
-    romBank {1},
-    ramBank {0}
+    bankingNumber {0x1},
+    bankingMode {false}
     {}
 
     void MemoryBC1::write(const word address, const byte value){
         if (address <= 0x1FFF) {
-            eRamEnabled = (value & 0x000A) == 0x000A;
+            eRamEnabled = (value & MASK_4_LOWER_BYTE) == 0x000A;
+            return;
         }
 
         if (address >= 0x2000 && address <= 0x3FFF) {
-
+            bankingNumber = bankingNumber & MASK_6_7_BYTE | value & MASK_5_LOWER_BYTE;
         }
 
         if (address >= 0x4000 && address <= 0x5FFF) {
@@ -68,14 +69,13 @@ namespace gbdmge {
         }
 
         if (address >= 0x4000 && address <= 0x7FFF) {
-             return rom[address - 0x4000 + static_cast<word>(romBank) * 0x4000];
+             // return rom[address - 0x4000 + romBankId * 0x4000];
         }
 
         // External RAM
         if (eRamEnabled && address >= 0xA000 && address <= 0xBFFF) {
-
+            // return eram[address - 0xA000 + ramBankId * 0x2000];
         }
-
 
         // External RAM is only accessible if RAM is enabled, otherwise reads return open bus values
         // (often $FF, but not guaranteed) and writes are ignored.
@@ -149,7 +149,7 @@ namespace gbdmge {
 
             case 0x8000:
             case 0x9000:
-                return vram[address & MASK_13_LOWER];
+                return vram[address & MASK_13_LOWER_WORD];
 
             case 0xA000:
             case 0xB000:
@@ -160,11 +160,11 @@ namespace gbdmge {
             case 0xE000:
             case 0xF000:
                 if (address < 0xFE00) {
-                    return wram[address & MASK_13_LOWER]; // Work RAM and echo RAM. Echo RAM is a mirror of work RAM
+                    return wram[address & MASK_13_LOWER_WORD]; // Work RAM and echo RAM. Echo RAM is a mirror of work RAM
                 }
 
                 if (address < 0xFEA0) {
-                    return oram[address & MASK_8_LOWER];
+                    return oram[address & MASK_8_LOWER_BYTE];
                 }
 
                 if (address < 0xFF00) {
@@ -172,10 +172,10 @@ namespace gbdmge {
                 }
 
                 if (address >= 0xFF30 && address < 0xFF40) {
-                    return wavePattern[address & MASK_4_LOWER];
+                    return wavePattern[address & MASK_4_LOWER_BYTE];
                 }
 
-                return ioram[address & MASK_8_LOWER]; // I/O, HRAM, IE
+                return ioram[address & MASK_8_LOWER_BYTE]; // I/O, HRAM, IE
             default:
                 throw std::logic_error("Error, unmatched address");
         }
