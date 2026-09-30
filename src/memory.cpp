@@ -206,6 +206,7 @@ namespace gbdmge {
         switch (romData[0x147]) {
             case 0x0:
                 memoryBC = std::make_unique<MemoryBC0>(romData);
+                break;
             case 0x1:
             case 0x2:
             case 0x3:
