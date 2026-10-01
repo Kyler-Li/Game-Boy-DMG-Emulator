@@ -137,7 +137,7 @@ namespace gbdmge {
     dma {ioram[0x46]}
     {}
 
-    // Basically finished, should be fully implemented
+    // Basically finished, needs behavior when reading from IO registers.
     byte Memory::read(const word address) const {
         switch (address & 0xF000) {
             case 0x0000:
