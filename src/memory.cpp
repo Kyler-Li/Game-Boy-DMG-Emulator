@@ -137,7 +137,7 @@ namespace gbdmge {
     dma {ioram[0x46]}
     {}
 
-    // Basically finished, needs behavior when reading from IO registers.
+    // Basically finished, may need behavior when reading from IO registers.
     byte Memory::read(const word address) const {
         switch (address & 0xF000) {
             case 0x0000:
@@ -174,7 +174,7 @@ namespace gbdmge {
                     throw std::logic_error("Reading from unusable memory");
                 }
 
-                if (address >= 0xFF30 && address < 0xFF40) {
+                if (address >= 0xFF30 && address <= 0xFF3F) {
                     return wavePattern[address & MASK_4_LOWER_BYTE];
                 }
 
@@ -184,6 +184,7 @@ namespace gbdmge {
         }
     }
 
+    // Writing to specific IO registers has specific behavior that must be considered.
     void Memory::write(word address, byte value) {
         throw std::logic_error("not implemented");
     }

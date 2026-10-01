@@ -31,7 +31,7 @@ namespace gbdmge {
 
     class MemoryBC1 : public MemoryBC {
         /*
-            Here is the expected behavior of MBC1:
+            Memory Bank Controller 1
 
             Reading:
             if bankingMode = 1, RAM mode (up to 32KByte RAM, 512KByte ROM)
@@ -62,6 +62,25 @@ namespace gbdmge {
     };
 
     class Memory{
+        /*
+            Memory
+            The Game Boy uses a 2-byte address space (0x0000 to 0xFFFF) to map the different
+            types of memory (RAM, VRAM, [Cartridge] memory, etc.)
+
+            Memory map
+            0x0000-0x3FFF: 16 KiB bank #0                 (cartridge)
+            0x4000-0x7FFF: 16 KiB switchable ROM bank     (cartridge)
+            0x8000-0x9FFF: 8 KiB video RAM                (VRAM)
+            0xA000-0xBFFF: 8 KiB switchable RAM bank      (cartridge)
+            0xC000-0xDFFF: 8 KiB work RAM                 (WRAM)
+            0xE000-0xFDFF: Echo RAM                       (mirror of 0xC000-0xDFFF)
+            0xFE00-0xFE9F: Object attribute memory        (OAM)
+            0xFEA0-0xFEFF: Empty, not usable
+            0xFF00-0xFF4B: I/O registers                  (I/O)
+            0xFF4C-0xFF7F: Empty (?)
+            0xFF80-0xFFFE: High RAM                       (HRAM)
+            0xFF80-0xFFFF: Interrupt Enable Register      (IER)
+        */
         std::unique_ptr<MemoryBC> memoryBC; // Manages reads and writes to 0000-7FFF, A000-BFFF
 
         std::vector<byte> vram; // Video ram, 8000 - 9FFF
