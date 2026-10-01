@@ -27,9 +27,9 @@ static constexpr word MASK_13_LOWER_WORD = 0x1FFF;
 static constexpr byte MASK_5_6_BYTE = 0x60;
 
 template <typename T>
-class AbsReg {
+class BaseRegister {
  public:
-  virtual ~AbsReg() = default;
+  virtual ~BaseRegister() = default;
 
   void setBit(byte& value, const byte pos, const bool set) {
     const byte mask = static_cast<byte>(1) << pos;
@@ -51,12 +51,12 @@ class AbsReg {
   virtual void dec() = 0;
 };
 
-class Reg : public AbsReg<word> {
+class Register : public BaseRegister<word> {
   byte low;
   byte high;
 
  public:
-  Reg();
+  Register();
 
   word get() override;
   void set(word value) override;
@@ -71,11 +71,11 @@ class Reg : public AbsReg<word> {
   void setHigh(byte value);
 };
 
-class MemoryReg : public AbsReg<byte> {
+class MemoryRegister : public BaseRegister<byte> {
   byte& data;
 
  public:
-  explicit MemoryReg(byte& value);
+  explicit MemoryRegister(byte& value);
 
   byte get() override;
   void set(byte value) override;

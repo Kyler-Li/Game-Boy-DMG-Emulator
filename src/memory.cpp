@@ -5,7 +5,7 @@
 #include <stdexcept>
 
 namespace gbdmge {
-MemoryBC::MemoryBC(const std::vector<byte>& romData)
+MemoryBankController::MemoryBankController(const std::vector<byte>& romData)
     : rom{romData},
       eram(0x20000, 0),  // The largest size external RAM can be is 128KiB,
       // assume this as opposed to manual calculation.
@@ -13,15 +13,15 @@ MemoryBC::MemoryBC(const std::vector<byte>& romData)
       bankingNumber{1},
       bankingMode{0} {}
 
-MemoryBC0::MemoryBC0(const std::vector<byte>& romData) : MemoryBC(romData) {}
+MemoryBankController0::MemoryBankController0(const std::vector<byte>& romData) : MemoryBankController(romData) {}
 
-void MemoryBC0::write(const word address, const byte value) {
+void MemoryBankController0::write(const word address, const byte value) {
   if (address >= 0xA000 && address <= 0xBFFF) {
     eram[address & MASK_13_LOWER_WORD] = value;
   }
 }
 
-byte MemoryBC0::read(const word address) {
+byte MemoryBankController0::read(const word address) {
   if (address <= 0x7FFF) {
     return rom[address];
   }
@@ -33,7 +33,7 @@ byte MemoryBC0::read(const word address) {
   throw std::invalid_argument("Invalid read address for MBC0!");
 }
 
-void MemoryBC1::incrementBankingNumber() {
+void MemoryBankController1::incrementBankingNumber() {
   switch (bankingNumber) {
     case 0x0:
     case 0x20:
@@ -45,9 +45,9 @@ void MemoryBC1::incrementBankingNumber() {
   }
 }
 
-MemoryBC1::MemoryBC1(const std::vector<byte>& romData) : MemoryBC(romData) {}
+MemoryBankController1::MemoryBankController1(const std::vector<byte>& romData) : MemoryBankController(romData) {}
 
-void MemoryBC1::write(const word address, const byte value) {
+void MemoryBankController1::write(const word address, const byte value) {
   if (address <= 0x1FFF) {
     eRamEnabled = (value & MASK_4_LOWER_BYTE) == 0x0A;
   } else if (address >= 0x2000 && address <= 0x3FFF) {
@@ -66,7 +66,7 @@ void MemoryBC1::write(const word address, const byte value) {
   }
 }
 
-byte MemoryBC1::read(const word address) {
+byte MemoryBankController1::read(const word address) {
   if (address <= 0x3FFF) {
     return rom[address];
   }
@@ -268,13 +268,13 @@ void Memory::loadRom(const std::string& romFileName) {
 
   switch (romData[0x147]) {
     case 0x0:
-      memoryBC = std::make_unique<MemoryBC0>(romData);
+      memoryBC = std::make_unique<MemoryBankController0>(romData);
       break;
 
     case 0x1:
     case 0x2:
     case 0x3:
-      memoryBC = std::make_unique<MemoryBC1>(romData);
+      memoryBC = std::make_unique<MemoryBankController1>(romData);
       break;
 
     case 0x5:

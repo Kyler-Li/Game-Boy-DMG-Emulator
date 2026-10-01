@@ -7,7 +7,7 @@
 #include "types.h"
 
 namespace gbdmge {
-class MemoryBC {
+class MemoryBankController {
  protected:
   std::vector<byte> rom;
   std::vector<byte> eram;
@@ -16,21 +16,21 @@ class MemoryBC {
   byte bankingMode;
 
  public:
-  explicit MemoryBC(const std::vector<byte>& romData);
+  explicit MemoryBankController(const std::vector<byte>& romData);
   virtual void write(word address, byte value) = 0;
   virtual byte read(word address) = 0;
-  virtual ~MemoryBC() = default;
+  virtual ~MemoryBankController() = default;
 };
 
-class MemoryBC0 : public MemoryBC {
+class MemoryBankController0 : public MemoryBankController {
  public:
-  explicit MemoryBC0(const std::vector<byte>& romData);
+  explicit MemoryBankController0(const std::vector<byte>& romData);
   void write(word address, byte value) override;
   byte read(word address) override;
-  ~MemoryBC0() override = default;
+  ~MemoryBankController0() override = default;
 };
 
-class MemoryBC1 : public MemoryBC {
+class MemoryBankController1 : public MemoryBankController {
   /*
 		Memory Bank Controller 1
 
@@ -60,10 +60,10 @@ class MemoryBC1 : public MemoryBC {
   void incrementBankingNumber();
 
  public:
-  explicit MemoryBC1(const std::vector<byte>& romData);
+  explicit MemoryBankController1(const std::vector<byte>& romData);
   void write(word address, byte value) override;
   byte read(word address) override;
-  ~MemoryBC1() override = default;
+  ~MemoryBankController1() override = default;
 };
 
 class Memory {
@@ -86,7 +86,7 @@ class Memory {
 		0xFF80-0xFFFE: High RAM                       (HRAM)
 		0xFF80-0xFFFF: Interrupt Enable Register      (IER)
 	*/
-  std::unique_ptr<MemoryBC>
+  std::unique_ptr<MemoryBankController>
       memoryBC;  // Manages reads and writes to 0000-7FFF, A000-BFFF
 
   std::vector<byte> vram;  // Video ram, 8000 - 9FFF
@@ -96,22 +96,22 @@ class Memory {
   std::vector<byte> ioram;  // FF00 - FFFF
 
   // IO Registers, which are mapped to addresses in range FF00 - FFFF
-  MemoryReg p1;                   // Joy pad
-  MemoryReg sb, sc;               // Serial transfer
-  MemoryReg div, tima, tma, tac;  // Timer and divider
-  MemoryReg ie, inf;              // Interrupts
+  MemoryRegister p1;                   // Joy pad
+  MemoryRegister sb, sc;               // Serial transfer
+  MemoryRegister div, tima, tma, tac;  // Timer and divider
+  MemoryRegister ie, inf;              // Interrupts
 
-  MemoryReg nr10, nr11, nr12, nr13, nr14;  // Sound channel 1 - sweep
-  MemoryReg nr21, nr22, nr23, nr24;        // Sound channel 2 - pulse
-  MemoryReg nr30, nr31, nr32, nr33, nr34;  // Sound channel 3 - wave
-  MemoryReg nr41, nr42, nr43, nr44;        // Sound channel 4 - noise
-  MemoryReg nr50, nr51, nr52;              // Sound global control
+  MemoryRegister nr10, nr11, nr12, nr13, nr14;  // Sound channel 1 - sweep
+  MemoryRegister nr21, nr22, nr23, nr24;        // Sound channel 2 - pulse
+  MemoryRegister nr30, nr31, nr32, nr33, nr34;  // Sound channel 3 - wave
+  MemoryRegister nr41, nr42, nr43, nr44;        // Sound channel 4 - noise
+  MemoryRegister nr50, nr51, nr52;              // Sound global control
 
   std::vector<byte> wavePattern;  // Wave pattern
 
-  MemoryReg lcdc, ly, lyc, scy, scx, bgp, obp0, obp1;  // LCD control
-  MemoryReg stat, wy, wx;                              // LCD control
-  MemoryReg dma;                                       // Direct memory access
+  MemoryRegister lcdc, ly, lyc, scy, scx, bgp, obp0, obp1;  // LCD control
+  MemoryRegister stat, wy, wx;                              // LCD control
+  MemoryRegister dma;                                       // Direct memory access
  public:
   Memory();
   void write(word address, byte value);

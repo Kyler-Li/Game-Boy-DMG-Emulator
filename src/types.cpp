@@ -2,66 +2,66 @@
 
 namespace gbdmge {
 // CPU Register
-Reg::Reg() : low(0), high(0) {}
+Register::Register() : low(0), high(0) {}
 
-word Reg::get() {
+word Register::get() {
   return static_cast<word>(low) | static_cast<word>(high) << 8;
 }
 
-void Reg::set(const word value) {
+void Register::set(const word value) {
   high = static_cast<byte>(value >> 8);
   low = static_cast<byte>(value);
 }
 
-void Reg::clear() {
+void Register::clear() {
   high = 0;
   low = 0;
 }
 
-void Reg::inc() {
+void Register::inc() {
   set(get() + 1);
 }
 
-void Reg::dec() {
+void Register::dec() {
   set(get() - 1);
 }
 
-byte& Reg::getLow() {
+byte& Register::getLow() {
   return low;
 }
 
-byte& Reg::getHigh() {
+byte& Register::getHigh() {
   return high;
 }
 
-void Reg::setLow(const byte value) {
+void Register::setLow(const byte value) {
   low = value;
 }
 
-void Reg::setHigh(const byte value) {
+void Register::setHigh(const byte value) {
   high = value;
 }
 
 // Memory Register
-MemoryReg::MemoryReg(byte& value) : data(value) {}
+MemoryRegister::MemoryRegister(byte& value) : data(value) {}
 
-byte MemoryReg::get() {
+byte MemoryRegister::get() {
   return data;
 }
 
-void MemoryReg::set(const byte value) {
+void MemoryRegister::set(const byte value) {
   data = value;
 }
 
-void MemoryReg::clear() {
+void MemoryRegister::clear() {
   data = 0;
 }
 
-void MemoryReg::inc() {
+void MemoryRegister::inc() {
   data++;
 }
 
-void MemoryReg::dec() {
+void MemoryRegister::dec() {
   data--;
 }
 }  // namespace gbdmge

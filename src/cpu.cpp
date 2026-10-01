@@ -8,7 +8,7 @@ CPU::CPU(Memory& memory)
       memory{memory},
       tCycles{0} {}
 
-void CPU::pop(Reg& src) {
+void CPU::pop(Register& src) {
   const word address = sp.get();
   src.setLow(memory.read(address));
   src.setHigh(memory.read(address + 1));
@@ -16,7 +16,7 @@ void CPU::pop(Reg& src) {
   sp.inc();
 }
 
-void CPU::push(Reg& src) {
+void CPU::push(Register& src) {
   const word address = sp.get();
   memory.write(address - 1, src.getHigh());
   memory.write(address - 2, src.getLow());
@@ -56,7 +56,7 @@ void CPU::cp(const byte b) {
   af.setBit(low, CARRY_FLAG, a < b);
 }
 
-void CPU::cp(Reg& b) {
+void CPU::cp(Register& b) {
   cp(memory.read(b.get()));
 }
 
@@ -76,7 +76,7 @@ void CPU::jpnc(const word address) {
   jpCond(address, !af.bitIsSet(af.getLow(), CARRY_FLAG));
 }
 
-void CPU::jp(Reg& dst) {
+void CPU::jp(Register& dst) {
   jpCond(dst.get(), true);
 }
 
