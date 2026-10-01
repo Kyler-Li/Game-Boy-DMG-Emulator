@@ -1,4 +1,5 @@
 #include "memory.h"
+#include "constants.h"
 
 #include <fstream>
 #include <iostream>

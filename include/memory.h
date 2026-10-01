@@ -1,6 +1,7 @@
 #ifndef GBDMGE_MEMORY_H
 #define GBDMGE_MEMORY_H
 
+#include <filesystem>
 #include <memory>
 #include <vector>
 
@@ -121,3 +122,5 @@ class Memory {
 };
 }  // namespace gbdmge
 #endif
+
+// memory.loadRom("/foo/bar.gbc")

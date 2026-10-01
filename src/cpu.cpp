@@ -1,4 +1,5 @@
 #include "cpu.h"
+#include "constants.h"
 
 #include <stdexcept>
 
@@ -29,31 +30,31 @@ void CPU::anda(const byte src) {
   af.setLow(0);
 
   byte& low = af.getLow();
-  af.setBit(low, ZERO_FLAG, af.getHigh() == 0);
-  af.setBit(low, HALF_CARRY_FLAG, true);
+  af.setBit(low, CPU_ZERO_FLAG, af.getHigh() == 0);
+  af.setBit(low, CPU_HALF_CARRY_FLAG, true);
 }
 
 void CPU::ora(const byte src) {
   af.setHigh(af.getHigh() | src);
   af.setLow(0);
-  af.setBit(af.getLow(), ZERO_FLAG, af.getHigh() == 0);
+  af.setBit(af.getLow(), CPU_ZERO_FLAG, af.getHigh() == 0);
 }
 
 void CPU::xora(const byte src) {
   af.setHigh(af.getHigh() ^ src);
   af.setLow(0);
-  af.setBit(af.getLow(), ZERO_FLAG, af.getHigh() == 0);
+  af.setBit(af.getLow(), CPU_ZERO_FLAG, af.getHigh() == 0);
 }
 
 void CPU::cp(const byte b) {
   const byte a = af.getHigh();
 
   byte& low = af.getLow();
-  af.setBit(low, ZERO_FLAG, a == b);
-  af.setBit(low, SUB_FLAG, true);
-  af.setBit(low, HALF_CARRY_FLAG,
+  af.setBit(low, CPU_ZERO_FLAG, a == b);
+  af.setBit(low, CPU_SUB_FLAG, true);
+  af.setBit(low, CPU_HALF_CARRY_FLAG,
             (a & MASK_4_LOWER_BYTE) < (b & MASK_4_LOWER_BYTE));
-  af.setBit(low, CARRY_FLAG, a < b);
+  af.setBit(low, CPU_CARRY_FLAG, a < b);
 }
 
 void CPU::cp(Register& b) {
@@ -61,19 +62,19 @@ void CPU::cp(Register& b) {
 }
 
 void CPU::jpz(word address) {
-  jpCond(address, af.bitIsSet(af.getLow(), ZERO_FLAG));
+  jpCond(address, af.bitIsSet(af.getLow(), CPU_ZERO_FLAG));
 }
 
 void CPU::jpnz(const word address) {
-  jpCond(address, !af.bitIsSet(af.getLow(), ZERO_FLAG));
+  jpCond(address, !af.bitIsSet(af.getLow(), CPU_ZERO_FLAG));
 }
 
 void CPU::jpc(const word address) {
-  jpCond(address, af.bitIsSet(af.getLow(), CARRY_FLAG));
+  jpCond(address, af.bitIsSet(af.getLow(), CPU_CARRY_FLAG));
 }
 
 void CPU::jpnc(const word address) {
-  jpCond(address, !af.bitIsSet(af.getLow(), CARRY_FLAG));
+  jpCond(address, !af.bitIsSet(af.getLow(), CPU_CARRY_FLAG));
 }
 
 void CPU::jp(Register& dst) {
@@ -95,8 +96,8 @@ void CPU::nop() {}
 void CPU::cpl() {
   af.setHigh(~af.getHigh());
   byte& low = af.getLow();
-  af.setBit(low, HALF_CARRY_FLAG, true);
-  af.setBit(low, SUB_FLAG, true);
+  af.setBit(low, CPU_HALF_CARRY_FLAG, true);
+  af.setBit(low, CPU_SUB_FLAG, true);
 }
 
 void CPU::ei() {
@@ -108,19 +109,19 @@ void CPU::di() {
 }
 
 void CPU::jrC(const byte src) {
-  jrCond(src, af.bitIsSet(af.getLow(), CARRY_FLAG));
+  jrCond(src, af.bitIsSet(af.getLow(), CPU_CARRY_FLAG));
 }
 
 void CPU::jrNc(const byte src) {
-  jrCond(src, !af.bitIsSet(af.getLow(), CARRY_FLAG));
+  jrCond(src, !af.bitIsSet(af.getLow(), CPU_CARRY_FLAG));
 }
 
 void CPU::jrZ(const byte src) {
-  jrCond(src, af.bitIsSet(af.getLow(), ZERO_FLAG));
+  jrCond(src, af.bitIsSet(af.getLow(), CPU_ZERO_FLAG));
 }
 
 void CPU::jrNz(const byte src) {
-  jrCond(src, !af.bitIsSet(af.getLow(), ZERO_FLAG));
+  jrCond(src, !af.bitIsSet(af.getLow(), CPU_ZERO_FLAG));
 }
 
 void CPU::jr(const byte src) {

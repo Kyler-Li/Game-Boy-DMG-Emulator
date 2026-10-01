@@ -26,8 +26,6 @@ class CPU {
   qword tCycles;  // 1 T-cycle = 1 clock cycle, 1 M-cycle = 4 clock cycles = 4
                   // T-cycles
 
-  const byte ZERO_FLAG = 7, SUB_FLAG = 6, HALF_CARRY_FLAG = 5, CARRY_FLAG = 4;
-
   void pop(Register& src);
   void push(Register& src);
   void anda(byte src);
