@@ -54,6 +54,10 @@ namespace gbdmge {
     public:
         explicit CPU(Memory& memory);
         byte fetch();
+
+        // NOTE: Don't forget to account for cycles to writes to
+        // memory mapped registers. For example, writes to initiate a
+        // DMA
         qword execute(byte opcode);
         void reset();
     };

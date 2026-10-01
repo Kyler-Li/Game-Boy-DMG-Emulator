@@ -6,7 +6,13 @@
 namespace gbdmge {
     // The largest size external RAM can be is 128KiB, assume this as opposed to manual calculation.
     MemoryBC::MemoryBC(const std::vector<byte>& romData)
-    : rom {romData}, eram(0x20000, 0) {}
+    :
+    rom {romData},
+    eram(0x20000, 0),
+    eRamEnabled {false},
+    bankingNumber {1},
+    bankingMode {false}
+    {}
 
     MemoryBC0::MemoryBC0(const std::vector<byte> &romData) : MemoryBC(romData) {}
 
@@ -40,13 +46,7 @@ namespace gbdmge {
         }
     }
 
-    MemoryBC1::MemoryBC1(const std::vector<byte>& romData)
-    :
-    MemoryBC(romData),
-    eRamEnabled {false},
-    bankingNumber {0x1},
-    bankingMode {false}
-    {}
+    MemoryBC1::MemoryBC1(const std::vector<byte>& romData): MemoryBC(romData){}
 
     void MemoryBC1::write(const word address, const byte value) {
         if (address <= 0x1FFF) {
@@ -80,7 +80,7 @@ namespace gbdmge {
             return eram[address - 0xA000 + ramBank * 0x2000];
         }
 
-        // External RAM is only accessible if RAM is enabled, otherwise reads return open bus values
+        // External RAM is only accessible if is enabled, otherwise reads return open bus values
         // (often $FF, but not guaranteed) and writes are ignored.
         return 0xFF;
     }
@@ -264,20 +264,24 @@ namespace gbdmge {
             case 0x0:
                 memoryBC = std::make_unique<MemoryBC0>(romData);
                 break;
+
             case 0x1:
             case 0x2:
             case 0x3:
                 memoryBC = std::make_unique<MemoryBC1>(romData);
                 break;
+
             case 0x5:
             case 0x6:
                 throw std::logic_error("MemoryBC2 not implemented!");
+
             case 0x0F:
             case 0x10:
             case 0x11:
             case 0x12:
             case 0x13:
                 throw std::logic_error("MemoryBC3 not implemented!");
+
             case 0x19:
             case 0x1A:
             case 0x1B:
@@ -285,6 +289,7 @@ namespace gbdmge {
             case 0x1D:
             case 0x1E:
                 throw std::logic_error("MemoryBC5 not implemented!");
+
             default:
                 throw std::logic_error(romFileName + " not supported!");
         }

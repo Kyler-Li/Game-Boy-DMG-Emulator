@@ -11,6 +11,9 @@ namespace gbdmge {
         std::vector<byte> rom;
         std::vector<byte> eram;
 
+        bool eRamEnabled;
+        byte bankingNumber;
+        bool bankingMode;
     public:
         explicit MemoryBC(const std::vector<byte>& romData);
         virtual void write(word address, byte value) = 0;
@@ -27,13 +30,6 @@ namespace gbdmge {
     };
 
     class MemoryBC1 : public MemoryBC {
-        bool eRamEnabled;
-        byte bankingNumber;
-
-        // In ROM mode, up to 8KByte RAM, 2MByte ROM
-        // In RAM mode, up to 32KByte RAM, 512KByte ROM
-        // false = ROM mode, true = RAM mode
-        bool bankingMode;
         void incrementBankingNumber();
     public:
         explicit MemoryBC1(const std::vector<byte>& romData);
