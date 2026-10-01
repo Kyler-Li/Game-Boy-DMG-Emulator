@@ -46,9 +46,9 @@ namespace gbdmge {
 
             Writing:
             Writing to 0000 - 1FFF enables eram writes and reads if the value written has 0x0A in the lower 4 bits, otherwise disables eram writes and reads.
-            Writing to 2000 - 3FFF sets the lower 5 bits of the bankingNumber. If the bankingNumber is 0x0, 0x20, 0x40 or 0x60,
+            Writing to 2000 - 3FFF sets the lower 5 bits of the bankingNumber. If the resulting bankingNumber is 0x0, 0x20, 0x40 or 0x60,
             it is incremented.
-            Writing to 4000 - 5FFF sets bits 5, 6 of the bankingNumber. If the bankingNumber is 0x0, 0x20, 0x40 or 0x60,
+            Writing to 4000 - 5FFF sets bits 5, 6 of the bankingNumber. If the resulting bankingNumber is 0x0, 0x20, 0x40 or 0x60,
             it is incremented.
             Writing to 6000 - 7FFF sets the bankingMode. If the value is 1, RAM mode is selected
             if the value is 0, ROM mode is selected.
