@@ -117,7 +117,7 @@ class Memory {
   Memory();
   void write(word address, byte value);
   [[nodiscard]] byte read(word address) const;
-  void loadRom(const std::string& romFileName);
+  void loadRom(const std::filesystem::path& romPath);
   void reset();
 };
 }  // namespace gbdmge

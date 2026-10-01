@@ -247,8 +247,8 @@ void Memory::reset() {
   ie.set(0x00);
 }
 
-void Memory::loadRom(const std::string& romFileName) {
-  std::ifstream romFile{romFileName, std::ios::binary};
+void Memory::loadRom(const std::filesystem::path& romPath) {
+  std::ifstream romFile{romPath, std::ios::binary};
   if (!romFile.is_open()) {
     throw std::invalid_argument("Cannot open rom file for reading!");
   }
@@ -298,7 +298,7 @@ void Memory::loadRom(const std::string& romFileName) {
       throw std::logic_error("MemoryBC5 not implemented!");
 
     default:
-      throw std::logic_error(romFileName + " not supported!");
+      throw std::logic_error(romPath.string() + " not supported!");
   }
 }
 }  // namespace gbdmge
