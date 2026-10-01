@@ -4,14 +4,13 @@
 #include "memory.h"
 
 namespace gbdmge {
-    // The largest size external RAM can be is 128KiB, assume this as opposed to manual calculation.
     MemoryBC::MemoryBC(const std::vector<byte>& romData)
     :
     rom {romData},
-    eram(0x20000, 0),
+    eram(0x20000, 0), // The largest size external RAM can be is 128KiB, assume this as opposed to manual calculation.
     eRamEnabled {false},
     bankingNumber {1},
-    bankingMode {false}
+    bankingMode {0}
     {}
 
     MemoryBC0::MemoryBC0(const std::vector<byte> &romData) : MemoryBC(romData) {}
@@ -51,16 +50,16 @@ namespace gbdmge {
     void MemoryBC1::write(const word address, const byte value) {
         if (address <= 0x1FFF) {
             eRamEnabled = (value & MASK_4_LOWER_BYTE) == 0x0A;
-        }else if (address <= 0x3FFF) {
+        }else if (address >= 0x2000 && address <= 0x3FFF) {
             bankingNumber = bankingNumber & MASK_5_6_BYTE | value & MASK_5_LOWER_BYTE;
             incrementBankingNumber();
-        }else if (address <= 0x5FFF) {
+        }else if (address >= 0x4000 && address <= 0x5FFF) {
             bankingNumber = bankingNumber & ~MASK_5_6_BYTE | (value & MASK_2_LOWER_BYTE) << 5;
             incrementBankingNumber();
-        }else if (address <= 0x7FFF) {
+        }else if (address >= 0x6000 && address <= 0x7FFF) {
             bankingMode = value & MASK_1_LOWER_BYTE;
         }else if (eRamEnabled && address >= 0xA000 && address <= 0xBFFF) {
-            const byte ramBank = bankingMode ? (bankingNumber & MASK_5_6_BYTE) >> 5: 0;
+            const byte ramBank = bankingMode == 1 ? (bankingNumber & MASK_5_6_BYTE) >> 5: 0;
             eram[address - 0xA000 + ramBank * 0x2000] = value;
         }
     }
@@ -70,13 +69,14 @@ namespace gbdmge {
             return rom[address];
         }
 
-        if (address <= 0x7FFF) {
-            return rom[address - 0x4000 + bankingNumber * 0x4000];
+        if (address >= 0x4000 && address <= 0x7FFF) {
+            const byte romBank = bankingMode == 1 ? bankingNumber & MASK_5_LOWER_BYTE : bankingNumber;
+            return rom[address - 0x4000 + romBank * 0x4000];
         }
 
         // External RAM
         if (eRamEnabled && address >= 0xA000 && address <= 0xBFFF) {
-            const byte ramBank = bankingMode ? (bankingNumber & MASK_5_6_BYTE) >> 5: 0;
+            const byte ramBank = bankingMode == 1 ? (bankingNumber & MASK_5_6_BYTE) >> 5: 0;
             return eram[address - 0xA000 + ramBank * 0x2000];
         }
 

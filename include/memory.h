@@ -13,7 +13,7 @@ namespace gbdmge {
 
         bool eRamEnabled;
         byte bankingNumber;
-        bool bankingMode;
+        byte bankingMode;
     public:
         explicit MemoryBC(const std::vector<byte>& romData);
         virtual void write(word address, byte value) = 0;
@@ -30,6 +30,29 @@ namespace gbdmge {
     };
 
     class MemoryBC1 : public MemoryBC {
+        /*
+            Here is the expected behavior of MBC1:
+
+            Reading:
+            if bankingMode = 1, RAM mode (up to 32KByte RAM, 512KByte ROM)
+            Reading from 0000 - 3FFF, simply reads a byte.
+            Reading from A000 - 0BFFF, use bits 5,6 of bankingNumber to select eram bank for eram reads.
+            Reading from 4000 - 7FFF, use bits 0-4 of bankingNumber to select rom bank for rom reads.
+
+            if bankingMode = 0, ROM mode (up to 8KByte RAM, 2MByte ROM) (default)
+            Reading from 0000 - 3FFF, simply reads a byte.
+            Reading from A000 - 0BFFF, use eram bank 0 for eram reads.
+            Reading from 4000 - 7FFF, use the entire bankingNumber to select rom bank for rom reads.
+
+            Writing:
+            Writing to 0000 - 1FFF enables eram writes and reads if the value written has 0x0A in the lower 4 bits, otherwise disables eram writes and reads.
+            Writing to 2000 - 3FFF sets the lower 5 bits of the bankingNumber. If the bankingNumber is 0x0, 0x20, 0x40 or 0x60,
+            it is incremented.
+            Writing to 4000 - 5FFF sets bits 5, 6 of the bankingNumber. If the bankingNumber is 0x0, 0x20, 0x40 or 0x60,
+            it is incremented.
+            Writing to 6000 - 7FFF sets the bankingMode. If the value is 1, RAM mode is selected
+            if the value is 0, ROM mode is selected.
+         */
         void incrementBankingNumber();
     public:
         explicit MemoryBC1(const std::vector<byte>& romData);
