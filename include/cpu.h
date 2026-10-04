@@ -1,13 +1,14 @@
 #ifndef GBDMGE_CPU_H
 #define GBDMGE_CPU_H
 
-#include "memory.h"
 #include "types.h"
 
 namespace gbdmge {
+class Console;
+
 class CPU {
   bool ime;
-  Memory& memory;
+  Console* console{};
 
   // For each Reg, the rightmost letter represents low byte,
   // leftmost letter represents high byte. For example:
@@ -52,7 +53,7 @@ class CPU {
   void jrCond(byte src, bool cond);
 
  public:
-  explicit CPU(Memory& memory);
+  explicit CPU(Console& console);
   byte fetch();
 
   // NOTE: Don't forget to account for cycles to writes to

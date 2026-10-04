@@ -1,26 +1,27 @@
 #include "cpu.h"
+#include "console.h"
 #include "constants.h"
 
 #include <stdexcept>
 
 namespace gbdmge {
-CPU::CPU(Memory& memory)
+CPU::CPU(Console& console)
     : ime{false},  // Interrupts are disabled on boot
-      memory{memory},
+      console{&console},
       tCycles{0} {}
 
 void CPU::pop(Register& src) {
   const word address = sp.get();
-  src.setLow(memory.read(address));
-  src.setHigh(memory.read(address + 1));
+  src.setLow(console->m_memory.read(address));
+  src.setHigh(console->m_memory.read(address + 1));
   sp.inc();
   sp.inc();
 }
 
 void CPU::push(Register& src) {
   const word address = sp.get();
-  memory.write(address - 1, src.getHigh());
-  memory.write(address - 2, src.getLow());
+  console->m_memory.write(address - 1, src.getHigh());
+  console->m_memory.write(address - 2, src.getLow());
   sp.dec();
   sp.dec();
 }
@@ -58,7 +59,7 @@ void CPU::cp(const byte b) {
 }
 
 void CPU::cp(Register& b) {
-  cp(memory.read(b.get()));
+  cp(console->m_memory.read(b.get()));
 }
 
 void CPU::jpz(word address) {
@@ -149,7 +150,7 @@ void CPU::reset() {
 byte CPU::fetch() {
   const word address = pc.get();
   pc.inc();
-  return memory.read(address);
+  return console->m_memory.read(address);
 }
 
 // Returns the number of T-cycles after execution

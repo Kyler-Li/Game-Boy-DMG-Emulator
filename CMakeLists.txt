@@ -26,6 +26,7 @@ add_executable(${PROJECT_NAME})
 
 set(SOURCES
     src/main.cpp
+    src/console.cpp
     src/cpu.cpp
     src/memory.cpp
     src/types.cpp
