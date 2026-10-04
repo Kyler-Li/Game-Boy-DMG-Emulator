@@ -25,11 +25,11 @@ FetchContent_MakeAvailable(SDL3)
 add_executable(${PROJECT_NAME})
 
 set(SOURCES
-    src/main.cpp
     src/console.cpp
     src/cpu.cpp
+    src/main.cpp
     src/memory.cpp
-    src/types.cpp
+    src/register.cpp
 )
 
 target_sources(${PROJECT_NAME}

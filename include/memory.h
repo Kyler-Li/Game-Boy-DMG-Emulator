@@ -5,6 +5,7 @@
 #include <memory>
 #include <vector>
 
+#include "register.h"
 #include "types.h"
 
 namespace gbdmge {

@@ -1,4 +1,4 @@
-#include "types.h"
+#include "register.h"
 
 namespace gbdmge {
 // CPU Register

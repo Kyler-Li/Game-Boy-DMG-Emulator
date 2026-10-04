@@ -1,6 +1,7 @@
 #ifndef GBDMGE_CPU_H
 #define GBDMGE_CPU_H
 
+#include "register.h"
 #include "types.h"
 
 namespace gbdmge {
