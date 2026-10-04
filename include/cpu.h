@@ -5,11 +5,11 @@
 #include "types.h"
 
 namespace gbdmge {
-class Console;
+class Bus;
 
 class CPU {
  public:
-  explicit CPU(Console& console);
+  explicit CPU(Bus& bus);
   byte fetch();
 
   // NOTE: Don't forget to account for cycles to writes to
@@ -20,7 +20,7 @@ class CPU {
 
  private:
   bool ime;
-  Console* console{};
+  Bus* bus{};
 
   // For each Reg, the rightmost letter represents low byte,
   // leftmost letter represents high byte. For example:

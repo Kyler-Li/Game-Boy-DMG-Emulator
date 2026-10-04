@@ -25,6 +25,7 @@ FetchContent_MakeAvailable(SDL3)
 add_executable(${PROJECT_NAME})
 
 set(SOURCES
+    src/bus.cpp
     src/cartridge.cpp
     src/console.cpp
     src/cpu.cpp

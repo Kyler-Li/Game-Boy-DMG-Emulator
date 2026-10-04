@@ -36,6 +36,22 @@ static constexpr std::array<byte, NINTENDO_LOGO_END - NINTENDO_LOGO_START + 1>
                      0xD9, 0x99, 0xBB, 0xBB, 0x67, 0x63, 0x6E, 0x0E, 0xEC, 0xCC,
                      0xDD, 0xDC, 0x99, 0x9F, 0xBB, 0xB9, 0x33, 0x3E};
 
+// Memory spaces
+static constexpr word MEMORY_FIXED_BANK_START = 0x0000;
+static constexpr word MEMORY_FIXED_BANK_END = 0x3FFF;
+static constexpr word MEMORY_SWITCH_BANK_START = 0x4000;
+static constexpr word MEMORY_SWITCH_BANK_END = 0x7FFF;
+static constexpr word MEMORY_VRAM_START = 0x8000;
+static constexpr word MEMORY_VRAM_END = 0x9FFF;
+static constexpr word MEMORY_ERAM_START = 0xA000;
+static constexpr word MEMORY_ERAM_END = 0xBFFF;
+static constexpr word MEMORY_WRAM_START = 0xC000;
+static constexpr word MEMORY_WRAM_END = 0xCFFF;
+static constexpr word MEMORY_SWITCH_WRAM_START = 0xD000;
+static constexpr word MEMORY_SWITCH_WRAM_END = 0xDFFF;
+static constexpr word MEMORY_HRAM_START = 0xFF80;
+static constexpr word MEMORY_HRAM_END = 0xFFFE;
+
 }  // namespace gbdmge
 
 #endif

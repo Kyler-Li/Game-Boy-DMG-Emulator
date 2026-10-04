@@ -1,6 +1,7 @@
 #ifndef GBDMGE_CONSOLE_H
 #define GBDMGE_CONSOLE_H
 
+#include "bus.h"
 #include "cartridge.h"
 #include "cpu.h"
 #include "memory.h"
@@ -14,12 +15,11 @@ class Console {
   void play();
 
  private:
+  Bus bus;
   CPU cpu;
   Memory memory;
   Cartridge cartridge;
-  friend class CPU;
-  friend class Cartridge;
-  friend class Memory;
+  friend class Bus;
 };
 }  // namespace gbdmge
 

@@ -1,7 +1,7 @@
 #include "console.h"
 
 namespace gbdmge {
-Console::Console() : cpu{*this} {}
+Console::Console() : bus{*this}, cpu{bus} {}
 
 auto Console::load(const std::filesystem::path& romPath) -> bool {
   return cartridge.load(romPath);
