@@ -1,11 +1,15 @@
 #include "cartridge.h"
+#include <cstring>
 #include <fstream>
+#include <iostream>
 
 namespace gbdmge {
 
 auto Cartridge::load(const std::filesystem::path& romPath) -> bool {
   auto f = std::fstream{romPath, std::ios::binary};
   if (!f.is_open()) {
+    std::cerr << "Failed to load cartridge " << romPath << ": "
+              << std::strerror(errno) << "\n";
     return false;
   }
 
