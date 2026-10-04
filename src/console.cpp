@@ -1,10 +1,10 @@
 #include "console.h"
 
 namespace gbdmge {
-Console::Console() : m_cpu{*this} {}
+Console::Console() : cpu{*this} {}
 
-void Console::load(const std::filesystem::path& romPath) {
-  // TODO: Implement
+auto Console::load(const std::filesystem::path& romPath) -> bool {
+  return cartridge.load(romPath);
 }
 
 void Console::play() {

@@ -14,8 +14,10 @@ int main(int argc, const char* argv[]) {
   if (argc > 1) {
     const auto romPath = std::filesystem::path{argv[1]};
     auto console = gbdmge::Console{};
-    console.load(romPath);
-    console.play();
+
+    if (console.load(romPath)) {
+      console.play();
+    }
   }
 
   std::cout << "SDL init finished, exiting...\n";

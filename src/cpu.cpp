@@ -12,16 +12,16 @@ CPU::CPU(Console& console)
 
 void CPU::pop(Register& src) {
   const word address = sp.get();
-  src.setLow(console->m_memory.read(address));
-  src.setHigh(console->m_memory.read(address + 1));
+  src.setLow(console->memory.read(address));
+  src.setHigh(console->memory.read(address + 1));
   sp.inc();
   sp.inc();
 }
 
 void CPU::push(Register& src) {
   const word address = sp.get();
-  console->m_memory.write(address - 1, src.getHigh());
-  console->m_memory.write(address - 2, src.getLow());
+  console->memory.write(address - 1, src.getHigh());
+  console->memory.write(address - 2, src.getLow());
   sp.dec();
   sp.dec();
 }
@@ -59,7 +59,7 @@ void CPU::cp(const byte b) {
 }
 
 void CPU::cp(Register& b) {
-  cp(console->m_memory.read(b.get()));
+  cp(console->memory.read(b.get()));
 }
 
 void CPU::jpz(word address) {
@@ -150,7 +150,7 @@ void CPU::reset() {
 byte CPU::fetch() {
   const word address = pc.get();
   pc.inc();
-  return console->m_memory.read(address);
+  return console->memory.read(address);
 }
 
 // Returns the number of T-cycles after execution
