@@ -7,6 +7,8 @@
 namespace gbdmge {
 class Console {
  public:
+  Console();
+
   void load(const std::filesystem::path& romPath);
   void play();
 
