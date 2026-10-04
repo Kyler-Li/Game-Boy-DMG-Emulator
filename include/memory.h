@@ -9,18 +9,18 @@
 
 namespace gbdmge {
 class MemoryBankController {
+ public:
+  explicit MemoryBankController(const std::vector<byte>& romData);
+  virtual void write(word address, byte value) = 0;
+  virtual byte read(word address) = 0;
+  virtual ~MemoryBankController() = default;
+
  protected:
   std::vector<byte> rom;
   std::vector<byte> eram;
   bool eRamEnabled;
   byte bankingNumber;
   byte bankingMode;
-
- public:
-  explicit MemoryBankController(const std::vector<byte>& romData);
-  virtual void write(word address, byte value) = 0;
-  virtual byte read(word address) = 0;
-  virtual ~MemoryBankController() = default;
 };
 
 class MemoryBankController0 : public MemoryBankController {
@@ -32,6 +32,13 @@ class MemoryBankController0 : public MemoryBankController {
 };
 
 class MemoryBankController1 : public MemoryBankController {
+ public:
+  explicit MemoryBankController1(const std::vector<byte>& romData);
+  void write(word address, byte value) override;
+  byte read(word address) override;
+  ~MemoryBankController1() override = default;
+
+ private:
   /*
 		Memory Bank Controller 1
 
@@ -59,15 +66,17 @@ class MemoryBankController1 : public MemoryBankController {
 	   is selected if the value is 0, ROM mode is selected.
 	 */
   void incrementBankingNumber();
-
- public:
-  explicit MemoryBankController1(const std::vector<byte>& romData);
-  void write(word address, byte value) override;
-  byte read(word address) override;
-  ~MemoryBankController1() override = default;
 };
 
 class Memory {
+ public:
+  Memory();
+  void write(word address, byte value);
+  [[nodiscard]] byte read(word address) const;
+  void loadRom(const std::filesystem::path& romPath);
+  void reset();
+
+ private:
   /*
 		Memory
 		The Game Boy uses a 2-byte address space (0x0000 to 0xFFFF) to map the
@@ -112,13 +121,7 @@ class Memory {
 
   MemoryRegister lcdc, ly, lyc, scy, scx, bgp, obp0, obp1;  // LCD control
   MemoryRegister stat, wy, wx;                              // LCD control
-  MemoryRegister dma;                                       // Direct memory access
- public:
-  Memory();
-  void write(word address, byte value);
-  [[nodiscard]] byte read(word address) const;
-  void loadRom(const std::filesystem::path& romPath);
-  void reset();
+  MemoryRegister dma;  // Direct memory access
 };
 }  // namespace gbdmge
 #endif

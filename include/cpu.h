@@ -7,6 +7,17 @@ namespace gbdmge {
 class Console;
 
 class CPU {
+ public:
+  explicit CPU(Console& console);
+  byte fetch();
+
+  // NOTE: Don't forget to account for cycles to writes to
+  // memory mapped registers. For example, writes to initiate a
+  // DMA
+  qword execute(byte opcode);
+  void reset();
+
+ private:
   bool ime;
   Console* console{};
 
@@ -51,16 +62,6 @@ class CPU {
   void jrNz(byte src);
   void jr(byte src);
   void jrCond(byte src, bool cond);
-
- public:
-  explicit CPU(Console& console);
-  byte fetch();
-
-  // NOTE: Don't forget to account for cycles to writes to
-  // memory mapped registers. For example, writes to initiate a
-  // DMA
-  qword execute(byte opcode);
-  void reset();
 };
 }  // namespace gbdmge
 

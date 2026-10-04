@@ -38,9 +38,6 @@ class BaseRegister {
 };
 
 class Register : public BaseRegister<word> {
-  byte low;
-  byte high;
-
  public:
   Register();
 
@@ -55,11 +52,13 @@ class Register : public BaseRegister<word> {
 
   void setLow(byte value);
   void setHigh(byte value);
+
+ private:
+  byte low;
+  byte high;
 };
 
 class MemoryRegister : public BaseRegister<byte> {
-  byte& data;
-
  public:
   explicit MemoryRegister(byte& value);
 
@@ -68,6 +67,9 @@ class MemoryRegister : public BaseRegister<byte> {
   void clear() override;
   void inc() override;
   void dec() override;
+
+ private:
+  byte& data;
 };
 
 }  // namespace gbdmge
