@@ -14,7 +14,7 @@ class Console;
 class Bus {
  public:
   Bus(Console& console);
-  auto read(word address) -> byte&;
+  auto read(word address) -> byte;
   void write(word address, byte value);
 
  private:

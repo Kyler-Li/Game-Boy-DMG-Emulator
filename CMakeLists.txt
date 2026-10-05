@@ -30,7 +30,6 @@ set(SOURCES
     src/console.cpp
     src/cpu.cpp
     src/main.cpp
-    src/memory.cpp
     src/register.cpp
 )
 
