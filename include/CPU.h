@@ -41,8 +41,16 @@ class CPU {
                   // T-cycles
 
   // IMPORTANT:
-  // Instruction implementation functions receive control
-  // after the opcode has been fetched, and PC points to the first operand byte.
+  // Some instructions depend on where the PC is currently pointing.
+  // Instruction implementation functions ASSUME they have received control
+  // after their opcode has been fetched, and PC points to the first operand byte.
+  //
+  // For example, the call instruction assumes the PC points the first byte of the address
+  // it will jump to (one byte beyond its opcode).
+  //                            |Address | Value  |  Meaning           |
+  //                            | 0x100  |  0xCD  |  Opcode for call   |
+  //  PC when call executes ->  | 0x101  |  0xAB  |  low byte address  |
+  //                            | 0x102  |  0xCD  |  high byte address |
   void pop(byte& high, byte& low);
   void push(byte high, byte low);
   void anda(byte src);
