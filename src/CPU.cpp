@@ -183,7 +183,9 @@ void CPU::sbc(const byte src) {
   setBit(f, CPU_SUB_FLAG, true);
   setBit(f, CPU_HALF_CARRY_FLAG,
          (a & MASK_4_LOWER_BYTE) < (src & MASK_4_LOWER_BYTE) + carry);
-  setBit(f, CPU_CARRY_FLAG, a < src + carry);
+  setBit(
+      f, CPU_CARRY_FLAG,
+      static_cast<word>(src) + static_cast<word>(carry) > static_cast<word>(a));
 
   a = result;
 }
@@ -210,6 +212,18 @@ void CPU::rlca() {
   a <<= 1;
   a |= highBit;
   setBit(f, CPU_CARRY_FLAG, highBit);
+}
+
+void CPU::callCond(bool cond) {
+  if (cond) {
+    call();
+  }
+}
+
+void CPU::call() {
+  const word returnAddress = pc + 2;
+  push(getHighByte(returnAddress), getLowByte(returnAddress));
+  pc = makeWord(bus->read(pc + 1), bus->read(pc));
 }
 
 void CPU::reset() {

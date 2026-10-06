@@ -40,6 +40,9 @@ class CPU {
   qword tCycles;  // 1 T-cycle = 1 clock cycle, 1 M-cycle = 4 clock cycles = 4
                   // T-cycles
 
+  // IMPORTANT:
+  // Instruction implementation functions receive control
+  // after the opcode has been fetched, and PC points to the first operand byte.
   void pop(byte& high, byte& low);
   void push(byte high, byte low);
   void anda(byte src);
@@ -77,6 +80,8 @@ class CPU {
   void scf();
   void ccf();
   void rlca();
+  void callCond(bool cond);
+  void call();
 };
 }  // namespace gbdmge
 
