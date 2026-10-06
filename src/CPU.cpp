@@ -8,6 +8,7 @@
 namespace gbdmge {
 CPU::CPU(Bus& bus)
     : ime{false},
+      isHalted{false},
       bus{&bus},
       a{0},
       f{0},
@@ -168,6 +169,27 @@ void CPU::retCond(const bool cond) {
 void CPU::ret() {
   pc = makeWord(bus->read(sp + 1), bus->read(sp));
   sp += 2;
+}
+
+void CPU::halt() {
+  isHalted = true;
+}
+
+void CPU::sbc(const byte src) {
+  const byte carry = getBit(f, CPU_CARRY_FLAG);
+  const byte result = a - src - carry;
+
+  setBit(f, CPU_ZERO_FLAG, result == 0);
+  setBit(f, CPU_SUB_FLAG, true);
+  setBit(f, CPU_HALF_CARRY_FLAG,
+         (a & MASK_4_LOWER_BYTE) < (src & MASK_4_LOWER_BYTE) + carry);
+  setBit(f, CPU_CARRY_FLAG, a < src + carry);
+
+  a = result;
+}
+
+void CPU::sbc(const byte high, const byte low) {
+  sbc(bus->read(makeWord(high, low)));
 }
 
 void CPU::reset() {

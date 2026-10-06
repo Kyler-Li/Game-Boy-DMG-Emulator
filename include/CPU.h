@@ -19,6 +19,7 @@ class CPU {
 
  private:
   bool ime;
+  bool isHalted;
   Bus* bus{};
 
   // For each register, the rightmost letter represents low byte,
@@ -70,6 +71,9 @@ class CPU {
   void retnz();
   void retCond(bool cond);
   void ret();
+  void halt();
+  void sbc(byte src);
+  void sbc(byte high, byte low);
 };
 }  // namespace gbdmge
 
