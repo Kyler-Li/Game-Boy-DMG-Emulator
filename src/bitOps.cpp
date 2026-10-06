@@ -2,7 +2,7 @@
 
 namespace gbdmge {
 
-void setBitByte(byte& value, const byte pos, const bool set) {
+constexpr void setBit(byte& value, const byte pos, const bool set) {
   const byte mask = static_cast<byte>(1) << pos;
   if (set) {
     value |= mask;
@@ -11,19 +11,19 @@ void setBitByte(byte& value, const byte pos, const bool set) {
   }
 }
 
-bool bitIsSetByte(const byte& value, const byte pos) {
+constexpr bool isBitSet(const byte& value, const byte pos) {
   return (value & static_cast<byte>(1) << pos) != 0;
 }
 
-word makeWordLowHighBytes(const byte low, const byte high) {
+constexpr word makeWord(const byte low, const byte high) {
   return static_cast<word>(low) | static_cast<word>(high) << 8;
 }
 
-byte getLowByteFromWord(const word word) {
+constexpr byte lowByte(const word word) {
   return static_cast<byte>(word);
 }
 
-byte getHighByteFromWord(const word word) {
+constexpr byte highByte(const word word) {
   return static_cast<byte>(word >> 8);
 }
 
