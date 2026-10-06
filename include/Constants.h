@@ -19,7 +19,10 @@ static constexpr word MASK_13_LOWER_WORD = 0x1FFF;
 // Mask for specific bits
 static constexpr byte MASK_5_6_BYTE = 0x60;
 
-// CPU flags
+// Indexes for specific bits
+static constexpr byte BIT_7 = 7;
+
+// Positions for flags register in CPU
 static constexpr byte CPU_ZERO_FLAG = 7;
 static constexpr byte CPU_SUB_FLAG = 6;
 static constexpr byte CPU_HALF_CARRY_FLAG = 5;

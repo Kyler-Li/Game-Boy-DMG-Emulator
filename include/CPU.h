@@ -74,6 +74,7 @@ class CPU {
   void halt();
   void sbc(byte src);
   void sbc(byte high, byte low);
+  void rlca();
 };
 }  // namespace gbdmge
 

@@ -192,6 +192,14 @@ void CPU::sbc(const byte high, const byte low) {
   sbc(bus->read(makeWord(high, low)));
 }
 
+void CPU::rlca() {
+  f = 0;
+  const byte highBit = getBit(a, BIT_7);
+  a <<= 1;
+  a |= highBit;
+  setBit(f, CPU_CARRY_FLAG, highBit);
+}
+
 void CPU::reset() {
   // Initialize to post boot ROM values
   ime = false;
