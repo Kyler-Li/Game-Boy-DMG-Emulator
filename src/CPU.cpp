@@ -1,6 +1,6 @@
-#include "cpu.h"
-#include "bus.h"
-#include "constants.h"
+#include "CPU.h"
+#include "Bus.h"
+#include "Constants.h"
 
 #include <stdexcept>
 

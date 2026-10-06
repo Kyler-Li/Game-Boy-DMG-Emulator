@@ -1,4 +1,4 @@
-#include "console.h"
+#include "Console.h"
 
 namespace gbdmge {
 Console::Console() : bus{*this}, cpu{bus} {}

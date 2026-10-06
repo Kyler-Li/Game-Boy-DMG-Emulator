@@ -25,13 +25,13 @@ FetchContent_MakeAvailable(SDL3)
 add_executable(${PROJECT_NAME})
 
 set(SOURCES
-        src/bitOps.cpp
-        src/bus.cpp
-        src/cartridge.cpp
-        src/console.cpp
-        src/cpu.cpp
+        src/BitOps.cpp
+        src/Bus.cpp
+        src/Cartridge.cpp
+        src/Console.cpp
+        src/CPU.cpp
         src/main.cpp
-        src/register.cpp
+        src/Register.cpp
 )
 
 target_sources(${PROJECT_NAME}

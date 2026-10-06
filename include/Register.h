@@ -1,7 +1,7 @@
 #ifndef GBDMGE_REGISTER_H
 #define GBDMGE_REGISTER_H
 
-#include "types.h"
+#include "Types.h"
 
 namespace gbdmge {
 

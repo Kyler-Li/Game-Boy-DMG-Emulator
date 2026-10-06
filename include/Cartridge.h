@@ -3,8 +3,8 @@
 
 #include <filesystem>
 #include <vector>
-#include "constants.h"
-#include "types.h"
+#include "Constants.h"
+#include "Types.h"
 
 namespace gbdmge {
 class Cartridge {

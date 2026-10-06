@@ -1,7 +1,7 @@
 #ifndef GBDMGE_BIT_OPS_H
 #define GBDMGE_BIT_OPS_H
 
-#include "types.h"
+#include "Types.h"
 
 namespace gbdmge {
 

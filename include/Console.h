@@ -1,9 +1,9 @@
 #ifndef GBDMGE_CONSOLE_H
 #define GBDMGE_CONSOLE_H
 
-#include "bus.h"
-#include "cartridge.h"
-#include "cpu.h"
+#include "Bus.h"
+#include "Cartridge.h"
+#include "CPU.h"
 
 namespace gbdmge {
 class Console {

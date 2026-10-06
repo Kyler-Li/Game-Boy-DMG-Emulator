@@ -2,7 +2,7 @@
 #define GBDMGE_ENUMLATOR_H
 
 #include <array>
-#include "types.h"
+#include "Types.h"
 
 namespace gbdmge {
 // Masks upper bits

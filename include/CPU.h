@@ -1,8 +1,8 @@
 #ifndef GBDMGE_CPU_H
 #define GBDMGE_CPU_H
 
-#include "register.h"
-#include "types.h"
+#include "Register.h"
+#include "Types.h"
 
 namespace gbdmge {
 class Bus;

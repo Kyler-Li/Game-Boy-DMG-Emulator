@@ -2,8 +2,8 @@
 #define GBDMGE_BUS_H
 
 #include <array>
-#include "constants.h"
-#include "types.h"
+#include "Constants.h"
+#include "Types.h"
 
 namespace gbdmge {
 class Console;

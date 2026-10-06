@@ -1,4 +1,4 @@
-#include "bitOps.h"
+#include "BitOps.h"
 
 namespace gbdmge {
 

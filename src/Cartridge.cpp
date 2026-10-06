@@ -1,10 +1,10 @@
-#include "cartridge.h"
+#include "Cartridge.h"
 #include <algorithm>
 #include <cstring>
 #include <fstream>
 #include <iostream>
 #include <span>
-#include "constants.h"
+#include "Constants.h"
 
 namespace gbdmge {
 

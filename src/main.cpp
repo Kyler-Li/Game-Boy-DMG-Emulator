@@ -1,7 +1,6 @@
 #include <SDL3/SDL.h>
 #include <iostream>
-#include "bitOps.h"
-#include "console.h"
+#include "Console.h"
 
 int main(const int argc, const char* argv[]) {
   // Test the SDL library

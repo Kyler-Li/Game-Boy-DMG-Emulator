@@ -1,6 +1,6 @@
-#include "bus.h"
+#include "Bus.h"
 #include <iostream>
-#include "console.h"
+#include "Console.h"
 
 namespace gbdmge {
 Bus::Bus(Console& console) : console{&console} {}
