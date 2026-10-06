@@ -51,6 +51,7 @@ class CPU {
   //                            | 0x100  |  0xCD  |  Opcode for call   |
   //  PC when call executes ->  | 0x101  |  0xAB  |  low byte address  |
   //                            | 0x102  |  0xCD  |  high byte address |
+  //                            | 0x103  |   ??   |  next instruction  |
   void pop(byte& high, byte& low);
   void push(byte high, byte low);
   void anda(byte src);
