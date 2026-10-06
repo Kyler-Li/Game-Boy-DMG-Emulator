@@ -5,11 +5,11 @@
 
 namespace gbdmge {
 
-constexpr void setBit(byte& value, byte pos, bool set);
-constexpr bool bitIsSet(const byte& value, byte pos);
-constexpr word makeWord(byte high, byte low);
-constexpr byte getHighByte(word word);
-constexpr byte getLowByte(word word);
+void setBit(byte& value, byte pos, bool set);
+bool bitIsSet(const byte& value, byte pos);
+word makeWord(byte high, byte low);
+byte getHighByte(word word);
+byte getLowByte(word word);
 }  // namespace gbdmge
 
 #endif
