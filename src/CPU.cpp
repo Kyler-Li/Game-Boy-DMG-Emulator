@@ -101,8 +101,8 @@ void CPU::nop() {}
 
 void CPU::cpl() {
   a = ~a;
-  setBit(f, CPU_HALF_CARRY_FLAG, true);
   setBit(f, CPU_SUB_FLAG, true);
+  setBit(f, CPU_HALF_CARRY_FLAG, true);
 }
 
 void CPU::ei() {
@@ -190,6 +190,18 @@ void CPU::sbc(const byte src) {
 
 void CPU::sbc(const byte high, const byte low) {
   sbc(bus->read(makeWord(high, low)));
+}
+
+void CPU::scf() {
+  setBit(f, CPU_SUB_FLAG, false);
+  setBit(f, CPU_HALF_CARRY_FLAG, false);
+  setBit(f, CPU_CARRY_FLAG, true);
+}
+
+void CPU::ccf() {
+  setBit(f, CPU_SUB_FLAG, false);
+  setBit(f, CPU_HALF_CARRY_FLAG, false);
+  setBit(f, CPU_CARRY_FLAG, !getBit(f, CPU_CARRY_FLAG));
 }
 
 void CPU::rlca() {
