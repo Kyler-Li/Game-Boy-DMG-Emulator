@@ -11,19 +11,17 @@ CPU::CPU(Bus& bus)
       tCycles{0} {}
 
 void CPU::pop(Register& src) {
-  const word address = sp.get();
+  const word address = sp;
   src.setLow(bus->read(address));
   src.setHigh(bus->read(address + 1));
-  sp.inc();
-  sp.inc();
+  sp += 2;
 }
 
 void CPU::push(Register& src) {
-  const word address = sp.get();
+  const word address = sp;
   bus->write(address - 1, src.getHigh());
   bus->write(address - 2, src.getLow());
-  sp.dec();
-  sp.dec();
+  sp -= 2;
 }
 
 void CPU::anda(const byte src) {
@@ -131,25 +129,30 @@ void CPU::jr(const byte src) {
 
 void CPU::jrCond(const byte src, const bool cond) {
   if (cond) {
-    const sbyte off = static_cast<sbyte>(src);
-    pc.set(pc.get() + off);
+    pc += static_cast<sbyte>(src);
   }
 }
 
 void CPU::reset() {
   // Initialize to post boot ROM values
   ime = false;
-  af.set(0x01B0);
-  bc.set(0x0013);
-  de.set(0x00D8);
-  hl.set(0x014D);
-  sp.set(0xFFFE);
-  pc.set(0x0100);
+
+  a = 0x01;
+  f = 0xB0;
+  b = 0x00;
+  c = 0x13;
+  d = 0x00;
+  e = 0xD8;
+  h = 0x01;
+  l = 0x4D;
+
+  sp = 0xFFFE;
+  pc = 0x0100;
 }
 
 byte CPU::fetch() {
-  const word address = pc.get();
-  pc.inc();
+  const word address = pc;
+  ++pc;
   return bus->read(address);
 }
 

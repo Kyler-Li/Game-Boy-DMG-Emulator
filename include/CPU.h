@@ -28,13 +28,14 @@ class CPU {
   // a            | f
   // b            | c
   // d            | e
-  // ...
-  Register af;
-  Register bc;
-  Register de;
-  Register hl;
-  Register sp;
-  Register pc;
+  // h            | l
+  byte a, f;
+  byte b, c;
+  byte d, e;
+  byte h, l;
+
+  word sp;
+  word pc;
 
   qword tCycles;  // 1 T-cycle = 1 clock cycle, 1 M-cycle = 4 clock cycles = 4
                   // T-cycles
