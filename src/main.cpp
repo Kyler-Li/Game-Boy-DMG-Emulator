@@ -1,8 +1,9 @@
 #include <SDL3/SDL.h>
 #include <iostream>
+#include "bitOps.h"
 #include "console.h"
 
-int main(int argc, const char* argv[]) {
+int main(const int argc, const char* argv[]) {
   // Test the SDL library
   std::cout << "Before SDL init\n";
 
