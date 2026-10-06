@@ -23,6 +23,9 @@ static constexpr byte MASK_5_6_BYTE = 0x60;
 static constexpr byte BIT_7 = 7;
 
 // Positions for flags register in CPU
+// Flags register layout:
+// Bit:     |   7  |      6      |     5      |   4   |  3 - 0  |
+// Meaning: | Zero | Subtraction | Half Carry | Carry |  Unused |
 static constexpr byte CPU_ZERO_FLAG = 7;
 static constexpr byte CPU_SUB_FLAG = 6;
 static constexpr byte CPU_HALF_CARRY_FLAG = 5;

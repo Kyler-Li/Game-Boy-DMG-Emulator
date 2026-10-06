@@ -203,6 +203,7 @@ void CPU::rlca() {
 void CPU::reset() {
   // Initialize to post boot ROM values
   ime = false;
+  isHalted = false;
 
   a = 0x01;
   f = 0xB0;
