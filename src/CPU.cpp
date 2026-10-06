@@ -1,4 +1,5 @@
 #include "CPU.h"
+#include "BitOps.h"
 #include "Bus.h"
 #include "Constants.h"
 
@@ -10,74 +11,69 @@ CPU::CPU(Bus& bus)
       bus{&bus},
       tCycles{0} {}
 
-void CPU::pop(Register& src) {
+void CPU::pop(byte& high, byte& low) {
   const word address = sp;
-  src.setLow(bus->read(address));
-  src.setHigh(bus->read(address + 1));
+  high = bus->read(address + 1);
+  low = bus->read(address);
   sp += 2;
 }
 
-void CPU::push(Register& src) {
+void CPU::push(const byte high, const byte low) {
   const word address = sp;
-  bus->write(address - 1, src.getHigh());
-  bus->write(address - 2, src.getLow());
+  bus->write(address - 1, high);
+  bus->write(address - 2, low);
   sp -= 2;
 }
 
 void CPU::anda(const byte src) {
-  af.setHigh(af.getHigh() & src);
-  af.setLow(0);
-
-  byte& low = af.getLow();
-  af.setBit(low, CPU_ZERO_FLAG, af.getHigh() == 0);
-  af.setBit(low, CPU_HALF_CARRY_FLAG, true);
+  a = a & src;
+  f = 0;
+  setBit(f, CPU_ZERO_FLAG, a == 0);
+  setBit(f, CPU_HALF_CARRY_FLAG, true);
 }
 
 void CPU::ora(const byte src) {
-  af.setHigh(af.getHigh() | src);
-  af.setLow(0);
-  af.setBit(af.getLow(), CPU_ZERO_FLAG, af.getHigh() == 0);
+  a = a | src;
+  f = 0;
+  setBit(f, CPU_ZERO_FLAG, a == 0);
 }
 
 void CPU::xora(const byte src) {
-  af.setHigh(af.getHigh() ^ src);
-  af.setLow(0);
-  af.setBit(af.getLow(), CPU_ZERO_FLAG, af.getHigh() == 0);
+  a = a ^ src;
+  f = 0;
+  setBit(f, CPU_ZERO_FLAG, a == 0);
 }
 
-void CPU::cp(const byte b) {
-  const byte a = af.getHigh();
-
-  byte& low = af.getLow();
-  af.setBit(low, CPU_ZERO_FLAG, a == b);
-  af.setBit(low, CPU_SUB_FLAG, true);
-  af.setBit(low, CPU_HALF_CARRY_FLAG,
-            (a & MASK_4_LOWER_BYTE) < (b & MASK_4_LOWER_BYTE));
-  af.setBit(low, CPU_CARRY_FLAG, a < b);
+void CPU::cp(const byte cmp) {
+  setBit(f, CPU_ZERO_FLAG, a == cmp);
+  setBit(f, CPU_SUB_FLAG, true);
+  setBit(f, CPU_HALF_CARRY_FLAG,
+         (a & MASK_4_LOWER_BYTE) < (cmp & MASK_4_LOWER_BYTE));
+  setBit(f, CPU_CARRY_FLAG, a < cmp);
 }
 
-void CPU::cp(Register& b) {
-  cp(bus->read(b.get()));
+void CPU::cp(const byte high, const byte low) {
+  cp(bus->read(makeWord(high, low)));
 }
 
-void CPU::jpz(word address) {
-  jpCond(address, af.bitIsSet(af.getLow(), CPU_ZERO_FLAG));
+void CPU::jpz(const word address) {
+  jpCond(address, bitIsSet(f, CPU_ZERO_FLAG));
 }
 
 void CPU::jpnz(const word address) {
-  jpCond(address, !af.bitIsSet(af.getLow(), CPU_ZERO_FLAG));
+  jpCond(address, !bitIsSet(f, CPU_ZERO_FLAG));
 }
 
 void CPU::jpc(const word address) {
-  jpCond(address, af.bitIsSet(af.getLow(), CPU_CARRY_FLAG));
+  jpCond(address, bitIsSet(f, CPU_CARRY_FLAG));
 }
 
 void CPU::jpnc(const word address) {
-  jpCond(address, !af.bitIsSet(af.getLow(), CPU_CARRY_FLAG));
+  jpCond(address, !bitIsSet(f, CPU_CARRY_FLAG));
 }
 
-void CPU::jp(Register& dst) {
-  jpCond(dst.get(), true);
+void CPU::jp(const byte high, const byte low) {
+  jpCond(makeWord(high, low), true);
 }
 
 void CPU::jp(const word address) {
@@ -86,17 +82,16 @@ void CPU::jp(const word address) {
 
 void CPU::jpCond(const word address, const bool cond) {
   if (cond) {
-    pc.set(address);
+    pc = address;
   }
 }
 
 void CPU::nop() {}
 
 void CPU::cpl() {
-  af.setHigh(~af.getHigh());
-  byte& low = af.getLow();
-  af.setBit(low, CPU_HALF_CARRY_FLAG, true);
-  af.setBit(low, CPU_SUB_FLAG, true);
+  a = ~a;
+  setBit(f, CPU_HALF_CARRY_FLAG, true);
+  setBit(f, CPU_SUB_FLAG, true);
 }
 
 void CPU::ei() {
@@ -108,19 +103,19 @@ void CPU::di() {
 }
 
 void CPU::jrC(const byte src) {
-  jrCond(src, af.bitIsSet(af.getLow(), CPU_CARRY_FLAG));
+  jrCond(src, bitIsSet(f, CPU_CARRY_FLAG));
 }
 
 void CPU::jrNc(const byte src) {
-  jrCond(src, !af.bitIsSet(af.getLow(), CPU_CARRY_FLAG));
+  jrCond(src, !bitIsSet(f, CPU_CARRY_FLAG));
 }
 
 void CPU::jrZ(const byte src) {
-  jrCond(src, af.bitIsSet(af.getLow(), CPU_ZERO_FLAG));
+  jrCond(src, bitIsSet(f, CPU_ZERO_FLAG));
 }
 
 void CPU::jrNz(const byte src) {
-  jrCond(src, !af.bitIsSet(af.getLow(), CPU_ZERO_FLAG));
+  jrCond(src, !bitIsSet(f, CPU_ZERO_FLAG));
 }
 
 void CPU::jr(const byte src) {
@@ -148,6 +143,7 @@ void CPU::reset() {
 
   sp = 0xFFFE;
   pc = 0x0100;
+  // Potentially reset T-cycles here
 }
 
 byte CPU::fetch() {

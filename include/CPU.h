@@ -1,7 +1,6 @@
 #ifndef GBDMGE_CPU_H
 #define GBDMGE_CPU_H
 
-#include "Register.h"
 #include "Types.h"
 
 namespace gbdmge {
@@ -22,7 +21,7 @@ class CPU {
   bool ime;
   Bus* bus{};
 
-  // For each Reg, the rightmost letter represents low byte,
+  // For each register, the rightmost letter represents low byte,
   // leftmost letter represents high byte. For example:
   // high byte    | low byte
   // a            | f
@@ -40,18 +39,18 @@ class CPU {
   qword tCycles;  // 1 T-cycle = 1 clock cycle, 1 M-cycle = 4 clock cycles = 4
                   // T-cycles
 
-  void pop(Register& src);
-  void push(Register& src);
+  void pop(byte& high, byte& low);
+  void push(byte high, byte low);
   void anda(byte src);
   void ora(byte src);
   void xora(byte src);
-  void cp(byte b);
-  void cp(Register& b);
+  void cp(byte cmp);
+  void cp(byte high, byte low);
   void jpz(word address);
   void jpnz(word address);
   void jpc(word address);
   void jpnc(word address);
-  void jp(Register& dst);
+  void jp(byte high, byte low);
   void jp(word address);
   void jpCond(word address, bool cond);
   void nop();
