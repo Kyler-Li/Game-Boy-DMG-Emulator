@@ -10,7 +10,6 @@ constexpr bool bitIsSet(const byte& value, byte pos);
 constexpr word makeWord(byte high, byte low);
 constexpr byte getHighByte(word word);
 constexpr byte getLowByte(word word);
-
 }  // namespace gbdmge
 
 #endif

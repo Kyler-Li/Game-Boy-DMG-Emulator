@@ -63,6 +63,13 @@ class CPU {
   void jrNz(byte src);
   void jr(byte src);
   void jrCond(byte src, bool cond);
+  void reti();
+  void retc();
+  void retz();
+  void retnc();
+  void retnz();
+  void retCond(bool cond);
+  void ret();
 };
 }  // namespace gbdmge
 

@@ -138,6 +138,38 @@ void CPU::jrCond(const byte src, const bool cond) {
   }
 }
 
+void CPU::reti() {
+  ime = true;
+  ret();
+}
+
+void CPU::retc() {
+  retCond(bitIsSet(f, CPU_CARRY_FLAG));
+}
+
+void CPU::retz() {
+  retCond(bitIsSet(f, CPU_ZERO_FLAG));
+}
+
+void CPU::retnc() {
+  retCond(!bitIsSet(f, CPU_CARRY_FLAG));
+}
+
+void CPU::retnz() {
+  retCond(!bitIsSet(f, CPU_ZERO_FLAG));
+}
+
+void CPU::retCond(const bool cond) {
+  if (cond) {
+    ret();
+  }
+}
+
+void CPU::ret() {
+  pc = makeWord(bus->read(sp + 1), bus->read(sp));
+  sp += 2;
+}
+
 void CPU::reset() {
   // Initialize to post boot ROM values
   ime = false;
