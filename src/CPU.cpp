@@ -7,8 +7,18 @@
 
 namespace gbdmge {
 CPU::CPU(Bus& bus)
-    : ime{false},  // Interrupts are disabled on boot
+    : ime{false},
       bus{&bus},
+      a{0},
+      f{0},
+      b{0},
+      c{0},
+      d{0},
+      e{0},
+      h{0},
+      l{0},
+      sp{0},
+      pc{0},
       tCycles{0} {}
 
 void CPU::pop(byte& high, byte& low) {
