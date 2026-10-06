@@ -31,7 +31,6 @@ set(SOURCES
         src/Console.cpp
         src/CPU.cpp
         src/main.cpp
-        src/Register.cpp
 )
 
 target_sources(${PROJECT_NAME}
