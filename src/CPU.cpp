@@ -214,7 +214,23 @@ void CPU::rlca() {
   setBit(f, CPU_CARRY_FLAG, highBit);
 }
 
-void CPU::callCond(bool cond) {
+void CPU::callc() {
+  callCond(bitIsSet(f, CPU_CARRY_FLAG));
+}
+
+void CPU::callnc() {
+  callCond(!bitIsSet(f, CPU_CARRY_FLAG));
+}
+
+void CPU::callz() {
+  callCond(bitIsSet(f, CPU_ZERO_FLAG));
+}
+
+void CPU::callnz() {
+  callCond(!bitIsSet(f, CPU_ZERO_FLAG));
+}
+
+void CPU::callCond(const bool cond) {
   if (cond) {
     call();
   }

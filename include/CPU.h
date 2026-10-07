@@ -40,18 +40,18 @@ class CPU {
   qword tCycles;  // 1 T-cycle = 1 clock cycle, 1 M-cycle = 4 clock cycles = 4
                   // T-cycles
 
-  // IMPORTANT:
-  // Some instructions depend on where the PC is currently pointing.
+  // IMPORTANT FOR ALL INSTRUCTIONS:
   // Instruction implementation functions ASSUME they have received control
-  // after their opcode has been fetched, and PC points to the first operand byte.
+  // after their opcode has been fetched, and PC points to the first operand byte. That is they
+  // operate after a call to fetch().
   //
   // For example, the call instruction assumes the PC points the first byte of the address
   // it will jump to (one byte beyond its opcode).
-  //                            |Address | Value  |  Meaning           |
-  //                            | 0x100  |  0xCD  |  Opcode for call   |
-  //  PC when call executes ->  | 0x101  |  0xAB  |  low byte address  |
-  //                            | 0x102  |  0xCD  |  high byte address |
-  //                            | 0x103  |   ??   |  next instruction  |
+  //                            |Address | Value  |  Meaning                  |
+  //                            | 0x100  |  0xCD  |  Opcode for call          |
+  //  PC when call executes ->  | 0x101  |  0xAB  |  Low byte address         |
+  //                            | 0x102  |  0xCD  |  High byte address        |
+  //                            | 0x103  |   ??   |  Next instruction opcode  |
   void pop(byte& high, byte& low);
   void push(byte high, byte low);
   void anda(byte src);
@@ -89,6 +89,10 @@ class CPU {
   void scf();
   void ccf();
   void rlca();
+  void callc();
+  void callnc();
+  void callz();
+  void callnz();
   void callCond(bool cond);
   void call();
 };
