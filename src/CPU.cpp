@@ -312,6 +312,38 @@ void CPU::dec(byte& dst) {
   dst = value;
 }
 
+void CPU::set(byte& dst, const byte pos, const bool set) {
+  setBit(dst, pos, set);
+}
+
+void CPU::set(const word address, const byte pos, const bool set) {
+  byte value = bus->read(address);
+  setBit(value, pos, set);
+  bus->write(address, value);
+}
+
+void CPU::swap(byte& dst) {
+  f = 0;
+  dst = dst >> 4 | dst << 4;
+  setBit(f, CPU_ZERO_FLAG, dst == 0);
+}
+
+void CPU::swap(const word address) {
+  byte value = bus->read(address);
+  swap(value);
+  bus->write(address, value);
+}
+
+void CPU::bit(const word address, const byte pos) {
+  bit(bus->read(address), pos);
+}
+
+void CPU::bit(const byte src, const byte pos) {
+  setBit(f, CPU_ZERO_FLAG, !getBit(src, pos));
+  setBit(f, CPU_SUB_FLAG, false);
+  setBit(f, CPU_HALF_CARRY_FLAG, true);
+}
+
 void CPU::reset() {
   // Initialize to post boot ROM values
   ime = false;

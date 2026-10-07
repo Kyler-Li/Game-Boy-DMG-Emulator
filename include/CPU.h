@@ -107,6 +107,15 @@ class CPU {
   void dec(byte& high, byte& low);
   void dec(word address);
   void dec(byte& dst);
+
+  // CB Instructions
+  // For both set and res instructions
+  void set(byte& dst, byte pos, bool set);
+  void set(word address, byte pos, bool set);
+  void swap(byte& dst);
+  void swap(word address);
+  void bit(word address, byte pos);
+  void bit(byte src, byte pos);
 };
 }  // namespace gbdmge
 
