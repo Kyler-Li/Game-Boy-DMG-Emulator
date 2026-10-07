@@ -204,10 +204,18 @@ void CPU::ccf() {
 
 void CPU::rlca() {
   f = 0;
-  const byte highBit = getBit(a, BIT_7);
+  const byte highBit = (a & MASK_7_UPPER_BYTE) != 0;
   a <<= 1;
   a |= highBit;
   setBit(f, CPU_CARRY_FLAG, highBit);
+}
+
+void CPU::rrca() {
+  f = 0;
+  const byte lowBit = (a & MASK_1_LOWER_BYTE) != 0;
+  a >>= 1;
+  a |= lowBit << BIT_7;
+  setBit(f, CPU_CARRY_FLAG, lowBit);
 }
 
 void CPU::callC() {
@@ -233,9 +241,9 @@ void CPU::callCond(const bool cond) {
 }
 
 void CPU::call() {
-  const word returnAddress = fetchWord();
+  const word returnAddress = pc + 2;
   push(getHighByte(returnAddress), getLowByte(returnAddress));
-  pc = returnAddress;
+  pc = fetchWord();
 }
 
 void CPU::ld(byte& dst, const byte src) {
@@ -253,6 +261,11 @@ void CPU::ld(byte& dst, const word address) {
 void CPU::ld(byte& high, byte& low, const word value) {
   high = getHighByte(value);
   low = getLowByte(value);
+}
+
+void CPU::ldSp(const word address) {
+  bus->write(address, getLowByte(sp));
+  bus->write(address + 1, getHighByte(sp));
 }
 
 void CPU::inc(byte& high, byte& low) {
@@ -347,6 +360,38 @@ qword CPU::execute(const byte opcode) {
       return 8;
     case 0x04:
       inc(b);
+      return 4;
+    case 0x05:
+      dec(b);
+      return 4;
+    case 0x06:
+      ld(b, fetchByte());
+      return 8;
+    case 0x07:
+      rlca();
+      return 4;
+    case 0x08:
+      ldSp(fetchWord());
+      return 20;
+    case 0x09:
+      throw std::invalid_argument("ADD HL, BC not implemented!");
+    case 0x0A:
+      ld(a, makeWord(b, c));
+      return 8;
+    case 0x0B:
+      dec(b, c);
+      return 8;
+    case 0x0C:
+      inc(c);
+      return 4;
+    case 0x0D:
+      dec(c);
+      return 4;
+    case 0x0E:
+      ld(c, fetchByte());
+      return 8;
+    case 0x0F:
+      rrca();
       return 4;
     default:
       break;

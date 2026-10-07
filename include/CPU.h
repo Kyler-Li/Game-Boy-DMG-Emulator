@@ -89,6 +89,7 @@ class CPU {
   void scf();
   void ccf();
   void rlca();
+  void rrca();
   void callC();
   void callNc();
   void callZ();
@@ -99,6 +100,7 @@ class CPU {
   void ld(word address, byte src);
   void ld(byte& dst, word address);
   void ld(byte& high, byte& low, word value);
+  void ldSp(word address);
   void inc(byte& high, byte& low);
   void inc(word address);
   void inc(byte& dst);
