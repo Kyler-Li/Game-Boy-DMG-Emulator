@@ -30,9 +30,8 @@ void CPU::pop(byte& high, byte& low) {
 }
 
 void CPU::push(const byte high, const byte low) {
-  const word address = sp;
-  bus->write(address - 1, high);
-  bus->write(address - 2, low);
+  bus->write(sp - 1, high);
+  bus->write(sp - 2, low);
   sp -= 2;
 }
 
@@ -342,6 +341,11 @@ void CPU::bit(const byte src, const byte pos) {
   setBit(f, CPU_ZERO_FLAG, !getBit(src, pos));
   setBit(f, CPU_SUB_FLAG, false);
   setBit(f, CPU_HALF_CARRY_FLAG, true);
+}
+
+void CPU::rst(const word address) {
+  push(getHighByte(pc), getLowByte(pc));
+  pc = address;
 }
 
 void CPU::reset() {

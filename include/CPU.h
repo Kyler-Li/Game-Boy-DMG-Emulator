@@ -116,6 +116,7 @@ class CPU {
   void swap(word address);
   void bit(word address, byte pos);
   void bit(byte src, byte pos);
+  void rst(word address);
 };
 }  // namespace gbdmge
 
