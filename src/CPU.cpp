@@ -36,20 +36,20 @@ void CPU::push(const byte high, const byte low) {
   sp -= 2;
 }
 
-void CPU::anda(const byte src) {
+void CPU::andA(const byte src) {
   a = a & src;
   f = 0;
   setBit(f, CPU_ZERO_FLAG, a == 0);
   setBit(f, CPU_HALF_CARRY_FLAG, true);
 }
 
-void CPU::ora(const byte src) {
+void CPU::orA(const byte src) {
   a = a | src;
   f = 0;
   setBit(f, CPU_ZERO_FLAG, a == 0);
 }
 
-void CPU::xora(const byte src) {
+void CPU::xorA(const byte src) {
   a = a ^ src;
   f = 0;
   setBit(f, CPU_ZERO_FLAG, a == 0);
@@ -63,28 +63,24 @@ void CPU::cp(const byte cmp) {
   setBit(f, CPU_CARRY_FLAG, a < cmp);
 }
 
-void CPU::cp(const byte high, const byte low) {
-  cp(bus->read(makeWord(high, low)));
+void CPU::cp(const word address) {
+  cp(bus->read(address));
 }
 
-void CPU::jpz(const word address) {
+void CPU::jpZ(const word address) {
   jpCond(address, bitIsSet(f, CPU_ZERO_FLAG));
 }
 
-void CPU::jpnz(const word address) {
+void CPU::jpNz(const word address) {
   jpCond(address, !bitIsSet(f, CPU_ZERO_FLAG));
 }
 
-void CPU::jpc(const word address) {
+void CPU::jpC(const word address) {
   jpCond(address, bitIsSet(f, CPU_CARRY_FLAG));
 }
 
-void CPU::jpnc(const word address) {
+void CPU::jpNc(const word address) {
   jpCond(address, !bitIsSet(f, CPU_CARRY_FLAG));
-}
-
-void CPU::jp(const byte high, const byte low) {
-  jpCond(makeWord(high, low), true);
 }
 
 void CPU::jp(const word address) {
@@ -139,24 +135,24 @@ void CPU::jrCond(const byte src, const bool cond) {
   }
 }
 
-void CPU::reti() {
+void CPU::retI() {
   ime = true;
   ret();
 }
 
-void CPU::retc() {
+void CPU::retC() {
   retCond(bitIsSet(f, CPU_CARRY_FLAG));
 }
 
-void CPU::retz() {
+void CPU::retZ() {
   retCond(bitIsSet(f, CPU_ZERO_FLAG));
 }
 
-void CPU::retnc() {
+void CPU::retNc() {
   retCond(!bitIsSet(f, CPU_CARRY_FLAG));
 }
 
-void CPU::retnz() {
+void CPU::retNz() {
   retCond(!bitIsSet(f, CPU_ZERO_FLAG));
 }
 
@@ -190,8 +186,8 @@ void CPU::sbc(const byte src) {
   a = result;
 }
 
-void CPU::sbc(const byte high, const byte low) {
-  sbc(bus->read(makeWord(high, low)));
+void CPU::sbc(const word address) {
+  sbc(bus->read(address));
 }
 
 void CPU::scf() {
@@ -214,19 +210,19 @@ void CPU::rlca() {
   setBit(f, CPU_CARRY_FLAG, highBit);
 }
 
-void CPU::callc() {
+void CPU::callC() {
   callCond(bitIsSet(f, CPU_CARRY_FLAG));
 }
 
-void CPU::callnc() {
+void CPU::callNc() {
   callCond(!bitIsSet(f, CPU_CARRY_FLAG));
 }
 
-void CPU::callz() {
+void CPU::callZ() {
   callCond(bitIsSet(f, CPU_ZERO_FLAG));
 }
 
-void CPU::callnz() {
+void CPU::callNz() {
   callCond(!bitIsSet(f, CPU_ZERO_FLAG));
 }
 
@@ -237,9 +233,37 @@ void CPU::callCond(const bool cond) {
 }
 
 void CPU::call() {
-  const word returnAddress = pc + 2;
+  const word returnAddress = fetchWord();
   push(getHighByte(returnAddress), getLowByte(returnAddress));
-  pc = makeWord(bus->read(pc + 1), bus->read(pc));
+  pc = returnAddress;
+}
+
+void CPU::ld(byte& dst, const byte src) {
+  dst = src;
+}
+
+void CPU::ld(const word address, const byte src) {
+  bus->write(address, src);
+}
+
+void CPU::ld(byte& dst, const word address) {
+  dst = bus->read(address);
+}
+
+void CPU::ld(byte& high, byte& low, const word value) {
+  high = getHighByte(value);
+  low = getLowByte(value);
+}
+
+void CPU::inc(byte& high, byte& low) {
+  word value = makeWord(high, low);
+  ++value;
+  high = getHighByte(value);
+  low = getLowByte(value);
+}
+
+void CPU::inc(byte& dst) {
+
 }
 
 void CPU::reset() {
@@ -261,14 +285,40 @@ void CPU::reset() {
   // Potentially reset T-cycles here
 }
 
-byte CPU::fetch() {
-  const word address = pc;
-  ++pc;
-  return bus->read(address);
+byte CPU::fetchByte() {
+  return bus->read(pc++);
+}
+
+word CPU::fetchWord() {
+  const byte low = bus->read(pc++);
+  const byte high = bus->read(pc++);
+  return makeWord(high, low);
 }
 
 // Returns the number of T-cycles after execution
-qword CPU::execute(byte opcode) {
-  throw std::logic_error("not implemented");
+qword CPU::execute(const byte opcode) {
+  switch (opcode) {
+    case 0xCB:
+      throw std::invalid_argument("CB opcodes not supported yet!");
+    case 0x00:
+      nop();
+      return 4;
+    case 0x01:
+      ld(b, c, fetchWord());
+      return 12;
+    case 0x02:
+      ld(makeWord(b, c), a);
+      return 8;
+    case 0x03:
+      inc(b, c);
+      return 8;
+    case 0x04:
+
+    default:
+      break;
+  }
+
+  throw std::invalid_argument("Unknown opcode provided!");
 }
+
 }  // namespace gbdmge
