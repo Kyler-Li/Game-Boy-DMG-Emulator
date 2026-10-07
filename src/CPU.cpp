@@ -375,6 +375,7 @@ qword CPU::execute(const byte opcode) {
       return 20;
     case 0x09:
       throw std::invalid_argument("ADD HL, BC not implemented!");
+      return 8;
     case 0x0A:
       ld(a, makeWord(b, c));
       return 8;
@@ -392,6 +393,54 @@ qword CPU::execute(const byte opcode) {
       return 8;
     case 0x0F:
       rrca();
+      return 4;
+    case 0x10:
+      throw std::invalid_argument("STOP not implemented!");
+      return 4;
+    case 0x11:
+      ld(d, e, fetchWord());
+      return 12;
+    case 0x12:
+      ld(makeWord(d, e), a);
+      return 8;
+    case 0x13:
+      inc(d, e);
+      return 8;
+    case 0x14:
+      inc(d);
+      return 4;
+    case 0x15:
+      dec(d);
+      return 4;
+    case 0x16:
+      ld(d, fetchByte());
+      return 8;
+    case 0x17:
+      throw std::invalid_argument("RLA not implemented!");
+      return 4;
+    case 0x18:
+      jr(fetchByte());
+      return 12;
+    case 0x19:
+      throw std::invalid_argument("ADD HL, DE not implemented!");
+      return 8;
+    case 0x1A:
+      ld(a, makeWord(d, e));
+      return 8;
+    case 0x1B:
+      dec(d, e);
+      return 8;
+    case 0x1C:
+      inc(e);
+      return 4;
+    case 0x1D:
+      dec(e);
+      return 4;
+    case 0x1E:
+      ld(e, fetchByte());
+      return 8;
+    case 0x1F:
+      throw std::invalid_argument("RRA not implemented!");
       return 4;
     default:
       break;
