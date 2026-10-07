@@ -100,7 +100,11 @@ class CPU {
   void ld(byte& dst, word address);
   void ld(byte& high, byte& low, word value);
   void inc(byte& high, byte& low);
+  void inc(word address);
   void inc(byte& dst);
+  void dec(byte& high, byte& low);
+  void dec(word address);
+  void dec(byte& dst);
 };
 }  // namespace gbdmge
 

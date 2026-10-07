@@ -256,14 +256,47 @@ void CPU::ld(byte& high, byte& low, const word value) {
 }
 
 void CPU::inc(byte& high, byte& low) {
+  // Doesn't set flags for some reason
   word value = makeWord(high, low);
   ++value;
   high = getHighByte(value);
   low = getLowByte(value);
 }
 
-void CPU::inc(byte& dst) {
+void CPU::inc(const word address) {
+  byte value = bus->read(address);
+  inc(value);
+  bus->write(address, value);
+}
 
+void CPU::inc(byte& dst) {
+  const byte value = dst + 1;
+  setBit(f, CPU_ZERO_FLAG, value == 0);
+  setBit(f, CPU_SUB_FLAG, false);
+  setBit(f, CPU_HALF_CARRY_FLAG,
+         (dst & MASK_4_LOWER_BYTE) == MASK_4_LOWER_BYTE);
+  dst = value;
+}
+
+void CPU::dec(byte& high, byte& low) {
+  word value = makeWord(high, low);
+  --value;
+  high = getHighByte(value);
+  low = getLowByte(value);
+}
+
+void CPU::dec(const word address) {
+  byte value = bus->read(address);
+  dec(value);
+  bus->write(address, value);
+}
+
+void CPU::dec(byte& dst) {
+  const byte value = dst - 1;
+  setBit(f, CPU_ZERO_FLAG, value == 0);
+  setBit(f, CPU_SUB_FLAG, true);
+  setBit(f, CPU_HALF_CARRY_FLAG, (dst & MASK_4_LOWER_BYTE) == 0);
+  dst = value;
 }
 
 void CPU::reset() {
@@ -313,7 +346,8 @@ qword CPU::execute(const byte opcode) {
       inc(b, c);
       return 8;
     case 0x04:
-
+      inc(b);
+      return 4;
     default:
       break;
   }
