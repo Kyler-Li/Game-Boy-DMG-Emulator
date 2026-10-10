@@ -87,9 +87,9 @@ class CPU {
   void retNz();
   void retCond(bool cond);
   void ret();
+
   void halt();
-  void sbc(byte src);
-  void sbc(word address);
+
   void scf();
   void ccf();
   void callC();
@@ -115,10 +115,16 @@ class CPU {
   void dec(word address);
   void dec(byte& dst);
   void decSp();
+
   void add(byte& dst, word address);
   void add(byte& dst, byte src);
   void addHl(byte high, byte low);
   void addSp(sbyte src);
+
+  void sbc(byte src);
+  void sbc(word address);
+  void sub(word address);
+  void sub(byte src, bool useCarry);
 
   void set(byte& dst, byte pos,
            bool set);  // For both set and res instructions

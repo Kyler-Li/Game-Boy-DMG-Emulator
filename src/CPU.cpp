@@ -173,24 +173,6 @@ void CPU::halt() {
   throw std::runtime_error("HALT not implemented!");
 }
 
-void CPU::sbc(const byte src) {
-  const byte carry = getBit(f, CPU_CARRY_FLAG);
-  const word subtrahend = static_cast<word>(src) + static_cast<word>(carry);
-  const byte result = static_cast<byte>(static_cast<word>(a) - subtrahend);
-
-  setBit(f, CPU_ZERO_FLAG, result == 0);
-  setBit(f, CPU_SUB_FLAG, true);
-  setBit(f, CPU_HALF_CARRY_FLAG,
-         (a & MASK_4_LOWER_BYTE) < (src & MASK_4_LOWER_BYTE) + carry);
-  setBit(f, CPU_CARRY_FLAG, static_cast<word>(a) < subtrahend);
-
-  a = result;
-}
-
-void CPU::sbc(const word address) {
-  sbc(bus->read(address));
-}
-
 void CPU::scf() {
   setBit(f, CPU_SUB_FLAG, false);
   setBit(f, CPU_HALF_CARRY_FLAG, false);
@@ -360,6 +342,32 @@ void CPU::addSp(const sbyte src) {
          (sp & MASK_8_LOWER_BYTE) + offset > MASK_8_LOWER_BYTE);
 
   sp = result;
+}
+
+void CPU::sbc(const byte src) {
+  sub(src, true);
+}
+
+void CPU::sbc(const word address) {
+  sbc(bus->read(address));
+}
+
+void CPU::sub(const word address) {
+  sub(bus->read(address), false);
+}
+
+void CPU::sub(const byte src, const bool useCarry) {
+  const word carry = useCarry && getBit(f, CPU_CARRY_FLAG);
+  const word value = static_cast<word>(src) + static_cast<word>(carry);
+  const byte result = static_cast<byte>(a - value);
+
+  setBit(f, CPU_ZERO_FLAG, result == 0);
+  setBit(f, CPU_SUB_FLAG, true);
+  setBit(f, CPU_HALF_CARRY_FLAG,
+         (a & MASK_4_LOWER_BYTE) < (src & MASK_4_LOWER_BYTE) + carry);
+  setBit(f, CPU_CARRY_FLAG, static_cast<word>(a) < value);
+
+  a = result;
 }
 
 void CPU::set(byte& dst, const byte pos, const bool set) {
