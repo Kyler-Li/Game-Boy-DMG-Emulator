@@ -23,9 +23,8 @@ CPU::CPU(Bus& bus)
       tCycles{0} {}
 
 void CPU::pop(byte& high, byte& low) {
-  const word address = sp;
-  high = bus->read(address + 1);
-  low = bus->read(address);
+  high = bus->read(sp + 1);
+  low = bus->read(sp);
   sp += 2;
 }
 
@@ -255,6 +254,10 @@ void CPU::ldSp(const word address) {
 
 void CPU::ldSp() {
   sp = fetchWord();
+}
+
+void CPU::ldSpHl() {
+  sp = makeWord(h, l);
 }
 
 void CPU::daa() {
@@ -1101,6 +1104,90 @@ qword CPU::execute(const byte opcode) {
     case 0xDE:
       sub(fetchByte(), true);
       return 8;
+    case 0xE0:
+      ld(static_cast<word>(fetchByte() + 0xFF00), a);
+      return 12;
+    case 0xE1:
+      pop(h, l);
+      return 12;
+    case 0xE2:
+      ld(static_cast<word>(c + 0xFF00), a);
+      return 8;
+    case 0xE3:
+    case 0xE4:
+      throw std::invalid_argument("Opcodes 0xE3 and 0xE4 are invalid!");
+    case 0xE5:
+      push(h, l);
+      return 16;
+    case 0xE6:
+      andA(fetchByte());
+      return 8;
+    case 0xE7:
+      rst(0x20);
+      return 16;
+    case 0xE8:
+      addSp(static_cast<sbyte>(fetchByte()));
+      return 16;
+    case 0xE9:
+      jp(makeWord(h, l));
+      return 4;
+    case 0xEA:
+      ld(fetchWord(), a);
+      return 16;
+    case 0xEB:
+    case 0xEC:
+    case 0xED:
+      throw std::invalid_argument("Opcodes 0xEB, 0xEC, and 0xED are invalid!");
+    case 0xEE:
+      xorA(fetchByte());
+      return 8;
+    case 0xEF:
+      rst(0x28);
+      return 16;
+    case 0xF0:
+      ld(a, static_cast<word>(fetchByte() + 0xFF00));
+      return 12;
+    case 0xF1:
+      pop(a, f);
+      f &= MASK_4_UPPER_BYTE;
+      return 12;
+    case 0xF2:
+      ld(a, static_cast<word>(c + 0xFF00));
+      return 8;
+    case 0xF3:
+      di();
+      return 4;
+    case 0xF4:
+      throw std::invalid_argument("Opcode 0xF4 is invalid!");
+    case 0xF5:
+      push(a, f);
+      return 16;
+    case 0xF6:
+      orA(fetchByte());
+      return 8;
+    case 0xF7:
+      rst(0x30);
+      return 16;
+    case 0xF8:
+      throw std::invalid_argument("LD HL, SP+s8 not implemented!");
+    case 0xF9:
+      ldSpHl();
+      return 8;
+    case 0xFA:
+      ld(a, fetchWord());
+      return 16;
+    case 0xFB:
+      ei();
+      return 4;
+    case 0xFC:
+    case 0xFD:
+      throw std::invalid_argument("Opcodes 0xFC and 0xFD are invalid!");
+    case 0xFE:
+      cp(fetchByte());
+      return 8;
+    case 0xFF:
+      rst(0x38);
+      return 16;
     default:
       break;
   }

@@ -108,6 +108,7 @@ class CPU {
   void ld(byte& high, byte& low, word value);
   void ldSp(word address);
   void ldSp();
+  void ldSpHl();
 
   void daa();
 
