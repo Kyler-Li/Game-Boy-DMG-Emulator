@@ -259,6 +259,10 @@ void CPU::ldSp() {
   sp = fetchWord();
 }
 
+void CPU::daa() {
+  throw std::runtime_error("DAA not implemented!");
+}
+
 void CPU::inc(byte& high, byte& low) {
   // Doesn't set flags for some reason
   word value = makeWord(high, low);
@@ -547,7 +551,7 @@ qword CPU::execute(const byte opcode) {
       ld(h, fetchByte());
       return 8;
     case 0x27:
-      throw std::invalid_argument("DAA not implemented!");
+      daa();
       return 4;
     case 0x28:
       return jrZ(static_cast<sbyte>(fetchByte())) ? 12 : 8;
