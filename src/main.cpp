@@ -1,5 +1,7 @@
 #include <SDL3/SDL.h>
 #include <iostream>
+
+#include "BitOps.h"
 #include "Console.h"
 
 int main(const int argc, const char* argv[]) {

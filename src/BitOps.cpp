@@ -2,7 +2,7 @@
 
 namespace gbdmge {
 
-void setBit(byte& value, byte pos, bool set) {
+void setBit(byte& value, const byte pos, const bool set) {
   const byte mask = static_cast<byte>(1) << pos;
   if (set) {
     value |= mask;
@@ -32,8 +32,7 @@ byte getHighByte(const word word) {
 }
 
 void addToPair(byte& high, byte& low, const sbyte value) {
-  const word result = static_cast<word>(
-      static_cast<sword>(makeWord(high, low)) + static_cast<sword>(value));
+  const word result = makeWord(high, low) + static_cast<word>(value);
   high = getHighByte(result);
   low = getLowByte(result);
 }
