@@ -70,12 +70,12 @@ class CPU {
   void cpl();
   void ei();
   void di();
-  void jrC(byte src);
-  void jrNc(byte src);
-  void jrZ(byte src);
-  void jrNz(byte src);
-  void jr(byte src);
-  void jrCond(byte src, bool cond);
+  void jrC(sbyte src);
+  void jrNc(sbyte src);
+  void jrZ(sbyte src);
+  void jrNz(sbyte src);
+  void jr(sbyte src);
+  void jrCond(sbyte src, bool cond);
   void retI();
   void retC();
   void retZ();
@@ -88,8 +88,6 @@ class CPU {
   void sbc(word address);
   void scf();
   void ccf();
-  void rlca();
-  void rrca();
   void callC();
   void callNc();
   void callZ();
@@ -107,11 +105,15 @@ class CPU {
   void dec(byte& high, byte& low);
   void dec(word address);
   void dec(byte& dst);
+  void add(byte& dst, word address);
+  void add(byte& dst, byte src);
+  void addHl(byte high, byte low);
+  void addSp(sbyte src);
 
-  // CB Instructions
-  // For both set and res instructions
-  void set(byte& dst, byte pos, bool set);
-  void set(word address, byte pos, bool set);
+  void set(byte& dst, byte pos,
+           bool set);  // For both set and res instructions
+  void set(word address, byte pos,
+           bool set);  // For both set and res instructions
   void swap(byte& dst);
   void swap(word address);
   void bit(word address, byte pos);

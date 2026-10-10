@@ -101,42 +101,41 @@ void CPU::cpl() {
 }
 
 void CPU::ei() {
-  ime = true;
+  throw std::runtime_error("DI not implemented!");
 }
 
 void CPU::di() {
-  ime = false;
+  throw std::runtime_error("DI not implemented!");
 }
 
-void CPU::jrC(const byte src) {
+void CPU::jrC(const sbyte src) {
   jrCond(src, bitIsSet(f, CPU_CARRY_FLAG));
 }
 
-void CPU::jrNc(const byte src) {
+void CPU::jrNc(const sbyte src) {
   jrCond(src, !bitIsSet(f, CPU_CARRY_FLAG));
 }
 
-void CPU::jrZ(const byte src) {
+void CPU::jrZ(const sbyte src) {
   jrCond(src, bitIsSet(f, CPU_ZERO_FLAG));
 }
 
-void CPU::jrNz(const byte src) {
+void CPU::jrNz(const sbyte src) {
   jrCond(src, !bitIsSet(f, CPU_ZERO_FLAG));
 }
 
-void CPU::jr(const byte src) {
+void CPU::jr(const sbyte src) {
   jrCond(src, true);
 }
 
-void CPU::jrCond(const byte src, const bool cond) {
+void CPU::jrCond(const sbyte src, const bool cond) {
   if (cond) {
-    pc += static_cast<sbyte>(src);
+    pc = static_cast<word>(static_cast<sdword>(pc) + static_cast<sdword>(src));
   }
 }
 
 void CPU::retI() {
-  ime = true;
-  ret();
+  throw std::runtime_error("DI not implemented!");
 }
 
 void CPU::retC() {
@@ -167,20 +166,19 @@ void CPU::ret() {
 }
 
 void CPU::halt() {
-  isHalted = true;
+  throw std::runtime_error("HALT not implemented!");
 }
 
 void CPU::sbc(const byte src) {
   const byte carry = getBit(f, CPU_CARRY_FLAG);
-  const byte result = a - src - carry;
+  const word subtrahend = static_cast<word>(src) + static_cast<word>(carry);
+  const byte result = static_cast<byte>(static_cast<word>(a) - subtrahend);
 
   setBit(f, CPU_ZERO_FLAG, result == 0);
   setBit(f, CPU_SUB_FLAG, true);
   setBit(f, CPU_HALF_CARRY_FLAG,
          (a & MASK_4_LOWER_BYTE) < (src & MASK_4_LOWER_BYTE) + carry);
-  setBit(
-      f, CPU_CARRY_FLAG,
-      static_cast<word>(src) + static_cast<word>(carry) > static_cast<word>(a));
+  setBit(f, CPU_CARRY_FLAG, static_cast<word>(a) < subtrahend);
 
   a = result;
 }
@@ -199,22 +197,6 @@ void CPU::ccf() {
   setBit(f, CPU_SUB_FLAG, false);
   setBit(f, CPU_HALF_CARRY_FLAG, false);
   setBit(f, CPU_CARRY_FLAG, !getBit(f, CPU_CARRY_FLAG));
-}
-
-void CPU::rlca() {
-  f = 0;
-  const byte highBit = (a & MASK_7_UPPER_BYTE) != 0;
-  a <<= 1;
-  a |= highBit;
-  setBit(f, CPU_CARRY_FLAG, highBit);
-}
-
-void CPU::rrca() {
-  f = 0;
-  const byte lowBit = (a & MASK_1_LOWER_BYTE) != 0;
-  a >>= 1;
-  a |= lowBit << BIT_7;
-  setBit(f, CPU_CARRY_FLAG, lowBit);
 }
 
 void CPU::callC() {
@@ -311,6 +293,57 @@ void CPU::dec(byte& dst) {
   dst = value;
 }
 
+void CPU::add(byte& dst, const word address) {
+  add(dst, bus->read(address));
+}
+
+void CPU::add(byte& dst, const byte src) {
+  const word sum = static_cast<word>(dst) + static_cast<word>(src);
+  const byte result = static_cast<byte>(sum);
+
+  setBit(f, CPU_ZERO_FLAG, result == 0);
+  setBit(f, CPU_SUB_FLAG, false);
+  setBit(f, CPU_HALF_CARRY_FLAG,
+         (dst & MASK_4_LOWER_BYTE) + (src & MASK_4_LOWER_BYTE) >
+             MASK_4_LOWER_BYTE);
+  setBit(f, CPU_CARRY_FLAG, sum > MASK_8_LOWER_BYTE);
+  dst = result;
+}
+
+void CPU::addHl(const byte high, const byte low) {
+  const word value = makeWord(high, low);
+  const word hl = makeWord(h, l);
+  const dword sum = static_cast<dword>(hl) + static_cast<dword>(value);
+
+  // Does not set zero flag for some reason
+  setBit(f, CPU_SUB_FLAG, false);
+  setBit(f, CPU_HALF_CARRY_FLAG,
+         (hl & MASK_12_LOWER_WORD) + (value & MASK_12_LOWER_WORD) >
+             MASK_12_LOWER_WORD);
+  setBit(f, CPU_CARRY_FLAG, sum > MASK_16_LOWER_WORD);
+
+  const word result = static_cast<word>(sum);
+  h = getHighByte(result);
+  l = getLowByte(result);
+}
+
+void CPU::addSp(const sbyte src) {
+  const byte offset = static_cast<byte>(src);
+
+  const word result =
+      static_cast<word>(static_cast<sdword>(sp) + static_cast<sdword>(src));
+
+  setBit(f, CPU_ZERO_FLAG, false);
+  setBit(f, CPU_SUB_FLAG, false);
+  setBit(f, CPU_HALF_CARRY_FLAG,
+         (sp & MASK_4_LOWER_BYTE) + (offset & MASK_4_LOWER_BYTE) >
+             MASK_4_LOWER_BYTE);
+  setBit(f, CPU_CARRY_FLAG,
+         (sp & MASK_8_LOWER_BYTE) + offset > MASK_8_LOWER_BYTE);
+
+  sp = result;
+}
+
 void CPU::set(byte& dst, const byte pos, const bool set) {
   setBit(dst, pos, set);
 }
@@ -404,7 +437,7 @@ qword CPU::execute(const byte opcode) {
       ld(b, fetchByte());
       return 8;
     case 0x07:
-      rlca();
+      throw std::invalid_argument("RCLA not implemented!");
       return 4;
     case 0x08:
       ldSp(fetchWord());
@@ -428,7 +461,7 @@ qword CPU::execute(const byte opcode) {
       ld(c, fetchByte());
       return 8;
     case 0x0F:
-      rrca();
+      throw std::invalid_argument("RCCA not implemented!");
       return 4;
     case 0x10:
       throw std::invalid_argument("STOP not implemented!");
@@ -455,7 +488,7 @@ qword CPU::execute(const byte opcode) {
       throw std::invalid_argument("RLA not implemented!");
       return 4;
     case 0x18:
-      jr(fetchByte());
+      jr(static_cast<sbyte>(fetchByte()));
       return 12;
     case 0x19:
       throw std::invalid_argument("ADD HL, DE not implemented!");
