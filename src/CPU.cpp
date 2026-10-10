@@ -915,6 +915,54 @@ qword CPU::execute(const byte opcode) {
     case 0x9F:
       sub(a, true);
       return 4;
+    case 0xA0:
+      andA(b);
+      return 4;
+    case 0xA1:
+      andA(c);
+      return 4;
+    case 0xA2:
+      andA(d);
+      return 4;
+    case 0xA3:
+      andA(e);
+      return 4;
+    case 0xA4:
+      andA(h);
+      return 4;
+    case 0xA5:
+      andA(l);
+      return 4;
+    case 0xA6:
+      andA(makeWord(h, l));
+      return 8;
+    case 0xA7:
+      andA(a);
+      return 4;
+    case 0xA8:
+      xorA(b);
+      return 4;
+    case 0xA9:
+      xorA(c);
+      return 4;
+    case 0xAA:
+      xorA(d);
+      return 4;
+    case 0xAB:
+      xorA(e);
+      return 4;
+    case 0xAC:
+      xorA(h);
+      return 4;
+    case 0xAD:
+      xorA(l);
+      return 4;
+    case 0xAE:
+      xorA(makeWord(h, l));
+      return 8;
+    case 0xAF:
+      xorA(a);
+      return 4;
     default:
       break;
   }
