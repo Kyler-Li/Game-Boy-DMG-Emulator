@@ -447,7 +447,7 @@ qword CPU::execute(const byte opcode) {
       ldSp(fetchWord());
       return 20;
     case 0x09:
-      throw std::invalid_argument("ADD HL, BC not implemented!");
+      addHl(b, c);
       return 8;
     case 0x0A:
       ld(a, makeWord(b, c));
@@ -541,6 +541,28 @@ qword CPU::execute(const byte opcode) {
       return 4;
     case 0x28:
       return jrZ(static_cast<sbyte>(fetchByte())) ? 12 : 8;
+    case 0x29:
+      addHl(h, l);
+      return 8;
+    case 0x2A:
+      ld(a, makeWord(h, l));
+      addToPair(h, l, 1);
+      return 8;
+    case 0x2B:
+      dec(h, l);
+      return 8;
+    case 0x2C:
+      inc(l);
+      return 4;
+    case 0x2D:
+      dec(l);
+      return 4;
+    case 0x2E:
+      ld(l, fetchByte());
+      return 8;
+    case 0x2F:
+      cpl();
+      return 4;
     default:
       break;
   }
