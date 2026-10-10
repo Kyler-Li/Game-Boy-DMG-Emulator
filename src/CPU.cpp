@@ -94,8 +94,8 @@ bool CPU::jpNc(const word address) {
   return jpCond(address, !bitIsSet(f, CPU_CARRY_FLAG));
 }
 
-bool CPU::jp(const word address) {
-  return jpCond(address, true);
+void CPU::jp(const word address) {
+  jpCond(address, true);
 }
 
 bool CPU::jpCond(const word address, const bool cond) {
@@ -138,8 +138,8 @@ bool CPU::jrNz(const sbyte src) {
   return jrCond(src, !bitIsSet(f, CPU_ZERO_FLAG));
 }
 
-bool CPU::jr(const sbyte src) {
-  return jrCond(src, true);
+void CPU::jr(const sbyte src) {
+  jrCond(src, true);
 }
 
 bool CPU::jrCond(const sbyte src, const bool cond) {
@@ -150,30 +150,32 @@ bool CPU::jrCond(const sbyte src, const bool cond) {
   return false;
 }
 
-void CPU::retI() {
+bool CPU::retI() {
   throw std::runtime_error("DI not implemented!");
 }
 
-void CPU::retC() {
-  retCond(bitIsSet(f, CPU_CARRY_FLAG));
+bool CPU::retC() {
+  return retCond(bitIsSet(f, CPU_CARRY_FLAG));
 }
 
-void CPU::retZ() {
-  retCond(bitIsSet(f, CPU_ZERO_FLAG));
+bool CPU::retZ() {
+  return retCond(bitIsSet(f, CPU_ZERO_FLAG));
 }
 
-void CPU::retNc() {
-  retCond(!bitIsSet(f, CPU_CARRY_FLAG));
+bool CPU::retNc() {
+  return retCond(!bitIsSet(f, CPU_CARRY_FLAG));
 }
 
-void CPU::retNz() {
-  retCond(!bitIsSet(f, CPU_ZERO_FLAG));
+bool CPU::retNz() {
+  return retCond(!bitIsSet(f, CPU_ZERO_FLAG));
 }
 
-void CPU::retCond(const bool cond) {
+bool CPU::retCond(const bool cond) {
   if (cond) {
     ret();
+    return true;
   }
+  return false;
 }
 
 void CPU::ret() {
@@ -197,28 +199,30 @@ void CPU::ccf() {
   setBit(f, CPU_CARRY_FLAG, !getBit(f, CPU_CARRY_FLAG));
 }
 
-void CPU::callC() {
-  callCond(bitIsSet(f, CPU_CARRY_FLAG));
+bool CPU::callC() {
+  return callCond(bitIsSet(f, CPU_CARRY_FLAG));
 }
 
-void CPU::callNc() {
-  callCond(!bitIsSet(f, CPU_CARRY_FLAG));
+bool CPU::callNc() {
+  return callCond(!bitIsSet(f, CPU_CARRY_FLAG));
 }
 
-void CPU::callZ() {
-  callCond(bitIsSet(f, CPU_ZERO_FLAG));
+bool CPU::callZ() {
+  return callCond(bitIsSet(f, CPU_ZERO_FLAG));
 }
 
-void CPU::callNz() {
-  callCond(!bitIsSet(f, CPU_ZERO_FLAG));
+bool CPU::callNz() {
+  return callCond(!bitIsSet(f, CPU_ZERO_FLAG));
 }
 
-void CPU::callCond(const bool cond) {
+bool CPU::callCond(const bool cond) {
   if (cond) {
     call();
-  } else {
-    fetchWord();  // Consume target address
+    return true;
   }
+
+  fetchWord();
+  return false;
 }
 
 void CPU::call() {
@@ -1023,6 +1027,45 @@ qword CPU::execute(const byte opcode) {
     case 0xBF:
       cp(a);
       return 4;
+    case 0xC0:
+      return retNz() ? 20 : 8;
+    case 0xC1:
+      pop(b, c);
+      return 12;
+    case 0xC2:
+      return jpNz(fetchWord()) ? 16 : 12;
+    case 0xC3:
+      jp(fetchWord());
+      return 16;
+    case 0xC4:
+      return callNz() ? 24 : 12;
+    case 0xC5:
+      push(b, c);
+      return 16;
+    case 0xC6:
+      add(a, fetchByte());
+      return 8;
+    case 0xC7:
+      rst(0);
+      return 16;
+    case 0xC8:
+      return retZ() ? 20 : 8;
+    case 0xC9:
+      ret();
+      return 16;
+    case 0xCA:
+      return jpZ(fetchWord()) ? 16 : 12;
+    case 0xCC:
+      return callZ() ? 24 : 12;
+    case 0xCD:
+      call();
+      return 24;
+    case 0xCE:
+      add(a, fetchByte(), true);
+      return 8;
+    case 0xCF:
+      rst(0x08);
+      return 16;
     default:
       break;
   }

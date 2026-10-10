@@ -68,7 +68,7 @@ class CPU {
   bool jpNz(word address);
   bool jpC(word address);
   bool jpNc(word address);
-  bool jp(word address);
+  void jp(word address);
   bool jpCond(word address, bool cond);
 
   void nop();
@@ -80,27 +80,27 @@ class CPU {
   bool jrNc(sbyte src);
   bool jrZ(sbyte src);
   bool jrNz(sbyte src);
-  bool jr(sbyte src);
+  void jr(sbyte src);
   bool jrCond(sbyte src, bool cond);
 
-  void retI();
-  void retC();
-  void retZ();
-  void retNc();
-  void retNz();
-  void retCond(bool cond);
+  bool retI();
+  bool retC();
+  bool retZ();
+  bool retNc();
+  bool retNz();
   void ret();
+  bool retCond(bool cond);
 
   void halt();
-
   void scf();
   void ccf();
-  void callC();
-  void callNc();
-  void callZ();
-  void callNz();
-  void callCond(bool cond);
+
+  bool callC();
+  bool callNc();
+  bool callZ();
+  bool callNz();
   void call();
+  bool callCond(bool cond);
 
   void ld(byte& dst, byte src);
   void ld(word address, byte src);
