@@ -777,6 +777,54 @@ qword CPU::execute(const byte opcode) {
     case 0x6F:
       ld(l, a);
       return 4;
+    case 0x70:
+      ld(makeWord(h, l), b);
+      return 8;
+    case 0x71:
+      ld(makeWord(h, l), c);
+      return 8;
+    case 0x72:
+      ld(makeWord(h, l), d);
+      return 8;
+    case 0x73:
+      ld(makeWord(h, l), e);
+      return 8;
+    case 0x74:
+      ld(makeWord(h, l), h);
+      return 8;
+    case 0x75:
+      ld(makeWord(h, l), l);
+      return 8;
+    case 0x76:
+      halt();
+      return 4;
+    case 0x77:
+      ld(makeWord(h, l), a);
+      return 8;
+    case 0x78:
+      ld(a, b);
+      return 4;
+    case 0x79:
+      ld(a, c);
+      return 4;
+    case 0x7A:
+      ld(a, d);
+      return 4;
+    case 0x7B:
+      ld(a, e);
+      return 4;
+    case 0x7C:
+      ld(a, h);
+      return 4;
+    case 0x7D:
+      ld(a, l);
+      return 4;
+    case 0x7E:
+      ld(a, makeWord(h, l));
+      return 8;
+    case 0x7F:
+      ld(a, a);
+      return 4;
     default:
       break;
   }
