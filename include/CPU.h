@@ -98,17 +98,21 @@ class CPU {
   void callNz();
   void callCond(bool cond);
   void call();
+
   void ld(byte& dst, byte src);
   void ld(word address, byte src);
   void ld(byte& dst, word address);
   void ld(byte& high, byte& low, word value);
   void ldSp(word address);
+  void ldSp();
+
   void inc(byte& high, byte& low);
   void inc(word address);
   void inc(byte& dst);
   void dec(byte& high, byte& low);
   void dec(word address);
   void dec(byte& dst);
+  void decSp();
   void add(byte& dst, word address);
   void add(byte& dst, byte src);
   void addHl(byte high, byte low);

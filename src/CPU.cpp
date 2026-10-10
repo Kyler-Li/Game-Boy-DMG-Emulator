@@ -222,6 +222,8 @@ void CPU::callNz() {
 void CPU::callCond(const bool cond) {
   if (cond) {
     call();
+  } else {
+    fetchWord();  // Consume target address
   }
 }
 
@@ -251,6 +253,10 @@ void CPU::ld(byte& high, byte& low, const word value) {
 void CPU::ldSp(const word address) {
   bus->write(address, getLowByte(sp));
   bus->write(address + 1, getHighByte(sp));
+}
+
+void CPU::ldSp() {
+  sp = fetchWord();
 }
 
 void CPU::inc(byte& high, byte& low) {
@@ -295,6 +301,10 @@ void CPU::dec(byte& dst) {
   setBit(f, CPU_SUB_FLAG, true);
   setBit(f, CPU_HALF_CARRY_FLAG, (dst & MASK_4_LOWER_BYTE) == 0);
   dst = value;
+}
+
+void CPU::decSp() {
+  --sp;
 }
 
 void CPU::add(byte& dst, const word address) {
@@ -562,6 +572,54 @@ qword CPU::execute(const byte opcode) {
       return 8;
     case 0x2F:
       cpl();
+      return 4;
+    case 0x30:
+      return jrNc(static_cast<sbyte>(fetchByte())) ? 12 : 8;
+    case 0x31:
+      ldSp();
+      return 12;
+    case 0x32:
+      ld(makeWord(h, l), a);
+      addToPair(h, l, -1);
+      return 8;
+    case 0x33:
+      inc(sp);
+      return 8;
+    case 0x34:
+      inc(makeWord(h, l));
+      return 12;
+    case 0x35:
+      dec(makeWord(h, l));
+      return 12;
+    case 0x36:
+      ld(makeWord(h, l), fetchByte());
+      return 12;
+    case 0x37:
+      scf();
+      return 4;
+    case 0x38:
+      return jrC(static_cast<sbyte>(fetchByte())) ? 12 : 8;
+    case 0x39:
+      addHl(getHighByte(sp), getLowByte(sp));
+      return 8;
+    case 0x3A:
+      ld(a, makeWord(h, l));
+      addToPair(h, l, -1);
+      return 8;
+    case 0x3B:
+      decSp();
+      return 8;
+    case 0x3C:
+      inc(a);
+      return 4;
+    case 0x3D:
+      dec(a);
+      return 4;
+    case 0x3E:
+      ld(a, fetchByte());
+      return 8;
+    case 0x3F:
+      ccf();
       return 4;
     default:
       break;
