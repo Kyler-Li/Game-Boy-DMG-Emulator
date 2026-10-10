@@ -35,6 +35,10 @@ void CPU::push(const byte high, const byte low) {
   sp -= 2;
 }
 
+void CPU::andA(const word address) {
+  andA(bus->read(address));
+}
+
 void CPU::andA(const byte src) {
   a = a & src;
   f = 0;
@@ -42,10 +46,18 @@ void CPU::andA(const byte src) {
   setBit(f, CPU_HALF_CARRY_FLAG, true);
 }
 
+void CPU::orA(const word address) {
+  orA(bus->read(address));
+}
+
 void CPU::orA(const byte src) {
   a = a | src;
   f = 0;
   setBit(f, CPU_ZERO_FLAG, a == 0);
+}
+
+void CPU::xorA(const word address) {
+  xorA(bus->read(address));
 }
 
 void CPU::xorA(const byte src) {
@@ -962,6 +974,54 @@ qword CPU::execute(const byte opcode) {
       return 8;
     case 0xAF:
       xorA(a);
+      return 4;
+    case 0xB0:
+      orA(b);
+      return 4;
+    case 0xB1:
+      orA(c);
+      return 4;
+    case 0xB2:
+      orA(d);
+      return 4;
+    case 0xB3:
+      orA(e);
+      return 4;
+    case 0xB4:
+      orA(h);
+      return 4;
+    case 0xB5:
+      orA(l);
+      return 4;
+    case 0xB6:
+      orA(makeWord(h, l));
+      return 8;
+    case 0xB7:
+      orA(a);
+      return 4;
+    case 0xB8:
+      cp(b);
+      return 4;
+    case 0xB9:
+      cp(c);
+      return 4;
+    case 0xBA:
+      cp(d);
+      return 4;
+    case 0xBB:
+      cp(e);
+      return 4;
+    case 0xBC:
+      cp(h);
+      return 4;
+    case 0xBD:
+      cp(l);
+      return 4;
+    case 0xBE:
+      cp(makeWord(h, l));
+      return 8;
+    case 0xBF:
+      cp(a);
       return 4;
     default:
       break;

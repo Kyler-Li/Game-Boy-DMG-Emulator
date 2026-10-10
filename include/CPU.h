@@ -55,8 +55,11 @@ class CPU {
   //                            | 0x103  |   ??   |  Next instruction opcode  |
   void pop(byte& high, byte& low);
   void push(byte high, byte low);
+  void andA(word address);
   void andA(byte src);
+  void orA(word address);
   void orA(byte src);
+  void xorA(word address);
   void xorA(byte src);
   void cp(byte cmp);
   void cp(word address);
