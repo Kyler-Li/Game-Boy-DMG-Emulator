@@ -1066,6 +1066,41 @@ qword CPU::execute(const byte opcode) {
     case 0xCF:
       rst(0x08);
       return 16;
+    case 0xD0:
+      return retNc() ? 20 : 8;
+    case 0xD1:
+      pop(d, e);
+      return 12;
+    case 0xD2:
+      return jpNc(fetchWord()) ? 16 : 12;
+    case 0xD3:
+      throw std::invalid_argument("Opcode 0xD3 is invalid!");
+    case 0xD4:
+      return callNc() ? 24 : 12;
+    case 0xD5:
+      push(d, e);
+      return 16;
+    case 0xD6:
+      sub(fetchByte());
+      return 8;
+    case 0xD7:
+      rst(0x10);
+      return 16;
+    case 0xD8:
+      return retC() ? 20 : 8;
+    case 0xD9:
+      return retI() ? 20 : 8;
+    case 0xDA:
+      return jpC(fetchWord()) ? 16 : 12;
+    case 0xDB:
+      throw std::invalid_argument("Opcode 0xDB is invalid!");
+    case 0xDC:
+      return callC() ? 24 : 12;
+    case 0xDD:
+      throw std::invalid_argument("Opcode 0xDD is invalid!");
+    case 0xDE:
+      sub(fetchByte(), true);
+      return 8;
     default:
       break;
   }
