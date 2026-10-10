@@ -60,22 +60,26 @@ class CPU {
   void xorA(byte src);
   void cp(byte cmp);
   void cp(word address);
-  void jpZ(word address);
-  void jpNz(word address);
-  void jpC(word address);
-  void jpNc(word address);
-  void jp(word address);
-  void jpCond(word address, bool cond);
+
+  bool jpZ(word address);
+  bool jpNz(word address);
+  bool jpC(word address);
+  bool jpNc(word address);
+  bool jp(word address);
+  bool jpCond(word address, bool cond);
+
   void nop();
   void cpl();
   void ei();
   void di();
-  void jrC(sbyte src);
-  void jrNc(sbyte src);
-  void jrZ(sbyte src);
-  void jrNz(sbyte src);
-  void jr(sbyte src);
-  void jrCond(sbyte src, bool cond);
+
+  bool jrC(sbyte src);
+  bool jrNc(sbyte src);
+  bool jrZ(sbyte src);
+  bool jrNz(sbyte src);
+  bool jr(sbyte src);
+  bool jrCond(sbyte src, bool cond);
+
   void retI();
   void retC();
   void retZ();

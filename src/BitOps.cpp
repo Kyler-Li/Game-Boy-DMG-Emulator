@@ -31,4 +31,11 @@ byte getHighByte(const word word) {
   return static_cast<byte>(word >> 8);
 }
 
+void addToPair(byte& high, byte& low, const sbyte value) {
+  const word result = static_cast<word>(
+      static_cast<sword>(makeWord(high, low)) + static_cast<sword>(value));
+  high = getHighByte(result);
+  low = getLowByte(result);
+}
+
 }  // namespace gbdmge

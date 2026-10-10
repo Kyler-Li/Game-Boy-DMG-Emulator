@@ -66,30 +66,32 @@ void CPU::cp(const word address) {
   cp(bus->read(address));
 }
 
-void CPU::jpZ(const word address) {
-  jpCond(address, bitIsSet(f, CPU_ZERO_FLAG));
+bool CPU::jpZ(const word address) {
+  return jpCond(address, bitIsSet(f, CPU_ZERO_FLAG));
 }
 
-void CPU::jpNz(const word address) {
-  jpCond(address, !bitIsSet(f, CPU_ZERO_FLAG));
+bool CPU::jpNz(const word address) {
+  return jpCond(address, !bitIsSet(f, CPU_ZERO_FLAG));
 }
 
-void CPU::jpC(const word address) {
-  jpCond(address, bitIsSet(f, CPU_CARRY_FLAG));
+bool CPU::jpC(const word address) {
+  return jpCond(address, bitIsSet(f, CPU_CARRY_FLAG));
 }
 
-void CPU::jpNc(const word address) {
-  jpCond(address, !bitIsSet(f, CPU_CARRY_FLAG));
+bool CPU::jpNc(const word address) {
+  return jpCond(address, !bitIsSet(f, CPU_CARRY_FLAG));
 }
 
-void CPU::jp(const word address) {
-  jpCond(address, true);
+bool CPU::jp(const word address) {
+  return jpCond(address, true);
 }
 
-void CPU::jpCond(const word address, const bool cond) {
+bool CPU::jpCond(const word address, const bool cond) {
   if (cond) {
     pc = address;
+    return true;
   }
+  return false;
 }
 
 void CPU::nop() {}
@@ -108,30 +110,32 @@ void CPU::di() {
   throw std::runtime_error("DI not implemented!");
 }
 
-void CPU::jrC(const sbyte src) {
-  jrCond(src, bitIsSet(f, CPU_CARRY_FLAG));
+bool CPU::jrC(const sbyte src) {
+  return jrCond(src, bitIsSet(f, CPU_CARRY_FLAG));
 }
 
-void CPU::jrNc(const sbyte src) {
-  jrCond(src, !bitIsSet(f, CPU_CARRY_FLAG));
+bool CPU::jrNc(const sbyte src) {
+  return jrCond(src, !bitIsSet(f, CPU_CARRY_FLAG));
 }
 
-void CPU::jrZ(const sbyte src) {
-  jrCond(src, bitIsSet(f, CPU_ZERO_FLAG));
+bool CPU::jrZ(const sbyte src) {
+  return jrCond(src, bitIsSet(f, CPU_ZERO_FLAG));
 }
 
-void CPU::jrNz(const sbyte src) {
-  jrCond(src, !bitIsSet(f, CPU_ZERO_FLAG));
+bool CPU::jrNz(const sbyte src) {
+  return jrCond(src, !bitIsSet(f, CPU_ZERO_FLAG));
 }
 
-void CPU::jr(const sbyte src) {
-  jrCond(src, true);
+bool CPU::jr(const sbyte src) {
+  return jrCond(src, true);
 }
 
-void CPU::jrCond(const sbyte src, const bool cond) {
+bool CPU::jrCond(const sbyte src, const bool cond) {
   if (cond) {
     pc = static_cast<word>(static_cast<sdword>(pc) + static_cast<sdword>(src));
+    return true;
   }
+  return false;
 }
 
 void CPU::retI() {
@@ -491,7 +495,7 @@ qword CPU::execute(const byte opcode) {
       jr(static_cast<sbyte>(fetchByte()));
       return 12;
     case 0x19:
-      throw std::invalid_argument("ADD HL, DE not implemented!");
+      addHl(d, e);
       return 8;
     case 0x1A:
       ld(a, makeWord(d, e));
@@ -511,6 +515,32 @@ qword CPU::execute(const byte opcode) {
     case 0x1F:
       throw std::invalid_argument("RRA not implemented!");
       return 4;
+    case 0x20:
+      return jrNz(static_cast<sbyte>(fetchByte())) ? 12 : 8;
+    case 0x21:
+      ld(h, l, fetchWord());
+      return 12;
+    case 0x22:
+      ld(makeWord(h, l), a);
+      addToPair(h, l, 1);
+      return 8;
+    case 0x23:
+      inc(h, l);
+      return 8;
+    case 0x24:
+      inc(h);
+      return 4;
+    case 0x25:
+      dec(h);
+      return 4;
+    case 0x26:
+      ld(h, fetchByte());
+      return 8;
+    case 0x27:
+      throw std::invalid_argument("DAA not implemented!");
+      return 4;
+    case 0x28:
+      return jrZ(static_cast<sbyte>(fetchByte())) ? 12 : 8;
     default:
       break;
   }

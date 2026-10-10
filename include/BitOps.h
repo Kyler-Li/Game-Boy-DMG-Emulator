@@ -11,6 +11,7 @@ bool bitIsSet(const byte& value, byte pos);
 word makeWord(byte high, byte low);
 byte getHighByte(word word);
 byte getLowByte(word word);
+void addToPair(byte& high, byte& low, sbyte value);
 }  // namespace gbdmge
 
 #endif
