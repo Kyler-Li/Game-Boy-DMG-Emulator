@@ -357,7 +357,7 @@ void CPU::sub(const word address) {
 }
 
 void CPU::sub(const byte src, const bool useCarry) {
-  const word carry = useCarry && getBit(f, CPU_CARRY_FLAG);
+  const word carry = useCarry && bitIsSet(f, CPU_CARRY_FLAG);
   const word value = static_cast<word>(src) + static_cast<word>(carry);
   const byte result = static_cast<byte>(a - value);
 
@@ -680,6 +680,54 @@ qword CPU::execute(const byte opcode) {
       return 8;
     case 0x4F:
       ld(c, a);
+      return 4;
+    case 0x50:
+      ld(d, b);
+      return 4;
+    case 0x51:
+      ld(d, c);
+      return 4;
+    case 0x52:
+      ld(d, d);
+      return 4;
+    case 0x53:
+      ld(d, e);
+      return 4;
+    case 0x54:
+      ld(d, h);
+      return 4;
+    case 0x55:
+      ld(d, l);
+      return 4;
+    case 0x56:
+      ld(d, makeWord(h, l));
+      return 8;
+    case 0x57:
+      ld(d, a);
+      return 4;
+    case 0x58:
+      ld(e, b);
+      return 4;
+    case 0x59:
+      ld(e, c);
+      return 4;
+    case 0x5A:
+      ld(e, d);
+      return 4;
+    case 0x5B:
+      ld(e, e);
+      return 4;
+    case 0x5C:
+      ld(e, h);
+      return 4;
+    case 0x5D:
+      ld(e, l);
+      return 4;
+    case 0x5E:
+      ld(e, makeWord(h, l));
+      return 8;
+    case 0x5F:
+      ld(e, a);
       return 4;
     default:
       break;
