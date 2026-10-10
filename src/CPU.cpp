@@ -293,20 +293,22 @@ void CPU::decSp() {
   --sp;
 }
 
-void CPU::add(byte& dst, const word address) {
-  add(dst, bus->read(address));
+void CPU::add(byte& dst, const word address, const bool useCarry) {
+  add(dst, bus->read(address), useCarry);
 }
 
-void CPU::add(byte& dst, const byte src) {
-  const word sum = static_cast<word>(dst) + static_cast<word>(src);
+void CPU::add(byte& dst, const byte src, const bool useCarry) {
+  const word carry = useCarry && bitIsSet(f, CPU_CARRY_FLAG);
+  const word sum = static_cast<word>(dst) + static_cast<word>(src) + carry;
   const byte result = static_cast<byte>(sum);
 
   setBit(f, CPU_ZERO_FLAG, result == 0);
   setBit(f, CPU_SUB_FLAG, false);
   setBit(f, CPU_HALF_CARRY_FLAG,
-         (dst & MASK_4_LOWER_BYTE) + (src & MASK_4_LOWER_BYTE) >
+         (dst & MASK_4_LOWER_BYTE) + (src & MASK_4_LOWER_BYTE) + carry >
              MASK_4_LOWER_BYTE);
   setBit(f, CPU_CARRY_FLAG, sum > MASK_8_LOWER_BYTE);
+
   dst = result;
 }
 
@@ -344,16 +346,8 @@ void CPU::addSp(const sbyte src) {
   sp = result;
 }
 
-void CPU::sbc(const byte src) {
-  sub(src, true);
-}
-
-void CPU::sbc(const word address) {
-  sbc(bus->read(address));
-}
-
-void CPU::sub(const word address) {
-  sub(bus->read(address), false);
+void CPU::sub(const word address, const bool useCarry) {
+  sub(bus->read(address), useCarry);
 }
 
 void CPU::sub(const byte src, const bool useCarry) {
@@ -824,6 +818,54 @@ qword CPU::execute(const byte opcode) {
       return 8;
     case 0x7F:
       ld(a, a);
+      return 4;
+    case 0x80:
+      add(a, b);
+      return 4;
+    case 0x81:
+      add(a, c);
+      return 4;
+    case 0x82:
+      add(a, d);
+      return 4;
+    case 0x83:
+      add(a, e);
+      return 4;
+    case 0x84:
+      add(a, h);
+      return 4;
+    case 0x85:
+      add(a, l);
+      return 4;
+    case 0x86:
+      add(a, makeWord(h, l));
+      return 8;
+    case 0x87:
+      add(a, a);
+      return 4;
+    case 0x88:
+      add(a, b, true);
+      return 4;
+    case 0x89:
+      add(a, c, true);
+      return 4;
+    case 0x8A:
+      add(a, d, true);
+      return 4;
+    case 0x8B:
+      add(a, e, true);
+      return 4;
+    case 0x8C:
+      add(a, h, true);
+      return 4;
+    case 0x8D:
+      add(a, l, true);
+      return 4;
+    case 0x8E:
+      add(a, makeWord(h, l), true);
+      return 8;
+    case 0x8F:
+      add(a, a, true);
       return 4;
     default:
       break;

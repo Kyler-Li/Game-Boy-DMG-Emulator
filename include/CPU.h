@@ -116,15 +116,13 @@ class CPU {
   void dec(byte& dst);
   void decSp();
 
-  void add(byte& dst, word address);
-  void add(byte& dst, byte src);
+  void add(byte& dst, word address, bool useCarry = false);
+  void add(byte& dst, byte src, bool useCarry = false);
   void addHl(byte high, byte low);
   void addSp(sbyte src);
 
-  void sbc(byte src);
-  void sbc(word address);
-  void sub(word address);
-  void sub(byte src, bool useCarry);
+  void sub(word address, bool useCarry = false);
+  void sub(byte src, bool useCarry = false);
 
   void set(byte& dst, byte pos,
            bool set);  // For both set and res instructions
