@@ -130,13 +130,12 @@ class CPU {
 
   void set(byte& dst, byte pos,
            bool set);  // For both set and res instructions
-  void set(word address, byte pos,
-           bool set);  // For both set and res instructions
   void swap(byte& dst);
-  void swap(word address);
   void bit(word address, byte pos);
   void bit(byte src, byte pos);
   void rst(word address);
+
+  qword executeCb(byte opcode);
 };
 }  // namespace gbdmge
 

@@ -387,22 +387,10 @@ void CPU::set(byte& dst, const byte pos, const bool set) {
   setBit(dst, pos, set);
 }
 
-void CPU::set(const word address, const byte pos, const bool set) {
-  byte value = bus->read(address);
-  setBit(value, pos, set);
-  bus->write(address, value);
-}
-
 void CPU::swap(byte& dst) {
   f = 0;
   dst = dst >> 4 | dst << 4;
   setBit(f, CPU_ZERO_FLAG, dst == 0);
-}
-
-void CPU::swap(const word address) {
-  byte value = bus->read(address);
-  swap(value);
-  bus->write(address, value);
 }
 
 void CPU::bit(const word address, const byte pos) {
@@ -449,11 +437,13 @@ word CPU::fetchWord() {
   return makeWord(high, low);
 }
 
-// Returns the number of T-cycles after execution
+// Returns the number of T-cycles after execution.
+// Fuck it, giant switch statement for now. Maybe there is an algorithm to parse opcodes
+// easier.
 qword CPU::execute(const byte opcode) {
   switch (opcode) {
     case 0xCB:
-      throw std::invalid_argument("CB opcodes not supported yet!");
+      return executeCb(fetchByte());
     case 0x00:
       nop();
       return 4;
@@ -1195,4 +1185,95 @@ qword CPU::execute(const byte opcode) {
   throw std::invalid_argument("Unknown opcode provided!");
 }
 
+// Returns the number of T-cycles after execution.
+// Thank god there is an algorithm to parse CB instructions.
+qword CPU::executeCb(const byte opcode) {
+  const byte target = opcode & MASK_3_LOWER_BYTE;
+  const byte instruction = opcode >> 6;
+  const byte immediate = opcode >> 3 & MASK_3_LOWER_BYTE;
+
+  byte* reg{nullptr};
+  bool isMemory{false};
+  switch (target) {
+    case 0:
+      reg = &b;
+      break;
+    case 1:
+      reg = &c;
+      break;
+    case 2:
+      reg = &d;
+      break;
+    case 3:
+      reg = &e;
+      break;
+    case 4:
+      reg = &h;
+      break;
+    case 5:
+      reg = &l;
+      break;
+    case 6:
+      isMemory = true;
+      break;
+    case 7:
+      reg = &a;
+      break;
+    default:
+      throw std::invalid_argument("Unknown target in CB opcode!");
+  }
+
+  const word address = makeWord(h, l);
+  byte value = isMemory ? bus->read(address) : *reg;
+  switch (instruction) {
+    case 0:
+      switch (immediate) {
+        case 0:
+          throw std::runtime_error("RLC not implemented!");
+        case 1:
+          throw std::runtime_error("RRC not implemented!");
+        case 2:
+          throw std::runtime_error("RL not implemented!");
+        case 3:
+          throw std::runtime_error("RR not implemented!");
+        case 4:
+          throw std::runtime_error("SLA not implemented!");
+        case 5:
+          throw std::runtime_error("SRA not implemented!");
+        case 6:
+          swap(value);
+          break;
+        case 7:
+          throw std::runtime_error("SRL not implemented!");
+        default:
+          throw std::runtime_error("Unknown immediate in CB opcode!");
+      }
+      break;
+    case 1:
+      bit(value, immediate);
+      break;
+    case 2:
+      set(value, immediate, false);  // RES
+      break;
+    case 3:
+      set(value, immediate, true);  // SET
+      break;
+    default:
+      throw std::invalid_argument("Unknown instruction in CB opcode!");
+  }
+
+  if (instruction != 1) {
+    if (isMemory) {
+      bus->write(address, value);
+    } else {
+      *reg = value;
+    }
+  }
+
+  if (isMemory) {
+    return instruction == 1 ? 12 : 16;
+  }
+
+  return 8;
+}
 }  // namespace gbdmge
