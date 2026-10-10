@@ -438,12 +438,11 @@ word CPU::fetchWord() {
 }
 
 // Returns the number of T-cycles after execution.
-// Fuck it, giant switch statement for now. Maybe there is an algorithm to parse opcodes
-// easier.
+// Fuck it, giant switch statement for NOW. There's probably a better approach to this? Maybe?
 qword CPU::execute(const byte opcode) {
   switch (opcode) {
     case 0xCB:
-      return executeCb(fetchByte());
+      return executeCb(fetchByte());  // Handle CB prefixed instructions.
     case 0x00:
       nop();
       return 4;
