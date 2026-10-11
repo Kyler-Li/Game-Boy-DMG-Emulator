@@ -147,7 +147,11 @@ class CPU {
   void rrc(byte& dst);
   void rl(byte& dst);
   void rr(byte& dst);
+  void sla(byte& dst);
+  void sra(byte& dst);
+  void srl(byte& dst);
   void shift(byte& dst, bool throughCarry, bool shiftLeft);
+  void shiftCb(byte& dst, bool preserveSign, bool shiftLeft);
 
   // Bitwise instructions
   void set(byte& dst, byte pos,

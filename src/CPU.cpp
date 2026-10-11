@@ -463,6 +463,18 @@ void CPU::rr(byte& dst) {
   shift(dst, true, false);
 }
 
+void CPU::sla(byte& dst) {
+  shiftCb(dst, false, true);
+}
+
+void CPU::sra(byte& dst) {
+  shiftCb(dst, true, false);
+}
+
+void CPU::srl(byte& dst) {
+  shiftCb(dst, false, false);
+}
+
 void CPU::shift(byte& dst, const bool throughCarry, const bool shiftLeft) {
   const bool selectedBit = bitIsSet(dst, shiftLeft ? BIT_7_BYTE : BIT_0_BYTE);
 
@@ -477,6 +489,25 @@ void CPU::shift(byte& dst, const bool throughCarry, const bool shiftLeft) {
     setBit(dst, insertPos, bitIsSet(f, CPU_CARRY_FLAG));
   } else {
     setBit(dst, insertPos, selectedBit);
+  }
+
+  f = 0;
+  setBit(f, CPU_ZERO_FLAG, dst == 0);
+  setBit(f, CPU_CARRY_FLAG, selectedBit);
+}
+
+void CPU::shiftCb(byte& dst, const bool preserveSign, const bool shiftLeft) {
+  const bool selectedBit = bitIsSet(dst, shiftLeft ? BIT_7_BYTE : BIT_0_BYTE);
+  const bool highBit = bitIsSet(dst, BIT_7_BYTE);
+
+  if (shiftLeft) {
+    dst <<= 1;
+  } else {
+    dst >>= 1;
+  }
+
+  if (preserveSign && !shiftLeft) {
+    setBit(dst, BIT_7_BYTE, highBit);
   }
 
   f = 0;
@@ -1313,14 +1344,14 @@ qword CPU::executeCb(const byte opcode) {
         case 3:
           rr(value);
         case 4:
-          throw std::runtime_error("SLA not implemented!");
+          sla(value);
         case 5:
-          throw std::runtime_error("SRA not implemented!");
+          sra(value);
         case 6:
           swap(value);
           break;
         case 7:
-          throw std::runtime_error("SRL not implemented!");
+          srl(value);
         default:
           throw std::runtime_error("Unknown immediate in CB opcode!");
       }
