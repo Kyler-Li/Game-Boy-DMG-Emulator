@@ -53,36 +53,44 @@ class CPU {
   //  PC when call executes ->  | 0x101  |  0xAB  |  Low byte address         |
   //                            | 0x102  |  0xCD  |  High byte address        |
   //                            | 0x103  |   ??   |  Next instruction opcode  |
+
+  // Stack instructions
   void pop(byte& high, byte& low);
   void push(byte high, byte low);
+
+  // Logical instructions
   void andA(word address);
   void andA(byte src);
   void orA(word address);
   void orA(byte src);
   void xorA(word address);
   void xorA(byte src);
+  void cpl();
+
+  // Comparisons
   void cp(byte cmp);
   void cp(word address);
 
+  // Jumps
   bool jpZ(word address);
   bool jpNz(word address);
   bool jpC(word address);
   bool jpNc(word address);
   void jp(word address);
   bool jpCond(word address, bool cond);
-
-  void nop();
-  void cpl();
-  void ei();
-  void di();
-
   bool jrC(sbyte src);
   bool jrNc(sbyte src);
   bool jrZ(sbyte src);
   bool jrNz(sbyte src);
   void jr(sbyte src);
   bool jrCond(sbyte src, bool cond);
+  void rst(word address);
 
+  void nop();
+  void ei();
+  void di();
+
+  // Returns
   bool retI();
   bool retC();
   bool retZ();
@@ -95,6 +103,7 @@ class CPU {
   void scf();
   void ccf();
 
+  // Calls
   bool callC();
   bool callNc();
   bool callZ();
@@ -102,6 +111,7 @@ class CPU {
   void call();
   bool callCond(bool cond);
 
+  // Loads
   void ld(byte& dst, byte src);
   void ld(word address, byte src);
   void ld(byte& dst, word address);
@@ -110,8 +120,10 @@ class CPU {
   void ldSp();
   void ldSpHl();
 
+  // BCD
   void daa();
 
+  // Arithmetic
   void inc(byte& high, byte& low);
   void inc(word address);
   void inc(byte& dst);
@@ -119,21 +131,30 @@ class CPU {
   void dec(word address);
   void dec(byte& dst);
   void decSp();
-
   void add(byte& dst, word address, bool useCarry = false);
   void add(byte& dst, byte src, bool useCarry = false);
   void addHl(byte high, byte low);
   void addSp(sbyte src);
-
   void sub(word address, bool useCarry = false);
   void sub(byte src, bool useCarry = false);
 
+  // Shifts
+  void rlca();
+  void rrca();
+  void rla();
+  void rra();
+  void rlc(byte& dst);
+  void rrc(byte& dst);
+  void rl(byte& dst);
+  void rr(byte& dst);
+  void shift(byte& dst, bool throughCarry, bool shiftLeft);
+
+  // Bitwise instructions
   void set(byte& dst, byte pos,
            bool set);  // For both set and res instructions
   void swap(byte& dst);
   void bit(word address, byte pos);
   void bit(byte src, byte pos);
-  void rst(word address);
 
   qword executeCb(byte opcode);
 };

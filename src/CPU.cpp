@@ -114,7 +114,7 @@ void CPU::cpl() {
 }
 
 void CPU::ei() {
-  throw std::runtime_error("DI not implemented!");
+  throw std::runtime_error("EI not implemented!");
 }
 
 void CPU::di() {
@@ -267,12 +267,13 @@ void CPU::daa() {
   const bool halfCarryFlag = bitIsSet(f, CPU_HALF_CARRY_FLAG);
   const bool carryFlag = bitIsSet(f, CPU_CARRY_FLAG);
 
-  if (halfCarryFlag || (!subtractFlag && (a & MASK_4_LOWER_BYTE) > 0x09)) {
-    adjustment |= 0x06;
+  if (halfCarryFlag ||
+      (!subtractFlag && (a & MASK_4_LOWER_BYTE) > BCD_PLACE_MAXIMUM_BYTE)) {
+    adjustment |= BCD_ONES_PLACE_ADJUST_BYTE;
   }
 
-  if (carryFlag || (!subtractFlag && a > 0x99)) {
-    adjustment |= 0x60;
+  if (carryFlag || (!subtractFlag && a > BCD_MAXIMUM_BYTE)) {
+    adjustment |= BCD_TENS_PLACE_ADJUST_BYTE;
     setBit(f, CPU_CARRY_FLAG, true);
   }
 
@@ -430,6 +431,59 @@ void CPU::rst(const word address) {
   pc = address;
 }
 
+void CPU::rlca() {
+  shift(a, false, true);
+}
+
+void CPU::rrca() {
+  shift(a, false, false);
+}
+
+void CPU::rla() {
+  shift(a, true, true);
+}
+
+void CPU::rra() {
+  shift(a, true, false);
+}
+
+void CPU::rlc(byte& dst) {
+  shift(dst, false, true);
+}
+
+void CPU::rrc(byte& dst) {
+  shift(dst, false, false);
+}
+
+void CPU::rl(byte& dst) {
+  shift(dst, true, true);
+}
+
+void CPU::rr(byte& dst) {
+  shift(dst, true, false);
+}
+
+void CPU::shift(byte& dst, const bool throughCarry, const bool shiftLeft) {
+  const bool selectedBit = bitIsSet(dst, shiftLeft ? BIT_7_BYTE : BIT_0_BYTE);
+
+  if (shiftLeft) {
+    dst <<= 1;
+  } else {
+    dst >>= 1;
+  }
+
+  const byte insertPos = shiftLeft ? BIT_0_BYTE : BIT_7_BYTE;
+  if (throughCarry) {
+    setBit(dst, insertPos, bitIsSet(f, CPU_CARRY_FLAG));
+  } else {
+    setBit(dst, insertPos, selectedBit);
+  }
+
+  f = 0;
+  setBit(f, CPU_ZERO_FLAG, dst == 0);
+  setBit(f, CPU_CARRY_FLAG, selectedBit);
+}
+
 void CPU::reset() {
   // Initialize to post boot ROM values
   ime = false;
@@ -487,7 +541,7 @@ qword CPU::execute(const byte opcode) {
       ld(b, fetchByte());
       return 8;
     case 0x07:
-      throw std::invalid_argument("RCLA not implemented!");
+      rlca();
       return 4;
     case 0x08:
       ldSp(fetchWord());
@@ -511,7 +565,7 @@ qword CPU::execute(const byte opcode) {
       ld(c, fetchByte());
       return 8;
     case 0x0F:
-      throw std::invalid_argument("RCCA not implemented!");
+      rrca();
       return 4;
     case 0x10:
       // Make sure to consume call fetch byte after instruction, as this takes 2 bytes.
@@ -536,7 +590,7 @@ qword CPU::execute(const byte opcode) {
       ld(d, fetchByte());
       return 8;
     case 0x17:
-      throw std::invalid_argument("RLA not implemented!");
+      rla();
       return 4;
     case 0x18:
       jr(static_cast<sbyte>(fetchByte()));
@@ -560,7 +614,7 @@ qword CPU::execute(const byte opcode) {
       ld(e, fetchByte());
       return 8;
     case 0x1F:
-      throw std::invalid_argument("RRA not implemented!");
+      rra();
       return 4;
     case 0x20:
       return jrNz(static_cast<sbyte>(fetchByte())) ? 12 : 8;
@@ -1251,13 +1305,13 @@ qword CPU::executeCb(const byte opcode) {
     case 0:
       switch (immediate) {
         case 0:
-          throw std::runtime_error("RLC not implemented!");
+          rlc(value);
         case 1:
-          throw std::runtime_error("RRC not implemented!");
+          rrc(value);
         case 2:
-          throw std::runtime_error("RL not implemented!");
+          rl(value);
         case 3:
-          throw std::runtime_error("RR not implemented!");
+          rr(value);
         case 4:
           throw std::runtime_error("SLA not implemented!");
         case 5:

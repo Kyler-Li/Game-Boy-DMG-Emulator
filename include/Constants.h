@@ -27,7 +27,14 @@ static constexpr word MASK_16_LOWER_WORD = 0x0000FFFF;
 static constexpr byte MASK_5_6_BYTE = 0x60;
 
 // Indexes for specific bits
-static constexpr byte BIT_7 = 7;
+static constexpr byte BIT_0_BYTE = 0;
+static constexpr byte BIT_7_BYTE = 7;
+
+// Constants for Binary Coded Decimals
+static constexpr byte BCD_PLACE_MAXIMUM_BYTE = 0x09;
+static constexpr byte BCD_MAXIMUM_BYTE = 0x99;
+static constexpr byte BCD_ONES_PLACE_ADJUST_BYTE = 0x06;
+static constexpr byte BCD_TENS_PLACE_ADJUST_BYTE = 0x60;
 
 // Positions for flags register in CPU
 // Flags register layout:
