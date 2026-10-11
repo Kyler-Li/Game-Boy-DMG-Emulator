@@ -261,7 +261,29 @@ void CPU::ldSpHl() {
 }
 
 void CPU::daa() {
-  throw std::runtime_error("DAA not implemented!");
+  byte adjustment = 0;
+
+  const bool subtractFlag = bitIsSet(f, CPU_SUB_FLAG);
+  const bool halfCarryFlag = bitIsSet(f, CPU_HALF_CARRY_FLAG);
+  const bool carryFlag = bitIsSet(f, CPU_CARRY_FLAG);
+
+  if (halfCarryFlag || (!subtractFlag && (a & MASK_4_LOWER_BYTE) > 0x09)) {
+    adjustment |= 0x06;
+  }
+
+  if (carryFlag || (!subtractFlag && a > 0x99)) {
+    adjustment |= 0x60;
+    setBit(f, CPU_CARRY_FLAG, true);
+  }
+
+  if (subtractFlag) {
+    a -= adjustment;
+  } else {
+    a += adjustment;
+  }
+
+  setBit(f, CPU_ZERO_FLAG, a == 0);
+  setBit(f, CPU_HALF_CARRY_FLAG, false);
 }
 
 void CPU::inc(byte& high, byte& low) {
@@ -492,6 +514,7 @@ qword CPU::execute(const byte opcode) {
       throw std::invalid_argument("RCCA not implemented!");
       return 4;
     case 0x10:
+      // Make sure to consume call fetch byte after instruction, as this takes 2 bytes.
       throw std::invalid_argument("STOP not implemented!");
       return 4;
     case 0x11:
@@ -1187,13 +1210,13 @@ qword CPU::execute(const byte opcode) {
 // Returns the number of T-cycles after execution.
 // Thank god there is an algorithm to parse CB instructions.
 qword CPU::executeCb(const byte opcode) {
-  const byte target = opcode & MASK_3_LOWER_BYTE;
+  const byte operand = opcode & MASK_3_LOWER_BYTE;
   const byte instruction = opcode >> 6;
   const byte immediate = opcode >> 3 & MASK_3_LOWER_BYTE;
 
   byte* reg{nullptr};
   bool isMemory{false};
-  switch (target) {
+  switch (operand) {
     case 0:
       reg = &b;
       break;
