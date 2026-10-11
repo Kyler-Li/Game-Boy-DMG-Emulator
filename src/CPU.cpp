@@ -506,7 +506,7 @@ void CPU::shiftCb(byte& dst, const bool preserveSign, const bool shiftLeft) {
     dst >>= 1;
   }
 
-  if (preserveSign && !shiftLeft) {
+  if (preserveSign) {
     setBit(dst, BIT_7_BYTE, highBit);
   }
 
