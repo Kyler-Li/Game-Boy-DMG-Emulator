@@ -65,6 +65,12 @@ void CPU::xorA(const byte src) {
   setBit(f, CPU_ZERO_FLAG, a == 0);
 }
 
+void CPU::cpl() {
+  a = ~a;
+  setBit(f, CPU_SUB_FLAG, true);
+  setBit(f, CPU_HALF_CARRY_FLAG, true);
+}
+
 void CPU::cp(const byte cmp) {
   setBit(f, CPU_ZERO_FLAG, a == cmp);
   setBit(f, CPU_SUB_FLAG, true);
@@ -105,22 +111,6 @@ bool CPU::jpCond(const word address, const bool cond) {
   return false;
 }
 
-void CPU::nop() {}
-
-void CPU::cpl() {
-  a = ~a;
-  setBit(f, CPU_SUB_FLAG, true);
-  setBit(f, CPU_HALF_CARRY_FLAG, true);
-}
-
-void CPU::ei() {
-  throw std::runtime_error("EI not implemented!");
-}
-
-void CPU::di() {
-  throw std::runtime_error("DI not implemented!");
-}
-
 bool CPU::jrC(const sbyte src) {
   return jrCond(src, bitIsSet(f, CPU_CARRY_FLAG));
 }
@@ -147,6 +137,21 @@ bool CPU::jrCond(const sbyte src, const bool cond) {
     return true;
   }
   return false;
+}
+
+void CPU::rst(const word address) {
+  push(getHighByte(pc), getLowByte(pc));
+  pc = address;
+}
+
+void CPU::nop() {}
+
+void CPU::ei() {
+  throw std::runtime_error("EI not implemented!");
+}
+
+void CPU::di() {
+  throw std::runtime_error("DI not implemented!");
 }
 
 bool CPU::retI() {
@@ -406,31 +411,6 @@ void CPU::sub(const byte src, const bool useCarry) {
   a = result;
 }
 
-void CPU::set(byte& dst, const byte pos, const bool set) {
-  setBit(dst, pos, set);
-}
-
-void CPU::swap(byte& dst) {
-  f = 0;
-  dst = dst >> 4 | dst << 4;
-  setBit(f, CPU_ZERO_FLAG, dst == 0);
-}
-
-void CPU::bit(const word address, const byte pos) {
-  bit(bus->read(address), pos);
-}
-
-void CPU::bit(const byte src, const byte pos) {
-  setBit(f, CPU_ZERO_FLAG, !getBit(src, pos));
-  setBit(f, CPU_SUB_FLAG, false);
-  setBit(f, CPU_HALF_CARRY_FLAG, true);
-}
-
-void CPU::rst(const word address) {
-  push(getHighByte(pc), getLowByte(pc));
-  pc = address;
-}
-
 void CPU::rlca() {
   shift(a, false, true);
 }
@@ -513,6 +493,26 @@ void CPU::shiftCb(byte& dst, const bool preserveSign, const bool shiftLeft) {
   f = 0;
   setBit(f, CPU_ZERO_FLAG, dst == 0);
   setBit(f, CPU_CARRY_FLAG, selectedBit);
+}
+
+void CPU::set(byte& dst, const byte pos, const bool set) {
+  setBit(dst, pos, set);
+}
+
+void CPU::swap(byte& dst) {
+  f = 0;
+  dst = dst >> 4 | dst << 4;
+  setBit(f, CPU_ZERO_FLAG, dst == 0);
+}
+
+void CPU::bit(const word address, const byte pos) {
+  bit(bus->read(address), pos);
+}
+
+void CPU::bit(const byte src, const byte pos) {
+  setBit(f, CPU_ZERO_FLAG, !getBit(src, pos));
+  setBit(f, CPU_SUB_FLAG, false);
+  setBit(f, CPU_HALF_CARRY_FLAG, true);
 }
 
 void CPU::reset() {
