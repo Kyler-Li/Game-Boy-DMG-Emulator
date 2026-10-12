@@ -7,8 +7,9 @@ auto Console::load(const std::filesystem::path& romPath) -> bool {
   return cartridge.load(romPath);
 }
 
-void Console::play() {
-  // TODO: Implement
+void Console::step() {
+  const auto opcode = cpu.fetchByte();
+  const auto cycles = cpu.execute(opcode);
 }
 
 }  // namespace gbdmge

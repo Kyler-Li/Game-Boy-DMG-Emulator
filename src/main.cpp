@@ -1,28 +1,23 @@
-#include <SDL3/SDL.h>
 #include <iostream>
 
-#include "BitOps.h"
 #include "Console.h"
 
 int main(const int argc, const char* argv[]) {
-  // Test the SDL library
-  std::cout << "Before SDL init\n";
-
-  if (!SDL_Init(SDL_INIT_VIDEO)) {
-    std::cerr << "SDL_Init failed\n";
+  if (argc <= 1) {
+    std::cerr << "Usage: ./gbdmge <cartridge>\n";
     return 1;
   }
 
-  if (argc > 1) {
-    const auto romPath = std::filesystem::path{argv[1]};
-    auto console = gbdmge::Console{};
+  const auto romPath = std::filesystem::path{argv[1]};
+  auto console = gbdmge::Console{};
 
-    if (console.load(romPath)) {
-      console.play();
-    }
+  if (!console.load(romPath)) {
+    return 1;
   }
 
-  std::cout << "SDL init finished, exiting...\n";
-  SDL_Quit();
+  while (true) {
+    console.step();
+  }
+
   return 0;
 }
