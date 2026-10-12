@@ -22,535 +22,6 @@ CPU::CPU(Bus& bus)
       pc{0},
       tCycles{0} {}
 
-void CPU::pop(byte& high, byte& low) {
-  high = bus->read(sp + 1);
-  low = bus->read(sp);
-  sp += 2;
-}
-
-void CPU::push(const byte high, const byte low) {
-  bus->write(sp - 1, high);
-  bus->write(sp - 2, low);
-  sp -= 2;
-}
-
-void CPU::andA(const word address) {
-  andA(bus->read(address));
-}
-
-void CPU::andA(const byte src) {
-  a = a & src;
-  f = 0;
-  setBit(f, CPU_ZERO_FLAG, a == 0);
-  setBit(f, CPU_HALF_CARRY_FLAG, true);
-}
-
-void CPU::orA(const word address) {
-  orA(bus->read(address));
-}
-
-void CPU::orA(const byte src) {
-  a = a | src;
-  f = 0;
-  setBit(f, CPU_ZERO_FLAG, a == 0);
-}
-
-void CPU::xorA(const word address) {
-  xorA(bus->read(address));
-}
-
-void CPU::xorA(const byte src) {
-  a = a ^ src;
-  f = 0;
-  setBit(f, CPU_ZERO_FLAG, a == 0);
-}
-
-void CPU::cpl() {
-  a = ~a;
-  setBit(f, CPU_SUB_FLAG, true);
-  setBit(f, CPU_HALF_CARRY_FLAG, true);
-}
-
-void CPU::cp(const byte cmp) {
-  setBit(f, CPU_ZERO_FLAG, a == cmp);
-  setBit(f, CPU_SUB_FLAG, true);
-  setBit(f, CPU_HALF_CARRY_FLAG,
-         (a & MASK_4_LOWER_BYTE) < (cmp & MASK_4_LOWER_BYTE));
-  setBit(f, CPU_CARRY_FLAG, a < cmp);
-}
-
-void CPU::cp(const word address) {
-  cp(bus->read(address));
-}
-
-bool CPU::jpZ(const word address) {
-  return jpCond(address, bitIsSet(f, CPU_ZERO_FLAG));
-}
-
-bool CPU::jpNz(const word address) {
-  return jpCond(address, !bitIsSet(f, CPU_ZERO_FLAG));
-}
-
-bool CPU::jpC(const word address) {
-  return jpCond(address, bitIsSet(f, CPU_CARRY_FLAG));
-}
-
-bool CPU::jpNc(const word address) {
-  return jpCond(address, !bitIsSet(f, CPU_CARRY_FLAG));
-}
-
-void CPU::jp(const word address) {
-  jpCond(address, true);
-}
-
-bool CPU::jpCond(const word address, const bool cond) {
-  if (cond) {
-    pc = address;
-    return true;
-  }
-  return false;
-}
-
-bool CPU::jrC(const sbyte src) {
-  return jrCond(src, bitIsSet(f, CPU_CARRY_FLAG));
-}
-
-bool CPU::jrNc(const sbyte src) {
-  return jrCond(src, !bitIsSet(f, CPU_CARRY_FLAG));
-}
-
-bool CPU::jrZ(const sbyte src) {
-  return jrCond(src, bitIsSet(f, CPU_ZERO_FLAG));
-}
-
-bool CPU::jrNz(const sbyte src) {
-  return jrCond(src, !bitIsSet(f, CPU_ZERO_FLAG));
-}
-
-void CPU::jr(const sbyte src) {
-  jrCond(src, true);
-}
-
-bool CPU::jrCond(const sbyte src, const bool cond) {
-  if (cond) {
-    pc = static_cast<word>(static_cast<sdword>(pc) + static_cast<sdword>(src));
-    return true;
-  }
-  return false;
-}
-
-void CPU::rst(const word address) {
-  push(getHighByte(pc), getLowByte(pc));
-  pc = address;
-}
-
-void CPU::nop() {}
-
-void CPU::ei() {
-  throw std::runtime_error("EI not implemented!");
-}
-
-void CPU::di() {
-  throw std::runtime_error("DI not implemented!");
-}
-
-bool CPU::retI() {
-  throw std::runtime_error("RETI not implemented!");
-}
-
-bool CPU::retC() {
-  return retCond(bitIsSet(f, CPU_CARRY_FLAG));
-}
-
-bool CPU::retZ() {
-  return retCond(bitIsSet(f, CPU_ZERO_FLAG));
-}
-
-bool CPU::retNc() {
-  return retCond(!bitIsSet(f, CPU_CARRY_FLAG));
-}
-
-bool CPU::retNz() {
-  return retCond(!bitIsSet(f, CPU_ZERO_FLAG));
-}
-
-bool CPU::retCond(const bool cond) {
-  if (cond) {
-    ret();
-    return true;
-  }
-  return false;
-}
-
-void CPU::ret() {
-  pc = makeWord(bus->read(sp + 1), bus->read(sp));
-  sp += 2;
-}
-
-void CPU::halt() {
-  throw std::runtime_error("HALT not implemented!");
-}
-
-void CPU::scf() {
-  setBit(f, CPU_SUB_FLAG, false);
-  setBit(f, CPU_HALF_CARRY_FLAG, false);
-  setBit(f, CPU_CARRY_FLAG, true);
-}
-
-void CPU::ccf() {
-  setBit(f, CPU_SUB_FLAG, false);
-  setBit(f, CPU_HALF_CARRY_FLAG, false);
-  setBit(f, CPU_CARRY_FLAG, !getBit(f, CPU_CARRY_FLAG));
-}
-
-bool CPU::callC() {
-  return callCond(bitIsSet(f, CPU_CARRY_FLAG));
-}
-
-bool CPU::callNc() {
-  return callCond(!bitIsSet(f, CPU_CARRY_FLAG));
-}
-
-bool CPU::callZ() {
-  return callCond(bitIsSet(f, CPU_ZERO_FLAG));
-}
-
-bool CPU::callNz() {
-  return callCond(!bitIsSet(f, CPU_ZERO_FLAG));
-}
-
-bool CPU::callCond(const bool cond) {
-  if (cond) {
-    call();
-    return true;
-  }
-
-  fetchWord();
-  return false;
-}
-
-void CPU::call() {
-  const word returnAddress = pc + 2;
-  push(getHighByte(returnAddress), getLowByte(returnAddress));
-  pc = fetchWord();
-}
-
-void CPU::ld(byte& dst, const byte src) {
-  dst = src;
-}
-
-void CPU::ld(const word address, const byte src) {
-  bus->write(address, src);
-}
-
-void CPU::ld(byte& dst, const word address) {
-  dst = bus->read(address);
-}
-
-void CPU::ld(byte& high, byte& low, const word value) {
-  high = getHighByte(value);
-  low = getLowByte(value);
-}
-
-void CPU::ldSp(const word address) {
-  bus->write(address, getLowByte(sp));
-  bus->write(address + 1, getHighByte(sp));
-}
-
-void CPU::ldSp() {
-  sp = fetchWord();
-}
-
-void CPU::ldSpHl() {
-  sp = makeWord(h, l);
-}
-
-void CPU::ldHlSp(const sbyte src) {
-  const word result = sp + src;
-  f = 0;
-  h = getHighByte(result);
-  l = getLowByte(result);
-  setBit(
-      f, CPU_HALF_CARRY_FLAG,
-      (sp & MASK_4_LOWER_WORD) + (src & MASK_4_LOWER_WORD) > MASK_4_LOWER_WORD);
-  setBit(
-      f, CPU_CARRY_FLAG,
-      (sp & MASK_8_LOWER_WORD) + (src & MASK_8_LOWER_WORD) > MASK_8_LOWER_WORD);
-}
-
-void CPU::daa() {
-  byte adjustment = 0;
-
-  const bool subtractFlag = bitIsSet(f, CPU_SUB_FLAG);
-  const bool halfCarryFlag = bitIsSet(f, CPU_HALF_CARRY_FLAG);
-  const bool carryFlag = bitIsSet(f, CPU_CARRY_FLAG);
-
-  if (halfCarryFlag ||
-      (!subtractFlag && (a & MASK_4_LOWER_BYTE) > BCD_PLACE_MAXIMUM_BYTE)) {
-    adjustment |= BCD_ONES_PLACE_ADJUST_BYTE;
-  }
-
-  if (carryFlag || (!subtractFlag && a > BCD_MAXIMUM_BYTE)) {
-    adjustment |= BCD_TENS_PLACE_ADJUST_BYTE;
-    setBit(f, CPU_CARRY_FLAG, true);
-  }
-
-  if (subtractFlag) {
-    a -= adjustment;
-  } else {
-    a += adjustment;
-  }
-
-  setBit(f, CPU_ZERO_FLAG, a == 0);
-  setBit(f, CPU_HALF_CARRY_FLAG, false);
-}
-
-void CPU::inc(byte& high, byte& low) {
-  // Doesn't set flags for some reason
-  word value = makeWord(high, low);
-  ++value;
-  high = getHighByte(value);
-  low = getLowByte(value);
-}
-
-void CPU::inc(const word address) {
-  byte value = bus->read(address);
-  inc(value);
-  bus->write(address, value);
-}
-
-void CPU::inc(byte& dst) {
-  const byte value = dst + 1;
-  setBit(f, CPU_ZERO_FLAG, value == 0);
-  setBit(f, CPU_SUB_FLAG, false);
-  setBit(f, CPU_HALF_CARRY_FLAG,
-         (dst & MASK_4_LOWER_BYTE) == MASK_4_LOWER_BYTE);
-  dst = value;
-}
-
-void CPU::dec(byte& high, byte& low) {
-  word value = makeWord(high, low);
-  --value;
-  high = getHighByte(value);
-  low = getLowByte(value);
-}
-
-void CPU::dec(const word address) {
-  byte value = bus->read(address);
-  dec(value);
-  bus->write(address, value);
-}
-
-void CPU::dec(byte& dst) {
-  const byte value = dst - 1;
-  setBit(f, CPU_ZERO_FLAG, value == 0);
-  setBit(f, CPU_SUB_FLAG, true);
-  setBit(f, CPU_HALF_CARRY_FLAG, (dst & MASK_4_LOWER_BYTE) == 0);
-  dst = value;
-}
-
-void CPU::decSp() {
-  --sp;
-}
-
-void CPU::add(byte& dst, const word address, const bool useCarry) {
-  add(dst, bus->read(address), useCarry);
-}
-
-void CPU::add(byte& dst, const byte src, const bool useCarry) {
-  const word carry = useCarry && bitIsSet(f, CPU_CARRY_FLAG);
-  const word sum = static_cast<word>(dst) + static_cast<word>(src) + carry;
-  const byte result = static_cast<byte>(sum);
-
-  setBit(f, CPU_ZERO_FLAG, result == 0);
-  setBit(f, CPU_SUB_FLAG, false);
-  setBit(f, CPU_HALF_CARRY_FLAG,
-         (dst & MASK_4_LOWER_BYTE) + (src & MASK_4_LOWER_BYTE) + carry >
-             MASK_4_LOWER_BYTE);
-  setBit(f, CPU_CARRY_FLAG, sum > MASK_8_LOWER_BYTE);
-
-  dst = result;
-}
-
-void CPU::addHl(const byte high, const byte low) {
-  const word value = makeWord(high, low);
-  const word hl = makeWord(h, l);
-  const dword sum = static_cast<dword>(hl) + static_cast<dword>(value);
-
-  // Does not set zero flag for some reason
-  setBit(f, CPU_SUB_FLAG, false);
-  setBit(f, CPU_HALF_CARRY_FLAG,
-         (hl & MASK_12_LOWER_WORD) + (value & MASK_12_LOWER_WORD) >
-             MASK_12_LOWER_WORD);
-  setBit(f, CPU_CARRY_FLAG, sum > MASK_16_LOWER_WORD);
-
-  const word result = static_cast<word>(sum);
-  h = getHighByte(result);
-  l = getLowByte(result);
-}
-
-void CPU::addSp(const sbyte src) {
-  const byte offset = static_cast<byte>(src);
-
-  const word result =
-      static_cast<word>(static_cast<sdword>(sp) + static_cast<sdword>(src));
-
-  setBit(f, CPU_ZERO_FLAG, false);
-  setBit(f, CPU_SUB_FLAG, false);
-  setBit(f, CPU_HALF_CARRY_FLAG,
-         (sp & MASK_4_LOWER_BYTE) + (offset & MASK_4_LOWER_BYTE) >
-             MASK_4_LOWER_BYTE);
-  setBit(f, CPU_CARRY_FLAG,
-         (sp & MASK_8_LOWER_BYTE) + offset > MASK_8_LOWER_BYTE);
-
-  sp = result;
-}
-
-void CPU::sub(const word address, const bool useCarry) {
-  sub(bus->read(address), useCarry);
-}
-
-void CPU::sub(const byte src, const bool useCarry) {
-  const word carry = useCarry && bitIsSet(f, CPU_CARRY_FLAG);
-  const word value = static_cast<word>(src) + static_cast<word>(carry);
-  const byte result = static_cast<byte>(a - value);
-
-  setBit(f, CPU_ZERO_FLAG, result == 0);
-  setBit(f, CPU_SUB_FLAG, true);
-  setBit(f, CPU_HALF_CARRY_FLAG,
-         (a & MASK_4_LOWER_BYTE) < (src & MASK_4_LOWER_BYTE) + carry);
-  setBit(f, CPU_CARRY_FLAG, static_cast<word>(a) < value);
-
-  a = result;
-}
-
-void CPU::rlca() {
-  shift(a, false, true);
-  setBit(f, CPU_ZERO_FLAG, false);
-}
-
-void CPU::rrca() {
-  shift(a, false, false);
-  setBit(f, CPU_ZERO_FLAG, false);
-}
-
-void CPU::rla() {
-  shift(a, true, true);
-  setBit(f, CPU_ZERO_FLAG, false);
-}
-
-void CPU::rra() {
-  shift(a, true, false);
-  setBit(f, CPU_ZERO_FLAG, false);
-}
-
-void CPU::rlc(byte& dst) {
-  shift(dst, false, true);
-}
-
-void CPU::rrc(byte& dst) {
-  shift(dst, false, false);
-}
-
-void CPU::rl(byte& dst) {
-  shift(dst, true, true);
-}
-
-void CPU::rr(byte& dst) {
-  shift(dst, true, false);
-}
-
-void CPU::sla(byte& dst) {
-  shiftCb(dst, false, true);
-}
-
-void CPU::sra(byte& dst) {
-  shiftCb(dst, true, false);
-}
-
-void CPU::srl(byte& dst) {
-  shiftCb(dst, false, false);
-}
-
-void CPU::shift(byte& dst, const bool throughCarry, const bool shiftLeft) {
-  const bool selectedBit = bitIsSet(dst, shiftLeft ? BIT_7_BYTE : BIT_0_BYTE);
-
-  if (shiftLeft) {
-    dst <<= 1;
-  } else {
-    dst >>= 1;
-  }
-
-  const byte insertPos = shiftLeft ? BIT_0_BYTE : BIT_7_BYTE;
-  if (throughCarry) {
-    setBit(dst, insertPos, bitIsSet(f, CPU_CARRY_FLAG));
-  } else {
-    setBit(dst, insertPos, selectedBit);
-  }
-
-  f = 0;
-  setBit(f, CPU_ZERO_FLAG, dst == 0);
-  setBit(f, CPU_CARRY_FLAG, selectedBit);
-}
-
-void CPU::shiftCb(byte& dst, const bool preserveSign, const bool shiftLeft) {
-  const bool selectedBit = bitIsSet(dst, shiftLeft ? BIT_7_BYTE : BIT_0_BYTE);
-  const bool highBit = bitIsSet(dst, BIT_7_BYTE);
-
-  if (shiftLeft) {
-    dst <<= 1;
-  } else {
-    dst >>= 1;
-  }
-
-  if (preserveSign) {
-    setBit(dst, BIT_7_BYTE, highBit);
-  }
-
-  f = 0;
-  setBit(f, CPU_ZERO_FLAG, dst == 0);
-  setBit(f, CPU_CARRY_FLAG, selectedBit);
-}
-
-void CPU::set(byte& dst, const byte pos, const bool set) {
-  setBit(dst, pos, set);
-}
-
-void CPU::swap(byte& dst) {
-  f = 0;
-  dst = dst >> 4 | dst << 4;
-  setBit(f, CPU_ZERO_FLAG, dst == 0);
-}
-
-void CPU::bit(const word address, const byte pos) {
-  bit(bus->read(address), pos);
-}
-
-void CPU::bit(const byte src, const byte pos) {
-  setBit(f, CPU_ZERO_FLAG, !getBit(src, pos));
-  setBit(f, CPU_SUB_FLAG, false);
-  setBit(f, CPU_HALF_CARRY_FLAG, true);
-}
-
-void CPU::reset() {
-  // Initialize to post boot ROM values
-  ime = false;
-  isHalted = false;
-
-  a = 0x01;
-  f = 0xB0;
-  b = 0x00;
-  c = 0x13;
-  d = 0x00;
-  e = 0xD8;
-  h = 0x01;
-  l = 0x4D;
-
-  sp = 0xFFFE;
-  pc = 0x0100;
-  // Potentially reset T-cycles here
-}
-
 byte CPU::fetchByte() {
   return bus->read(pc++);
 }
@@ -560,7 +31,6 @@ word CPU::fetchWord() {
   const byte high = bus->read(pc++);
   return makeWord(high, low);
 }
-
 // Returns the number of T-cycles after execution.
 // Fuck it, giant switch statement for NOW. There's probably a better approach to this? Maybe?
 qword CPU::execute(const byte opcode) {
@@ -1206,7 +676,8 @@ qword CPU::execute(const byte opcode) {
     case 0xD8:
       return retC() ? 20 : 8;
     case 0xD9:
-      return retI() ? 20 : 8;
+      retI();
+      return 16;
     case 0xDA:
       return jpC(fetchWord()) ? 16 : 12;
     case 0xDB:
@@ -1313,6 +784,29 @@ qword CPU::execute(const byte opcode) {
   throw std::invalid_argument("Unknown opcode provided!");
 }
 
+void CPU::handleInterrupts() {
+  throw std::runtime_error("Interrupt handling not implemented!");
+}
+
+void CPU::reset() {
+  // Initialize to post boot ROM values
+  ime = false;
+  isHalted = false;
+
+  a = 0x01;
+  f = 0xB0;
+  b = 0x00;
+  c = 0x13;
+  d = 0x00;
+  e = 0xD8;
+  h = 0x01;
+  l = 0x4D;
+
+  sp = 0xFFFE;
+  pc = 0x0100;
+  // Potentially reset T-cycles here
+}
+
 // Returns the number of T-cycles after execution.
 // Thank god there is an algorithm to parse CB instructions.
 qword CPU::executeCb(const byte opcode) {
@@ -1410,5 +904,515 @@ qword CPU::executeCb(const byte opcode) {
   }
 
   return 8;
+}
+
+void CPU::pop(byte& high, byte& low) {
+  high = bus->read(sp + 1);
+  low = bus->read(sp);
+  sp += 2;
+}
+
+void CPU::push(const byte high, const byte low) {
+  bus->write(sp - 1, high);
+  bus->write(sp - 2, low);
+  sp -= 2;
+}
+
+void CPU::andA(const word address) {
+  andA(bus->read(address));
+}
+
+void CPU::andA(const byte src) {
+  a = a & src;
+  f = 0;
+  setBit(f, CPU_ZERO_FLAG, a == 0);
+  setBit(f, CPU_HALF_CARRY_FLAG, true);
+}
+
+void CPU::orA(const word address) {
+  orA(bus->read(address));
+}
+
+void CPU::orA(const byte src) {
+  a = a | src;
+  f = 0;
+  setBit(f, CPU_ZERO_FLAG, a == 0);
+}
+
+void CPU::xorA(const word address) {
+  xorA(bus->read(address));
+}
+
+void CPU::xorA(const byte src) {
+  a = a ^ src;
+  f = 0;
+  setBit(f, CPU_ZERO_FLAG, a == 0);
+}
+
+void CPU::cpl() {
+  a = ~a;
+  setBit(f, CPU_SUB_FLAG, true);
+  setBit(f, CPU_HALF_CARRY_FLAG, true);
+}
+
+void CPU::cp(const byte cmp) {
+  setBit(f, CPU_ZERO_FLAG, a == cmp);
+  setBit(f, CPU_SUB_FLAG, true);
+  setBit(f, CPU_HALF_CARRY_FLAG,
+         (a & MASK_4_LOWER_BYTE) < (cmp & MASK_4_LOWER_BYTE));
+  setBit(f, CPU_CARRY_FLAG, a < cmp);
+}
+
+void CPU::cp(const word address) {
+  cp(bus->read(address));
+}
+
+bool CPU::jpZ(const word address) {
+  return jpCond(address, bitIsSet(f, CPU_ZERO_FLAG));
+}
+
+bool CPU::jpNz(const word address) {
+  return jpCond(address, !bitIsSet(f, CPU_ZERO_FLAG));
+}
+
+bool CPU::jpC(const word address) {
+  return jpCond(address, bitIsSet(f, CPU_CARRY_FLAG));
+}
+
+bool CPU::jpNc(const word address) {
+  return jpCond(address, !bitIsSet(f, CPU_CARRY_FLAG));
+}
+
+void CPU::jp(const word address) {
+  jpCond(address, true);
+}
+
+bool CPU::jpCond(const word address, const bool cond) {
+  if (cond) {
+    pc = address;
+    return true;
+  }
+  return false;
+}
+
+bool CPU::jrC(const sbyte src) {
+  return jrCond(src, bitIsSet(f, CPU_CARRY_FLAG));
+}
+
+bool CPU::jrNc(const sbyte src) {
+  return jrCond(src, !bitIsSet(f, CPU_CARRY_FLAG));
+}
+
+bool CPU::jrZ(const sbyte src) {
+  return jrCond(src, bitIsSet(f, CPU_ZERO_FLAG));
+}
+
+bool CPU::jrNz(const sbyte src) {
+  return jrCond(src, !bitIsSet(f, CPU_ZERO_FLAG));
+}
+
+void CPU::jr(const sbyte src) {
+  jrCond(src, true);
+}
+
+bool CPU::jrCond(const sbyte src, const bool cond) {
+  if (cond) {
+    pc = static_cast<word>(static_cast<sdword>(pc) + static_cast<sdword>(src));
+    return true;
+  }
+  return false;
+}
+
+void CPU::rst(const word address) {
+  push(getHighByte(pc), getLowByte(pc));
+  pc = address;
+}
+
+void CPU::nop() {}
+
+void CPU::ei() {
+  throw std::runtime_error("EI not implemented!");
+}
+
+void CPU::di() {
+  throw std::runtime_error("DI not implemented!");
+}
+
+bool CPU::retI() {
+  throw std::runtime_error("RETI not implemented!");
+}
+
+bool CPU::retC() {
+  return retCond(bitIsSet(f, CPU_CARRY_FLAG));
+}
+
+bool CPU::retZ() {
+  return retCond(bitIsSet(f, CPU_ZERO_FLAG));
+}
+
+bool CPU::retNc() {
+  return retCond(!bitIsSet(f, CPU_CARRY_FLAG));
+}
+
+bool CPU::retNz() {
+  return retCond(!bitIsSet(f, CPU_ZERO_FLAG));
+}
+
+bool CPU::retCond(const bool cond) {
+  if (cond) {
+    ret();
+    return true;
+  }
+  return false;
+}
+
+void CPU::ret() {
+  pc = makeWord(bus->read(sp + 1), bus->read(sp));
+  sp += 2;
+}
+
+void CPU::halt() {
+  throw std::runtime_error("HALT not implemented!");
+}
+
+void CPU::scf() {
+  setBit(f, CPU_SUB_FLAG, false);
+  setBit(f, CPU_HALF_CARRY_FLAG, false);
+  setBit(f, CPU_CARRY_FLAG, true);
+}
+
+void CPU::ccf() {
+  setBit(f, CPU_SUB_FLAG, false);
+  setBit(f, CPU_HALF_CARRY_FLAG, false);
+  setBit(f, CPU_CARRY_FLAG, !getBit(f, CPU_CARRY_FLAG));
+}
+
+bool CPU::callC() {
+  return callCond(bitIsSet(f, CPU_CARRY_FLAG));
+}
+
+bool CPU::callNc() {
+  return callCond(!bitIsSet(f, CPU_CARRY_FLAG));
+}
+
+bool CPU::callZ() {
+  return callCond(bitIsSet(f, CPU_ZERO_FLAG));
+}
+
+bool CPU::callNz() {
+  return callCond(!bitIsSet(f, CPU_ZERO_FLAG));
+}
+
+bool CPU::callCond(const bool cond) {
+  if (cond) {
+    call();
+    return true;
+  }
+
+  fetchWord();
+  return false;
+}
+
+void CPU::call() {
+  const word returnAddress = pc + 2;
+  push(getHighByte(returnAddress), getLowByte(returnAddress));
+  pc = fetchWord();
+}
+
+void CPU::ld(byte& dst, const byte src) {
+  dst = src;
+}
+
+void CPU::ld(const word address, const byte src) {
+  bus->write(address, src);
+}
+
+void CPU::ld(byte& dst, const word address) {
+  dst = bus->read(address);
+}
+
+void CPU::ld(byte& high, byte& low, const word value) {
+  high = getHighByte(value);
+  low = getLowByte(value);
+}
+
+void CPU::ldSp(const word address) {
+  bus->write(address, getLowByte(sp));
+  bus->write(address + 1, getHighByte(sp));
+}
+
+void CPU::ldSp() {
+  sp = fetchWord();
+}
+
+void CPU::ldSpHl() {
+  sp = makeWord(h, l);
+}
+
+void CPU::ldHlSp(const sbyte src) {
+  const word result = sp + src;
+  f = 0;
+  h = getHighByte(result);
+  l = getLowByte(result);
+  setBit(
+      f, CPU_HALF_CARRY_FLAG,
+      (sp & MASK_4_LOWER_WORD) + (src & MASK_4_LOWER_WORD) > MASK_4_LOWER_WORD);
+  setBit(
+      f, CPU_CARRY_FLAG,
+      (sp & MASK_8_LOWER_WORD) + (src & MASK_8_LOWER_WORD) > MASK_8_LOWER_WORD);
+}
+
+void CPU::daa() {
+  byte adjustment = 0;
+
+  const bool subtractFlag = bitIsSet(f, CPU_SUB_FLAG);
+  const bool halfCarryFlag = bitIsSet(f, CPU_HALF_CARRY_FLAG);
+  const bool carryFlag = bitIsSet(f, CPU_CARRY_FLAG);
+
+  if (halfCarryFlag ||
+      (!subtractFlag && (a & MASK_4_LOWER_BYTE) > BCD_PLACE_MAXIMUM_BYTE)) {
+    adjustment |= BCD_ONES_PLACE_ADJUST_BYTE;
+  }
+
+  if (carryFlag || (!subtractFlag && a > BCD_MAXIMUM_BYTE)) {
+    adjustment |= BCD_TENS_PLACE_ADJUST_BYTE;
+    setBit(f, CPU_CARRY_FLAG, true);
+  }
+
+  if (subtractFlag) {
+    a -= adjustment;
+  } else {
+    a += adjustment;
+  }
+
+  setBit(f, CPU_ZERO_FLAG, a == 0);
+  setBit(f, CPU_HALF_CARRY_FLAG, false);
+}
+
+void CPU::inc(byte& high, byte& low) {
+  // Doesn't set flags for some reason
+  word value = makeWord(high, low);
+  ++value;
+  high = getHighByte(value);
+  low = getLowByte(value);
+}
+
+void CPU::inc(const word address) {
+  byte value = bus->read(address);
+  inc(value);
+  bus->write(address, value);
+}
+
+void CPU::inc(byte& dst) {
+  const byte value = dst + 1;
+  setBit(f, CPU_ZERO_FLAG, value == 0);
+  setBit(f, CPU_SUB_FLAG, false);
+  setBit(f, CPU_HALF_CARRY_FLAG,
+         (dst & MASK_4_LOWER_BYTE) == MASK_4_LOWER_BYTE);
+  dst = value;
+}
+
+void CPU::dec(byte& high, byte& low) {
+  word value = makeWord(high, low);
+  --value;
+  high = getHighByte(value);
+  low = getLowByte(value);
+}
+
+void CPU::dec(const word address) {
+  byte value = bus->read(address);
+  dec(value);
+  bus->write(address, value);
+}
+
+void CPU::dec(byte& dst) {
+  const byte value = dst - 1;
+  setBit(f, CPU_ZERO_FLAG, value == 0);
+  setBit(f, CPU_SUB_FLAG, true);
+  setBit(f, CPU_HALF_CARRY_FLAG, (dst & MASK_4_LOWER_BYTE) == 0);
+  dst = value;
+}
+
+void CPU::decSp() {
+  --sp;
+}
+
+void CPU::add(byte& dst, const word address, const bool useCarry) {
+  add(dst, bus->read(address), useCarry);
+}
+
+void CPU::add(byte& dst, const byte src, const bool useCarry) {
+  const word carry = useCarry && bitIsSet(f, CPU_CARRY_FLAG);
+  const word sum = static_cast<word>(dst) + static_cast<word>(src) + carry;
+  const byte result = static_cast<byte>(sum);
+
+  setBit(f, CPU_ZERO_FLAG, result == 0);
+  setBit(f, CPU_SUB_FLAG, false);
+  setBit(f, CPU_HALF_CARRY_FLAG,
+         (dst & MASK_4_LOWER_BYTE) + (src & MASK_4_LOWER_BYTE) + carry >
+             MASK_4_LOWER_BYTE);
+  setBit(f, CPU_CARRY_FLAG, sum > MASK_8_LOWER_BYTE);
+
+  dst = result;
+}
+
+void CPU::addHl(const byte high, const byte low) {
+  const word value = makeWord(high, low);
+  const word hl = makeWord(h, l);
+  const dword sum = static_cast<dword>(hl) + static_cast<dword>(value);
+
+  // Does not set zero flag for some reason
+  setBit(f, CPU_SUB_FLAG, false);
+  setBit(f, CPU_HALF_CARRY_FLAG,
+         (hl & MASK_12_LOWER_WORD) + (value & MASK_12_LOWER_WORD) >
+             MASK_12_LOWER_WORD);
+  setBit(f, CPU_CARRY_FLAG, sum > MASK_16_LOWER_WORD);
+
+  const word result = static_cast<word>(sum);
+  h = getHighByte(result);
+  l = getLowByte(result);
+}
+
+void CPU::addSp(const sbyte src) {
+  const byte offset = static_cast<byte>(src);
+
+  const word result =
+      static_cast<word>(static_cast<sdword>(sp) + static_cast<sdword>(src));
+
+  setBit(f, CPU_ZERO_FLAG, false);
+  setBit(f, CPU_SUB_FLAG, false);
+  setBit(f, CPU_HALF_CARRY_FLAG,
+         (sp & MASK_4_LOWER_BYTE) + (offset & MASK_4_LOWER_BYTE) >
+             MASK_4_LOWER_BYTE);
+  setBit(f, CPU_CARRY_FLAG,
+         (sp & MASK_8_LOWER_BYTE) + offset > MASK_8_LOWER_BYTE);
+
+  sp = result;
+}
+
+void CPU::sub(const word address, const bool useCarry) {
+  sub(bus->read(address), useCarry);
+}
+
+void CPU::sub(const byte src, const bool useCarry) {
+  const word carry = useCarry && bitIsSet(f, CPU_CARRY_FLAG);
+  const word value = static_cast<word>(src) + static_cast<word>(carry);
+  const byte result = static_cast<byte>(a - value);
+
+  setBit(f, CPU_ZERO_FLAG, result == 0);
+  setBit(f, CPU_SUB_FLAG, true);
+  setBit(f, CPU_HALF_CARRY_FLAG,
+         (a & MASK_4_LOWER_BYTE) < (src & MASK_4_LOWER_BYTE) + carry);
+  setBit(f, CPU_CARRY_FLAG, static_cast<word>(a) < value);
+
+  a = result;
+}
+
+void CPU::rlca() {
+  shift(a, false, true);
+  setBit(f, CPU_ZERO_FLAG, false);
+}
+
+void CPU::rrca() {
+  shift(a, false, false);
+  setBit(f, CPU_ZERO_FLAG, false);
+}
+
+void CPU::rla() {
+  shift(a, true, true);
+  setBit(f, CPU_ZERO_FLAG, false);
+}
+
+void CPU::rra() {
+  shift(a, true, false);
+  setBit(f, CPU_ZERO_FLAG, false);
+}
+
+void CPU::rlc(byte& dst) {
+  shift(dst, false, true);
+}
+
+void CPU::rrc(byte& dst) {
+  shift(dst, false, false);
+}
+
+void CPU::rl(byte& dst) {
+  shift(dst, true, true);
+}
+
+void CPU::rr(byte& dst) {
+  shift(dst, true, false);
+}
+
+void CPU::sla(byte& dst) {
+  shiftCb(dst, false, true);
+}
+
+void CPU::sra(byte& dst) {
+  shiftCb(dst, true, false);
+}
+
+void CPU::srl(byte& dst) {
+  shiftCb(dst, false, false);
+}
+
+void CPU::shift(byte& dst, const bool throughCarry, const bool shiftLeft) {
+  const bool selectedBit = bitIsSet(dst, shiftLeft ? BIT_7_BYTE : BIT_0_BYTE);
+
+  if (shiftLeft) {
+    dst <<= 1;
+  } else {
+    dst >>= 1;
+  }
+
+  const byte insertPos = shiftLeft ? BIT_0_BYTE : BIT_7_BYTE;
+  if (throughCarry) {
+    setBit(dst, insertPos, bitIsSet(f, CPU_CARRY_FLAG));
+  } else {
+    setBit(dst, insertPos, selectedBit);
+  }
+
+  f = 0;
+  setBit(f, CPU_ZERO_FLAG, dst == 0);
+  setBit(f, CPU_CARRY_FLAG, selectedBit);
+}
+
+void CPU::shiftCb(byte& dst, const bool preserveSign, const bool shiftLeft) {
+  const bool selectedBit = bitIsSet(dst, shiftLeft ? BIT_7_BYTE : BIT_0_BYTE);
+  const bool highBit = bitIsSet(dst, BIT_7_BYTE);
+
+  if (shiftLeft) {
+    dst <<= 1;
+  } else {
+    dst >>= 1;
+  }
+
+  if (preserveSign) {
+    setBit(dst, BIT_7_BYTE, highBit);
+  }
+
+  f = 0;
+  setBit(f, CPU_ZERO_FLAG, dst == 0);
+  setBit(f, CPU_CARRY_FLAG, selectedBit);
+}
+
+void CPU::set(byte& dst, const byte pos, const bool set) {
+  setBit(dst, pos, set);
+}
+
+void CPU::swap(byte& dst) {
+  f = 0;
+  dst = dst >> 4 | dst << 4;
+  setBit(f, CPU_ZERO_FLAG, dst == 0);
+}
+
+void CPU::bit(const word address, const byte pos) {
+  bit(bus->read(address), pos);
+}
+
+void CPU::bit(const byte src, const byte pos) {
+  setBit(f, CPU_ZERO_FLAG, !getBit(src, pos));
+  setBit(f, CPU_SUB_FLAG, false);
+  setBit(f, CPU_HALF_CARRY_FLAG, true);
 }
 }  // namespace gbdmge

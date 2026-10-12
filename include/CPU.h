@@ -16,6 +16,7 @@ class CPU {
   // memory mapped registers. For example, writes to initiate a
   // DMA
   qword execute(byte opcode);
+  void handleInterrupts();
   void reset();
 
  private:
@@ -53,6 +54,8 @@ class CPU {
   //  PC when call executes ->  | 0x101  |  0xAB  |  Low byte address         |
   //                            | 0x102  |  0xCD  |  High byte address        |
   //                            | 0x103  |   ??   |  Next instruction opcode  |
+
+  qword executeCb(byte opcode);
 
   // Stack instructions
   void pop(byte& high, byte& low);
@@ -160,8 +163,6 @@ class CPU {
   void swap(byte& dst);
   void bit(word address, byte pos);
   void bit(byte src, byte pos);
-
-  qword executeCb(byte opcode);
 };
 }  // namespace gbdmge
 
