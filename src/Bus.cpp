@@ -11,6 +11,10 @@ auto Bus::read(word address) -> byte {
     return console->cartridge.read(address);
   }
 
+  if (address == MEMORY_IO_JOYPAD_INPUT) {
+    return console->joypad.read(address);
+  }
+
   std::cerr << "Bus failed to read from " << std::hex << address
             << " : Unrecgonized memory space\n";
   return 0xFF;
@@ -20,6 +24,11 @@ void Bus::write(word address, byte value) {
   if ((MEMORY_FIXED_BANK_START <= address && MEMORY_SWITCH_BANK_END) ||
       (MEMORY_ERAM_START <= address && address <= MEMORY_ERAM_END)) {
     console->cartridge.write(address, value);
+    return;
+  }
+
+  if (address == MEMORY_IO_JOYPAD_INPUT) {
+    console->joypad.write(address, value);
     return;
   }
 

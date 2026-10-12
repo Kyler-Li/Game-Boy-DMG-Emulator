@@ -4,6 +4,7 @@
 #include "Bus.h"
 #include "Cartridge.h"
 #include "CPU.h"
+#include "Joypad.h"
 
 namespace gbdmge {
 class Console {
@@ -17,6 +18,7 @@ class Console {
   Bus bus;
   CPU cpu;
   Cartridge cartridge;
+  Joypad joypad;
   friend class Bus;
 };
 }  // namespace gbdmge

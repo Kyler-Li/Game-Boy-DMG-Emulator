@@ -72,6 +72,9 @@ static constexpr word MEMORY_SWITCH_WRAM_END = 0xDFFF;
 static constexpr word MEMORY_HRAM_START = 0xFF80;
 static constexpr word MEMORY_HRAM_END = 0xFFFE;
 
+// IO Registers
+static constexpr word MEMORY_IO_JOYPAD_INPUT = 0xFF00;
+
 }  // namespace gbdmge
 
 #endif
