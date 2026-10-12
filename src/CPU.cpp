@@ -1035,7 +1035,7 @@ void CPU::ei() {
 }
 
 void CPU::di() {
-  throw std::runtime_error("DI not implemented!");
+  ime = false;
 }
 
 bool CPU::retI() {
