@@ -119,6 +119,7 @@ class CPU {
   void ldSp(word address);
   void ldSp();
   void ldSpHl();
+  void ldHlSp(sbyte src);
 
   // BCD
   void daa();

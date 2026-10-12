@@ -155,7 +155,7 @@ void CPU::di() {
 }
 
 bool CPU::retI() {
-  throw std::runtime_error("DI not implemented!");
+  throw std::runtime_error("RETI not implemented!");
 }
 
 bool CPU::retC() {
@@ -263,6 +263,19 @@ void CPU::ldSp() {
 
 void CPU::ldSpHl() {
   sp = makeWord(h, l);
+}
+
+void CPU::ldHlSp(const sbyte src) {
+  const word result = sp + src;
+  f = 0;
+  h = getHighByte(result);
+  l = getLowByte(result);
+  setBit(
+      f, CPU_HALF_CARRY_FLAG,
+      (sp & MASK_4_LOWER_WORD) + (src & MASK_4_LOWER_WORD) > MASK_4_LOWER_WORD);
+  setBit(
+      f, CPU_CARRY_FLAG,
+      (sp & MASK_8_LOWER_WORD) + (src & MASK_8_LOWER_WORD) > MASK_8_LOWER_WORD);
 }
 
 void CPU::daa() {
@@ -413,18 +426,22 @@ void CPU::sub(const byte src, const bool useCarry) {
 
 void CPU::rlca() {
   shift(a, false, true);
+  setBit(f, CPU_ZERO_FLAG, false);
 }
 
 void CPU::rrca() {
   shift(a, false, false);
+  setBit(f, CPU_ZERO_FLAG, false);
 }
 
 void CPU::rla() {
   shift(a, true, true);
+  setBit(f, CPU_ZERO_FLAG, false);
 }
 
 void CPU::rra() {
   shift(a, true, false);
+  setBit(f, CPU_ZERO_FLAG, false);
 }
 
 void CPU::rlc(byte& dst) {
@@ -705,7 +722,7 @@ qword CPU::execute(const byte opcode) {
       addToPair(h, l, -1);
       return 8;
     case 0x33:
-      inc(sp);
+      ++sp;
       return 8;
     case 0x34:
       inc(makeWord(h, l));
@@ -1201,6 +1218,9 @@ qword CPU::execute(const byte opcode) {
     case 0xDE:
       sub(fetchByte(), true);
       return 8;
+    case 0xDF:
+      rst(0x18);
+      return 16;
     case 0xE0:
       ld(static_cast<word>(fetchByte() + 0xFF00), a);
       return 12;
@@ -1266,7 +1286,8 @@ qword CPU::execute(const byte opcode) {
       rst(0x30);
       return 16;
     case 0xF8:
-      throw std::invalid_argument("LD HL, SP+s8 not implemented!");
+      ldHlSp(static_cast<sbyte>(fetchByte()));
+      return 12;
     case 0xF9:
       ldSpHl();
       return 8;
@@ -1337,21 +1358,28 @@ qword CPU::executeCb(const byte opcode) {
       switch (immediate) {
         case 0:
           rlc(value);
+          break;
         case 1:
           rrc(value);
+          break;
         case 2:
           rl(value);
+          break;
         case 3:
           rr(value);
+          break;
         case 4:
           sla(value);
+          break;
         case 5:
           sra(value);
+          break;
         case 6:
           swap(value);
           break;
         case 7:
           srl(value);
+          break;
         default:
           throw std::runtime_error("Unknown immediate in CB opcode!");
       }
