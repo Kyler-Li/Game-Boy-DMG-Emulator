@@ -1,6 +1,7 @@
 #ifndef GBDMGE_CONSOLE_H
 #define GBDMGE_CONSOLE_H
 
+#include "Audio.h"
 #include "Bus.h"
 #include "Cartridge.h"
 #include "CPU.h"
@@ -19,6 +20,7 @@ class Console {
   CPU cpu;
   Cartridge cartridge;
   Joypad joypad;
+  Audio audio;
   friend class Bus;
 };
 }  // namespace gbdmge

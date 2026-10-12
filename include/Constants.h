@@ -71,11 +71,34 @@ static constexpr word MEMORY_SWITCH_WRAM_START = 0xD000;
 static constexpr word MEMORY_SWITCH_WRAM_END = 0xDFFF;
 static constexpr word MEMORY_HRAM_START = 0xFF80;
 static constexpr word MEMORY_HRAM_END = 0xFFFE;
+static constexpr word MEMORY_IO_AUDIO_START = 0xFF10;
+static constexpr word MEMORY_IO_AUDIO_END = 0xFF26;
 
 // IO Registers
 static constexpr word MEMORY_IO_JOYPAD_INPUT = 0xFF00;
 static constexpr word MEMORY_IO_SERIAL_TRANSFER_DATA = 0xFF01;
-static constexpr word MEMORY_IO_SERIAL_TRANSFER_CONTROL = 0xFF02;
+static constexpr word MEMORY_IO_SERIAL_TRANSFER_CONTROL = 0xFF0;
+static constexpr word MEMORY_IO_NR10 = 0xFF10;
+static constexpr word MEMORY_IO_NR11 = 0xFF11;
+static constexpr word MEMORY_IO_NR12 = 0xFF12;
+static constexpr word MEMORY_IO_NR13 = 0xFF13;
+static constexpr word MEMORY_IO_NR14 = 0xFF14;
+static constexpr word MEMORY_IO_NR21 = 0xFF16;
+static constexpr word MEMORY_IO_NR22 = 0xFF17;
+static constexpr word MEMORY_IO_NR23 = 0xFF18;
+static constexpr word MEMORY_IO_NR24 = 0xFF19;
+static constexpr word MEMORY_IO_NR30 = 0xFF1A;
+static constexpr word MEMORY_IO_NR31 = 0xFF1B;
+static constexpr word MEMORY_IO_NR32 = 0xFF1C;
+static constexpr word MEMORY_IO_NR33 = 0xFF1D;
+static constexpr word MEMORY_IO_NR34 = 0xFF1E;
+static constexpr word MEMORY_IO_NR41 = 0xFF20;
+static constexpr word MEMORY_IO_NR42 = 0xFF21;
+static constexpr word MEMORY_IO_NR43 = 0xFF22;
+static constexpr word MEMORY_IO_NR44 = 0xFF23;
+static constexpr word MEMORY_IO_NR50 = 0xFF24;
+static constexpr word MEMORY_IO_NR51 = 0xFF25;
+static constexpr word MEMORY_IO_NR52 = 0xFF26;
 
 }  // namespace gbdmge
 

@@ -21,6 +21,10 @@ auto Bus::read(word address) -> byte {
     return 0xFF;
   }
 
+  if (MEMORY_IO_AUDIO_START <= address && address <= MEMORY_IO_AUDIO_END) {
+    return console->audio.read(address);
+  }
+
   std::cerr << "Bus failed to read from " << std::hex << address
             << " : Unrecgonized memory space\n";
   return 0xFF;
@@ -41,6 +45,11 @@ void Bus::write(word address, byte value) {
   // Unimplemented
   if (address == MEMORY_IO_SERIAL_TRANSFER_DATA ||
       address == MEMORY_IO_SERIAL_TRANSFER_CONTROL) {
+    return;
+  }
+
+  if (MEMORY_IO_AUDIO_START <= address && address <= MEMORY_IO_AUDIO_END) {
+    console->audio.write(address, value);
     return;
   }
 
