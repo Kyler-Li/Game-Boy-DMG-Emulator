@@ -74,6 +74,8 @@ static constexpr word MEMORY_HRAM_END = 0xFFFE;
 
 // IO Registers
 static constexpr word MEMORY_IO_JOYPAD_INPUT = 0xFF00;
+static constexpr word MEMORY_IO_SERIAL_TRANSFER_DATA = 0xFF01;
+static constexpr word MEMORY_IO_SERIAL_TRANSFER_CONTROL = 0xFF02;
 
 }  // namespace gbdmge
 

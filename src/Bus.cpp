@@ -15,6 +15,12 @@ auto Bus::read(word address) -> byte {
     return console->joypad.read(address);
   }
 
+  // Unimplemented
+  if (address == MEMORY_IO_SERIAL_TRANSFER_DATA ||
+      address == MEMORY_IO_SERIAL_TRANSFER_CONTROL) {
+    return 0xFF;
+  }
+
   std::cerr << "Bus failed to read from " << std::hex << address
             << " : Unrecgonized memory space\n";
   return 0xFF;
@@ -29,6 +35,12 @@ void Bus::write(word address, byte value) {
 
   if (address == MEMORY_IO_JOYPAD_INPUT) {
     console->joypad.write(address, value);
+    return;
+  }
+
+  // Unimplemented
+  if (address == MEMORY_IO_SERIAL_TRANSFER_DATA ||
+      address == MEMORY_IO_SERIAL_TRANSFER_CONTROL) {
     return;
   }
 
