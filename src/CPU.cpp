@@ -1072,7 +1072,8 @@ void CPU::ret() {
 }
 
 void CPU::halt() {
-  throw std::runtime_error("HALT not implemented!");
+  // This may need to change down the line
+  isHalted = true;
 }
 
 void CPU::scf() {
