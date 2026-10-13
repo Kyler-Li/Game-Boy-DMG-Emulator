@@ -6,6 +6,8 @@
 #include <iostream>
 #include <stdexcept>
 
+#include "Disassembler.h"
+
 namespace gbdmge {
 CPU::CPU(Bus& bus)
     : ime{false},
@@ -30,11 +32,11 @@ qword CPU::cycle() {
     // CPU is stopped until an interrupt is pending but still consumes 4 T-cycles
     cycles = 4;
   } else {
+    std::cout << Disassembler::decode(bus->read(pc), bus->read(pc + 1),
+                                      bus->read(pc + 2))
+              << '\n';  // For debugging purposes, remove later
     const byte opcode = fetchByte();
     cycles = execute(opcode);
-    std::cout << "ran " << "0x" << std::uppercase << std::hex
-              << static_cast<unsigned int>(opcode) << ", " << std::dec << cycles
-              << " cycles\n";
   }
 
   updateIME();

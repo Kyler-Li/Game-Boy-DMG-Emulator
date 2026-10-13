@@ -31,6 +31,7 @@ set(SOURCES
         src/Cartridge.cpp
         src/Console.cpp
         src/CPU.cpp
+        src/Disassembler.cpp
         src/Joypad.cpp
         src/main.cpp
 )
