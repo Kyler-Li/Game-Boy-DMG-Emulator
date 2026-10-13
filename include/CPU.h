@@ -33,8 +33,8 @@ class CPU {
   word sp;
   word pc;
 
-  qword tCycles;  // 1 T-cycle = 1 clock cycle, 1 M-cycle = 4 clock cycles = 4
-                  // T-cycles
+  // 1 cycle = 1 T-cycle, 1 M-cycle = 4 T-cycles = 4 cycles
+  qword clockSpeed;  // T-cycles / cycles per second
 
   // IMPORTANT FOR ALL INSTRUCTIONS:
   // Instruction implementation functions ASSUME they have received control

@@ -27,7 +27,7 @@ CPU::CPU(Bus& bus)
       l{0},
       sp{0},
       pc{0},
-      tCycles{0} {}
+      clockSpeed{4194304} {}
 
 qword CPU::cycle() {
   qword cycles;
@@ -79,7 +79,7 @@ word CPU::fetchWord() {
   return makeWord(high, low);
 }
 
-// Returns the number of T-cycles after execution.
+// Returns the number of T-cycles expended after execution.
 // Fuck it, giant switch statement for NOW. There's probably a better approach to this? Maybe?
 qword CPU::execute(const byte opcode) {
   switch (opcode) {
