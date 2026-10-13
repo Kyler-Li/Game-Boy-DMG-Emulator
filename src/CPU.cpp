@@ -26,17 +26,19 @@ CPU::CPU(Bus& bus)
 
 qword CPU::cycle() {
   const byte opcode = fetchByte();
-  const qword cycles = execute(opcode);
+  qword cycles = execute(opcode);
   std::cout << "ran " << "0x" << std::uppercase << std::hex
             << static_cast<unsigned int>(opcode) << ", " << std::dec << cycles
             << " cycles\n";
   updateIME();
+  cycles += handleInterrupts();
   return cycles;
 }
 
 void CPU::reset() {
   // Initialize to post boot ROM values
   ime = false;
+  imeEnablePending = false;
   isHalted = false;
 
   a = 0x01;
@@ -918,11 +920,62 @@ qword CPU::executeCb(const byte opcode) {
 void CPU::updateIME() {
   if (imeEnablePending) {
     ime = true;
+    imeEnablePending = false;
   }
 }
 
-void CPU::handleInterrupts() {
-  throw std::runtime_error("Interrupt handling not implemented!");
+qword CPU::handleInterrupts() {
+  const bool pending = interruptsPending();
+
+  if (pending && isHalted) {
+    isHalted = false;
+  }
+
+  if (!ime || !pending) {
+    return 0;
+  }
+
+  const byte ie = bus->read(MEMORY_IO_IE);
+  byte iff = bus->read(MEMORY_IO_IF);
+
+  for (byte i = 0; i < 5; ++i) {
+    if (bitIsSet(ie, i) && bitIsSet(iff, i)) {
+      push(getHighByte(pc), getLowByte(pc));
+
+      setBit(iff, i, false);
+      bus->write(MEMORY_IO_IF, iff);
+
+      ime = false;
+      imeEnablePending = false;
+
+      switch (i) {
+        case INTERRUPT_VBLANK_FLAG:
+          pc = MEMORY_INTERRUPT_VBLANK;
+          break;
+        case INTERRUPT_LCD_FLAG:
+          pc = MEMORY_INTERRUPT_LCD;
+          break;
+        case INTERRUPT_TIMER_FLAG:
+          pc = MEMORY_INTERRUPT_TIMER;
+          break;
+        case INTERRUPT_SERIAL_FLAG:
+          pc = MEMORY_INTERRUPT_SERIAL;
+          break;
+        case INTERRUPT_JOYPAD_FLAG:
+          pc = MEMORY_INTERRUPT_JOYPAD;
+          break;
+        default:
+          throw std::invalid_argument("Unknown interrupt flag!");
+      }
+      break;
+    }
+  }
+  return 20;
+}
+
+bool CPU::interruptsPending() const {
+  return (bus->read(MEMORY_IO_IE) & bus->read(MEMORY_IO_IF) &
+          MASK_5_LOWER_BYTE) != 0;
 }
 
 void CPU::pop(byte& high, byte& low) {

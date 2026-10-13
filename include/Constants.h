@@ -45,6 +45,20 @@ static constexpr byte CPU_SUB_FLAG = 6;
 static constexpr byte CPU_HALF_CARRY_FLAG = 5;
 static constexpr byte CPU_CARRY_FLAG = 4;
 
+// Positions for flags in IE and IF IO registers
+static constexpr byte INTERRUPT_VBLANK_FLAG = 0;
+static constexpr byte INTERRUPT_LCD_FLAG = 1;
+static constexpr byte INTERRUPT_TIMER_FLAG = 2;
+static constexpr byte INTERRUPT_SERIAL_FLAG = 3;
+static constexpr byte INTERRUPT_JOYPAD_FLAG = 4;
+
+// Addresses for interrupt handlers
+static constexpr word MEMORY_INTERRUPT_VBLANK = 0x0040;
+static constexpr word MEMORY_INTERRUPT_LCD = 0x0048;
+static constexpr word MEMORY_INTERRUPT_TIMER = 0x0050;
+static constexpr word MEMORY_INTERRUPT_SERIAL = 0x0058;
+static constexpr word MEMORY_INTERRUPT_JOYPAD = 0x0060;
+
 // Nintendo Logo
 static constexpr word NINTENDO_LOGO_START = 0x0104;
 static constexpr word NINTENDO_LOGO_END = 0x0133;

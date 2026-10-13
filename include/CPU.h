@@ -55,7 +55,8 @@ class CPU {
   qword executeCb(byte opcode);
 
   void updateIME();
-  void handleInterrupts();
+  qword handleInterrupts();
+  [[nodiscard]] bool interruptsPending() const;
 
   // Stack instructions
   void pop(byte& high, byte& low);
