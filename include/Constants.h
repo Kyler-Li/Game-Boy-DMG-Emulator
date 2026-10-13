@@ -78,6 +78,7 @@ static constexpr word MEMORY_IO_AUDIO_END = 0xFF26;
 static constexpr word MEMORY_IO_JOYPAD_INPUT = 0xFF00;
 static constexpr word MEMORY_IO_SERIAL_TRANSFER_DATA = 0xFF01;
 static constexpr word MEMORY_IO_SERIAL_TRANSFER_CONTROL = 0xFF0;
+static constexpr word MEMORY_IO_IF = 0xFF0F;
 static constexpr word MEMORY_IO_NR10 = 0xFF10;
 static constexpr word MEMORY_IO_NR11 = 0xFF11;
 static constexpr word MEMORY_IO_NR12 = 0xFF12;
@@ -99,6 +100,7 @@ static constexpr word MEMORY_IO_NR44 = 0xFF23;
 static constexpr word MEMORY_IO_NR50 = 0xFF24;
 static constexpr word MEMORY_IO_NR51 = 0xFF25;
 static constexpr word MEMORY_IO_NR52 = 0xFF26;
+static constexpr word MEMORY_IO_IE = 0xFFFF;
 
 }  // namespace gbdmge
 

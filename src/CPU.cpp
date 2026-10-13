@@ -3,11 +3,13 @@
 #include "Bus.h"
 #include "Constants.h"
 
+#include <iostream>
 #include <stdexcept>
 
 namespace gbdmge {
 CPU::CPU(Bus& bus)
     : ime{false},
+      imeEnablePending{false},
       isHalted{false},
       bus{&bus},
       a{0},
@@ -22,6 +24,35 @@ CPU::CPU(Bus& bus)
       pc{0},
       tCycles{0} {}
 
+qword CPU::cycle() {
+  const byte opcode = fetchByte();
+  const qword cycles = execute(opcode);
+  std::cout << "ran " << "0x" << std::uppercase << std::hex
+            << static_cast<unsigned int>(opcode) << ", " << std::dec << cycles
+            << " cycles\n";
+  updateIME();
+  return cycles;
+}
+
+void CPU::reset() {
+  // Initialize to post boot ROM values
+  ime = false;
+  isHalted = false;
+
+  a = 0x01;
+  f = 0xB0;
+  b = 0x00;
+  c = 0x13;
+  d = 0x00;
+  e = 0xD8;
+  h = 0x01;
+  l = 0x4D;
+
+  sp = 0xFFFE;
+  pc = 0x0100;
+  // Potentially reset T-cycles here
+}
+
 byte CPU::fetchByte() {
   return bus->read(pc++);
 }
@@ -31,6 +62,7 @@ word CPU::fetchWord() {
   const byte high = bus->read(pc++);
   return makeWord(high, low);
 }
+
 // Returns the number of T-cycles after execution.
 // Fuck it, giant switch statement for NOW. There's probably a better approach to this? Maybe?
 qword CPU::execute(const byte opcode) {
@@ -784,29 +816,6 @@ qword CPU::execute(const byte opcode) {
   throw std::invalid_argument("Unknown opcode provided!");
 }
 
-void CPU::handleInterrupts() {
-  throw std::runtime_error("Interrupt handling not implemented!");
-}
-
-void CPU::reset() {
-  // Initialize to post boot ROM values
-  ime = false;
-  isHalted = false;
-
-  a = 0x01;
-  f = 0xB0;
-  b = 0x00;
-  c = 0x13;
-  d = 0x00;
-  e = 0xD8;
-  h = 0x01;
-  l = 0x4D;
-
-  sp = 0xFFFE;
-  pc = 0x0100;
-  // Potentially reset T-cycles here
-}
-
 // Returns the number of T-cycles after execution.
 // Thank god there is an algorithm to parse CB instructions.
 qword CPU::executeCb(const byte opcode) {
@@ -904,6 +913,16 @@ qword CPU::executeCb(const byte opcode) {
   }
 
   return 8;
+}
+
+void CPU::updateIME() {
+  if (imeEnablePending) {
+    ime = true;
+  }
+}
+
+void CPU::handleInterrupts() {
+  throw std::runtime_error("Interrupt handling not implemented!");
 }
 
 void CPU::pop(byte& high, byte& low) {
@@ -1031,11 +1050,13 @@ void CPU::rst(const word address) {
 void CPU::nop() {}
 
 void CPU::ei() {
-  throw std::runtime_error("EI not implemented!");
+  // IME is only set after the instruction following EI
+  imeEnablePending = true;
 }
 
 void CPU::di() {
   ime = false;
+  imeEnablePending = false;  // Disable pending EI
 }
 
 bool CPU::retI() {

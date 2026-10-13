@@ -9,18 +9,12 @@ class Bus;
 class CPU {
  public:
   explicit CPU(Bus& bus);
-  byte fetchByte();
-  word fetchWord();
-
-  // NOTE: Don't forget to account for cycles to writes to
-  // memory mapped registers. For example, writes to initiate a
-  // DMA
-  qword execute(byte opcode);
-  void handleInterrupts();
+  qword cycle();
   void reset();
 
  private:
   bool ime;
+  bool imeEnablePending;
   bool isHalted;
   Bus* bus;
 
@@ -55,7 +49,13 @@ class CPU {
   //                            | 0x102  |  0xCD  |  High byte address        |
   //                            | 0x103  |   ??   |  Next instruction opcode  |
 
+  byte fetchByte();
+  word fetchWord();
+  qword execute(byte opcode);
   qword executeCb(byte opcode);
+
+  void updateIME();
+  void handleInterrupts();
 
   // Stack instructions
   void pop(byte& high, byte& low);
