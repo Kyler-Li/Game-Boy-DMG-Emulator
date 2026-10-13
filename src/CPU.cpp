@@ -1,4 +1,7 @@
 #include "CPU.h"
+
+#include <iomanip>
+
 #include "BitOps.h"
 #include "Bus.h"
 #include "Constants.h"
@@ -32,6 +35,8 @@ qword CPU::cycle() {
     // CPU is stopped until an interrupt is pending but still consumes 4 T-cycles
     cycles = 4;
   } else {
+    std::cout << "PC: " << "0x" << std::hex << std::setw(4) << std::setfill('0')
+              << static_cast<int>(pc) << ": ";
     std::cout << Disassembler::decode(bus->read(pc), bus->read(pc + 1),
                                       bus->read(pc + 2))
               << '\n';  // For debugging purposes, remove later
