@@ -25,11 +25,18 @@ CPU::CPU(Bus& bus)
       tCycles{0} {}
 
 qword CPU::cycle() {
-  const byte opcode = fetchByte();
-  qword cycles = execute(opcode);
-  std::cout << "ran " << "0x" << std::uppercase << std::hex
-            << static_cast<unsigned int>(opcode) << ", " << std::dec << cycles
-            << " cycles\n";
+  qword cycles;
+  if (isHalted) {
+    // CPU is stopped until an interrupt is pending but still consumes 4 T-cycles
+    cycles = 4;
+  } else {
+    const byte opcode = fetchByte();
+    cycles = execute(opcode);
+    std::cout << "ran " << "0x" << std::uppercase << std::hex
+              << static_cast<unsigned int>(opcode) << ", " << std::dec << cycles
+              << " cycles\n";
+  }
+
   updateIME();
   cycles += handleInterrupts();
   return cycles;
@@ -1147,7 +1154,9 @@ void CPU::ret() {
 
 void CPU::halt() {
   // This may need to change down the line
-  isHalted = true;
+  if (ime) {
+    isHalted = true;
+  }
 }
 
 void CPU::scf() {
