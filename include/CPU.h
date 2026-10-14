@@ -6,6 +6,8 @@
 namespace gbdmge {
 class Bus;
 
+enum class IME { DISABLED, DELAYED, PENDING, ENABLED };
+
 class CPU {
  public:
   explicit CPU(Bus& bus);
@@ -13,8 +15,7 @@ class CPU {
   void reset();
 
  private:
-  bool ime;
-  bool imeEnablePending;
+  IME ime;
   bool isHalted;
   Bus* bus;
 

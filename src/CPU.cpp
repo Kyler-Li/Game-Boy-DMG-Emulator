@@ -13,8 +13,7 @@
 
 namespace gbdmge {
 CPU::CPU(Bus& bus)
-    : ime{false},
-      imeEnablePending{false},
+    : ime{IME::DISABLED},
       isHalted{false},
       bus{&bus},
       a{0},
@@ -51,8 +50,7 @@ qword CPU::cycle() {
 
 void CPU::reset() {
   // Initialize to post boot ROM values
-  ime = false;
-  imeEnablePending = false;
+  ime = IME::DISABLED;
   isHalted = false;
 
   a = 0x01;
@@ -932,9 +930,10 @@ qword CPU::executeCb(const byte opcode) {
 }
 
 void CPU::updateIME() {
-  if (imeEnablePending) {
-    ime = true;
-    imeEnablePending = false;
+  if (ime == IME::DELAYED) {
+    ime = IME::PENDING;
+  } else if (ime == IME::PENDING) {
+    ime = IME::ENABLED;
   }
 }
 
@@ -945,7 +944,7 @@ qword CPU::handleInterrupts() {
     isHalted = false;
   }
 
-  if (!ime || !pending) {
+  if (ime != IME::ENABLED || !pending) {
     return 0;
   }
 
@@ -959,8 +958,7 @@ qword CPU::handleInterrupts() {
       setBit(iff, i, false);
       bus->write(MEMORY_IO_IF, iff);
 
-      ime = false;
-      imeEnablePending = false;
+      ime = IME::DISABLED;
 
       switch (i) {
         case INTERRUPT_VBLANK_FLAG:
@@ -1118,12 +1116,11 @@ void CPU::nop() {}
 
 void CPU::ei() {
   // IME is only set after the instruction following EI
-  imeEnablePending = true;
+  ime = IME::DELAYED;
 }
 
 void CPU::di() {
-  ime = false;
-  imeEnablePending = false;  // Disable pending EI
+  ime = IME::DISABLED;  // Disable pending EI
 }
 
 bool CPU::retI() {
@@ -1161,7 +1158,7 @@ void CPU::ret() {
 
 void CPU::halt() {
   // This may need to change down the line
-  if (ime) {
+  if (ime == IME::ENABLED) {
     isHalted = true;
   }
 }
