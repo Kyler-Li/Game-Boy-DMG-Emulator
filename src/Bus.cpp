@@ -15,6 +15,11 @@ auto Bus::read(word address) -> byte {
     return console->ppu.read(address);
   }
 
+  if ((MEMORY_WRAM_START <= address && address <= MEMORY_WRAM_END) ||
+      (MEMORY_SWITCH_WRAM_START <= address && MEMORY_SWITCH_WRAM_END)) {
+    return console->wram[address - MEMORY_WRAM_START];
+  }
+
   if (address == MEMORY_IO_JOYPAD_INPUT) {
     return console->joypad.read(address);
   }
@@ -43,6 +48,12 @@ void Bus::write(word address, byte value) {
 
   if (MEMORY_VRAM_START <= address && address <= MEMORY_VRAM_END) {
     console->ppu.write(address, value);
+    return;
+  }
+
+  if ((MEMORY_WRAM_START <= address && address <= MEMORY_WRAM_END) ||
+      (MEMORY_SWITCH_WRAM_START <= address && MEMORY_SWITCH_WRAM_END)) {
+    console->wram[address - MEMORY_WRAM_START] = value;
     return;
   }
 

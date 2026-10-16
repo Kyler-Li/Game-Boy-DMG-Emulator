@@ -1,5 +1,6 @@
 #include "Cartridge.h"
 #include <algorithm>
+#include <cassert>
 #include <cstring>
 #include <fstream>
 #include <iostream>
@@ -129,8 +130,7 @@ auto Cartridge::read(const word address) const -> byte {
     case Mapper::MBC3:
       return readMBC3(address);
     default:
-      std::cerr << "Bus read failed: Unrecgonized mapper\n";
-      return false;
+      assert(false && "Cartridge read failed, unrecognized mapper");
   }
 }
 
@@ -146,7 +146,7 @@ void Cartridge::write(const word address, const byte value) {
       writeMBC3(address, value);
       return;
     default:
-      std::cerr << "Bus write failed: unrecognized MBC\n";
+      assert(false && "Cartridge write failed, unrecognized mapper");
   }
 }
 
