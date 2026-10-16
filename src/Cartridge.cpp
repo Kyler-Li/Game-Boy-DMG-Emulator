@@ -13,6 +13,12 @@ Cartridge::Cartridge()
       eRamBankingNumber{0},
       romBankingNumber{1},
       bankingMode{CARTRIDGE_ROM_BANKING_MODE},
+      rtcSeconds{0},
+      rtcMinutes{0},
+      rtcHours{0},
+      rtcDaysLow{0},
+      rtcDaysHigh{0},
+      rtcEnabled {false},
       eRamEnabled{false} {}
 
 auto Cartridge::load(const std::filesystem::path& romPath) -> bool {
@@ -119,6 +125,8 @@ auto Cartridge::read(const word address) const -> byte {
       return readNoMBC(address);
     case Mapper::MBC1:
       return readMBC1(address);
+    case Mapper::MBC3:
+      return readMBC1(address);
     default:
       std::cerr << "Bus read failed: Unrecgonized mapper\n";
       return false;
@@ -132,6 +140,9 @@ void Cartridge::write(const word address, const byte value) {
       return;
     case Mapper::MBC1:
       writeMBC1(address, value);
+      return;
+    case Mapper::MBC3:
+      writeMBC3(address, value);
       return;
     default:
       std::cerr << "Bus write failed: unrecognized MBC\n";
@@ -157,7 +168,7 @@ void Cartridge::writeNoMBC(const word address, const byte value) {
 }
 
 auto Cartridge::readMBC1(const word address) const -> byte {
-  // 0x3FFF
+  // 0x0000 - 0x3FFF
   if (address <= MEMORY_FIXED_BANK_END) {
     return rom[address];
   }
@@ -224,6 +235,48 @@ void Cartridge::writeMBC1(const word address, const byte value) {
     eRam[address - MEMORY_ERAM_START + ramBank * CARTRIDGE_ERAM_BANK_SIZE] =
         value;
   }
+}
+
+auto Cartridge::readMBC3(const word address) const -> byte {
+  // 0x0000 - 0x3FFF
+  if (address <= MEMORY_FIXED_BANK_END) {
+    return rom[address];
+  }
+
+  // 0x4000 -  0x7FFF
+  if (address >= MEMORY_SWITCH_BANK_START &&
+    address <= MEMORY_SWITCH_BANK_END) {
+    // 0x4000, 0x4000
+    return rom[address - MEMORY_SWITCH_BANK_START +
+               romBankingNumber * CARTRIDGE_ROM_BANK_SIZE];
+  }
+
+  // 0xA000 - 0xBFFF
+  if (eRamEnabled && address >= MEMORY_ERAM_START &&
+      address <= MEMORY_ERAM_END) {
+      switch (eRamBankingNumber) {
+        case 0x0:
+        case 0x1:
+        case 0x2:
+        case 0x3:
+          return eRam[address - MEMORY_ERAM_START +
+                eRamBankingNumber * CARTRIDGE_ERAM_BANK_SIZE];
+        case 0x8: return rtcSeconds;
+        case 0x9: return rtcMinutes;
+        case 0xA: return rtcHours;
+        case 0xB: return rtcDaysLow;
+        case 0xC: return rtcDaysHigh;
+        default:
+          return 0xFF;
+      }
+
+  }
+
+  return 0xFF;
+}
+
+void Cartridge::writeMBC3(word address, byte value) {
+  throw std::runtime_error("MBC3 write not implemented");
 }
 
 void Cartridge::incrementBankingNumber() {

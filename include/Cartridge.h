@@ -81,6 +81,9 @@ class Cartridge {
   [[nodiscard]] auto readMBC1(word address) const -> byte;
   void writeMBC1(word address, byte value);
 
+  [[nodiscard]] auto readMBC3(word address) const -> byte;
+  void writeMBC3(word address, byte value);
+
   void incrementBankingNumber();
 
   std::vector<byte> rom;
@@ -89,6 +92,12 @@ class Cartridge {
   byte eRamBankingNumber;
   byte romBankingNumber;
   byte bankingMode;
+  byte rtcSeconds;
+  byte rtcMinutes;
+  byte rtcHours;
+  byte rtcDaysLow;
+  byte rtcDaysHigh;
+  bool rtcEnabled;
   bool eRamEnabled;
 };
 }  // namespace gbdmge
