@@ -1,5 +1,4 @@
 #include "Console.h"
-#include <iostream>
 
 namespace gbdmge {
 Console::Console() : bus{*this}, cpu{bus} {}
