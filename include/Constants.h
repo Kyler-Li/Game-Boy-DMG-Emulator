@@ -17,6 +17,7 @@ static constexpr byte MASK_3_LOWER_BYTE = 0x07;
 static constexpr byte MASK_4_LOWER_BYTE = 0x0F;
 static constexpr word MASK_4_LOWER_WORD = 0x000F;
 static constexpr byte MASK_5_LOWER_BYTE = 0x1F;
+static constexpr byte MASK_7_LOWER_BYTE = 0x7F;
 static constexpr byte MASK_8_LOWER_BYTE = 0xFF;
 static constexpr word MASK_8_LOWER_WORD = 0x00FF;
 static constexpr word MASK_12_LOWER_WORD = 0x0FFF;

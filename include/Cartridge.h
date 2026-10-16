@@ -3,7 +3,6 @@
 
 #include <filesystem>
 #include <vector>
-#include "Constants.h"
 #include "Types.h"
 
 namespace gbdmge {
@@ -24,7 +23,7 @@ class Cartridge {
     HUC3
   };
 
-  Cartridge() = default;
+  Cartridge();
 
   auto load(const std::filesystem::path& romPath) -> bool;
   [[nodiscard]] auto read(word address) const -> byte;
@@ -40,10 +39,11 @@ class Cartridge {
   void incrementBankingNumber();
 
   std::vector<byte> rom;
-  std::vector<byte> eram;
+  std::vector<byte> eRam;
   Mapper mapper;
-  byte bankingNumber;
-  byte bankingMode{CARTRIDGE_ROM_BANKING_MODE};
+  byte eRamBankingNumber;
+  byte romBankingNumber;
+  byte bankingMode;
   bool eRamEnabled;
 };
 }  // namespace gbdmge
