@@ -5,18 +5,21 @@
 #include "Types.h"
 
 namespace gbdmge {
-// Masks upper bits
-static constexpr byte MASK_7_UPPER_BYTE = 0x80;
+// Masks upper bits from MSB to LSB
+static constexpr byte MASK_1_UPPER_BYTE = 0x80;
 static constexpr word MASK_4_UPPER_WORD = 0xF000;
 static constexpr byte MASK_4_UPPER_BYTE = 0xF0;
+static constexpr byte MASK_8_UPPER_BYTE = 0xFE;
 
-// Masks lower bits
+// Masks lower bits from LSB to MSB
 static constexpr byte MASK_1_LOWER_BYTE = 0x01;
+static constexpr word MASK_1_LOWER_WORD = 0x0001;
 static constexpr byte MASK_2_LOWER_BYTE = 0x03;
 static constexpr byte MASK_3_LOWER_BYTE = 0x07;
 static constexpr byte MASK_4_LOWER_BYTE = 0x0F;
 static constexpr word MASK_4_LOWER_WORD = 0x000F;
 static constexpr byte MASK_5_LOWER_BYTE = 0x1F;
+static constexpr byte MASK_6_LOWER_BYTE = 0x3F;
 static constexpr byte MASK_7_LOWER_BYTE = 0x7F;
 static constexpr byte MASK_8_LOWER_BYTE = 0xFF;
 static constexpr word MASK_8_LOWER_WORD = 0x00FF;

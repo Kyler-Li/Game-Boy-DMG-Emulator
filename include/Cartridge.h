@@ -83,6 +83,7 @@ class Cartridge {
 
   [[nodiscard]] auto readMBC3(word address) const -> byte;
   void writeMBC3(word address, byte value);
+  void updateRtcLatchMBC3();
 
   void incrementBankingNumber();
 
@@ -97,7 +98,7 @@ class Cartridge {
   byte rtcHours;
   byte rtcDaysLow;
   byte rtcDaysHigh;
-  bool rtcEnabled;
+  byte rtcLatch;
   bool eRamEnabled;
 };
 }  // namespace gbdmge

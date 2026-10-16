@@ -4,6 +4,7 @@
 #include <fstream>
 #include <iostream>
 #include <span>
+#include <chrono>
 #include "Constants.h"
 
 namespace gbdmge {
@@ -18,7 +19,7 @@ Cartridge::Cartridge()
       rtcHours{0},
       rtcDaysLow{0},
       rtcDaysHigh{0},
-      rtcEnabled {false},
+      rtcLatch{0},
       eRamEnabled{false} {}
 
 auto Cartridge::load(const std::filesystem::path& romPath) -> bool {
@@ -126,7 +127,7 @@ auto Cartridge::read(const word address) const -> byte {
     case Mapper::MBC1:
       return readMBC1(address);
     case Mapper::MBC3:
-      return readMBC1(address);
+      return readMBC3(address);
     default:
       std::cerr << "Bus read failed: Unrecgonized mapper\n";
       return false;
@@ -205,12 +206,14 @@ void Cartridge::writeMBC1(const word address, const byte value) {
   // 0x1FFF
   if (address <= CARTRIDGE_ERAM_ENABLE_END) {
     eRamEnabled = (value & MASK_4_LOWER_BYTE) == CARTRIDGE_ERAM_ENABLE_VALUE;
+
     // 0x2000 - 0x3FFF
   } else if (address >= CARTRIDGE_ROM_BANK_NUMBER_START &&
              address <= CARTRIDGE_ROM_BANK_NUMBER_END) {
     romBankingNumber =
         romBankingNumber & MASK_5_6_BYTE | value & MASK_5_LOWER_BYTE;
     incrementBankingNumber();
+
     // 0x4000 - 0x5FFF
   } else if (address >= CARTRIDGE_ERAM_BANK_NUMBER_START &&
              address <= CARTRIDGE_ERAM_BANK_NUMBER_END) {
@@ -221,10 +224,12 @@ void Cartridge::writeMBC1(const word address, const byte value) {
           romBankingNumber & ~MASK_5_6_BYTE | (value & MASK_2_LOWER_BYTE) << 5;
       incrementBankingNumber();
     }
+
     // 0x6000 - 0x7FFF
   } else if (address >= CARTRIDGE_ROM_ERAM_MODE_SELECT_START &&
              address <= CARTRIDGE_ROM_ERAM_MODE_SELECT_END) {
     bankingMode = value & MASK_1_LOWER_BYTE;
+
     // 0xA000 - 0xBFFF
   } else if (eRamEnabled && address >= MEMORY_ERAM_START &&
              address <= MEMORY_ERAM_END) {
@@ -269,14 +274,80 @@ auto Cartridge::readMBC3(const word address) const -> byte {
         default:
           return 0xFF;
       }
-
   }
 
   return 0xFF;
 }
 
-void Cartridge::writeMBC3(word address, byte value) {
-  throw std::runtime_error("MBC3 write not implemented");
+void Cartridge::writeMBC3(const word address, const byte value) {
+  // 0x0000 - 0x1FFF
+  // If eram is enabled, so is RTC
+  if (address <= CARTRIDGE_ERAM_ENABLE_END) {
+    eRamEnabled = (value & MASK_4_LOWER_BYTE) == CARTRIDGE_ERAM_ENABLE_VALUE;
+    return;
+  }
+
+  // 0x2000 - 0x3FFF
+  if (address >= CARTRIDGE_ROM_BANK_NUMBER_START &&
+             address <= CARTRIDGE_ROM_BANK_NUMBER_END) {
+    romBankingNumber = value & MASK_7_LOWER_BYTE;
+    if (romBankingNumber == 0) {
+      romBankingNumber = 1;
+    }
+
+    // 0x4000 - 0x5FFF
+  }else if (address >= CARTRIDGE_ERAM_BANK_NUMBER_START &&
+             address <= CARTRIDGE_ERAM_BANK_NUMBER_END) {
+    eRamBankingNumber = value & MASK_4_LOWER_BYTE;
+
+  // 0x6000 - 0x7FFF
+  }else if (address >= CARTRIDGE_ROM_ERAM_MODE_SELECT_START &&
+                        address <= CARTRIDGE_ROM_ERAM_MODE_SELECT_END) {
+    if (rtcLatch == 0 && value == 1) {
+      updateRtcLatchMBC3();
+    }
+    rtcLatch = value;
+  // 0xA000 - 0xBFFF
+  }else if (eRamEnabled && address >= MEMORY_ERAM_START &&
+                 address <= MEMORY_ERAM_END) {
+      switch (eRamBankingNumber) {
+        case 0x0:
+        case 0x1:
+        case 0x2:
+        case 0x3:
+          eRam[address - MEMORY_ERAM_START +
+               eRamBankingNumber * CARTRIDGE_ERAM_BANK_SIZE] = value & MASK_4_LOWER_BYTE;
+          break;
+        case 0x8: rtcSeconds = value & MASK_6_LOWER_BYTE; break;
+        case 0x9: rtcMinutes = value & MASK_6_LOWER_BYTE; break;
+        case 0xA: rtcHours = value & MASK_5_LOWER_BYTE; break;
+        case 0xB: rtcDaysLow = value; break;
+        case 0xC: rtcDaysHigh = value; break;
+        default:
+          throw std::runtime_error("Unknown eram banking number found when writing with MBC3.");
+      }
+   }
+}
+
+void Cartridge::updateRtcLatchMBC3(){
+  // Get current time since UNIX epoch, as seconds.
+  const auto now = std::chrono::duration_cast<std::chrono::seconds>(
+      std::chrono::system_clock::now().time_since_epoch()
+  ).count();
+
+  rtcSeconds = static_cast<byte>(now % 60);
+  rtcMinutes = static_cast<byte>(now / 60 % 60);
+  rtcHours = static_cast<byte>(now / 3600 % 24);
+
+  const word days = static_cast<word>(now / 86400);
+  rtcDaysLow = static_cast<byte>(days & MASK_8_LOWER_WORD);
+
+  // Upper bits and flags in rtcDaysHigh.
+  rtcDaysHigh = rtcDaysHigh & MASK_8_UPPER_BYTE  | static_cast<byte>(days >> 8 & MASK_1_LOWER_WORD);
+
+  if (days > 511){
+    rtcDaysHigh |= MASK_1_UPPER_BYTE;
+  }
 }
 
 void Cartridge::incrementBankingNumber() {
