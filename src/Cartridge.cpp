@@ -284,11 +284,9 @@ void Cartridge::writeMBC3(const word address, const byte value) {
   // If eram is enabled, so is RTC
   if (address <= CARTRIDGE_ERAM_ENABLE_END) {
     eRamEnabled = (value & MASK_4_LOWER_BYTE) == CARTRIDGE_ERAM_ENABLE_VALUE;
-    return;
-  }
 
-  // 0x2000 - 0x3FFF
-  if (address >= CARTRIDGE_ROM_BANK_NUMBER_START &&
+    // 0x2000 - 0x3FFF
+  }else if (address >= CARTRIDGE_ROM_BANK_NUMBER_START &&
              address <= CARTRIDGE_ROM_BANK_NUMBER_END) {
     romBankingNumber = value & MASK_7_LOWER_BYTE;
     if (romBankingNumber == 0) {
@@ -324,13 +322,13 @@ void Cartridge::writeMBC3(const word address, const byte value) {
         case 0xB: rtcDaysLow = value; break;
         case 0xC: rtcDaysHigh = value; break;
         default:
-          throw std::runtime_error("Unknown eram banking number found when writing with MBC3.");
+          assert(false && "Unknown eram banking number found when writing with MBC3.");
       }
    }
 }
 
 void Cartridge::updateRtcLatchMBC3(){
-  // Get current time since UNIX epoch, as seconds.
+  // Uses time since epoch, update later with an accurate counter
   const auto now = std::chrono::duration_cast<std::chrono::seconds>(
       std::chrono::system_clock::now().time_since_epoch()
   ).count();
