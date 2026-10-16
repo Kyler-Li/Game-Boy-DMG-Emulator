@@ -27,13 +27,17 @@ auto Cartridge::load(const std::filesystem::path& romPath) -> bool {
   rom.resize(fileSize);
   f.read(reinterpret_cast<char*>(rom.data()), fileSize);
 
+  // Pan Docs list that a rom size value >= 52 exists and doesn't fit this formula but,
+  // no cartridges or ROM files using the rom sizes corresponding to the rom values exist.
   // Ensure that the ROM size (which was already loaded) matches the one specified in the file
-  if (fileSize != rom[CARTRIDGE_ROM_SIZE_START]) {
+  if (const dword estimatedRomSize =
+          2 * CARTRIDGE_ROM_BANK_SIZE * (1 << rom[CARTRIDGE_ROM_SIZE_VALUE]);
+      fileSize < estimatedRomSize) {
     std::cerr << "Failed to load cartridge: ROM has invalid size\n";
     return false;
   }
 
-  if (NINTENDO_LOGO_START < 0 || NINTENDO_LOGO_END >= rom.size()) {
+  if (NINTENDO_LOGO_END >= rom.size()) {
     std::cerr << "Failed to load cartridge: ROM is invalid (too small)\n";
     return false;
   }
@@ -131,7 +135,6 @@ void Cartridge::write(const word address, const byte value) {
       return;
     default:
       std::cerr << "Bus write failed: unrecognized MBC\n";
-      return;
   }
 }
 

@@ -102,7 +102,7 @@ static constexpr word CARTRIDGE_ERAM_ENABLE_END = 0x1FFF;
 static constexpr byte CARTRIDGE_ERAM_BANKING_MODE = 1;
 static constexpr byte CARTRIDGE_ROM_BANKING_MODE = 0;
 static constexpr word CARTRIDGE_TYPE_START = 0x147;
-static constexpr word CARTRIDGE_ROM_SIZE_START = 0x148;
+static constexpr word CARTRIDGE_ROM_SIZE_VALUE = 0x148;
 static constexpr word CARTRIDGE_ERAM_SIZE_START = 0x149;
 
 // IO Registers
