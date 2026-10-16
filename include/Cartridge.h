@@ -27,23 +27,23 @@ class Cartridge {
   Cartridge() = default;
 
   auto load(const std::filesystem::path& romPath) -> bool;
-  auto read(word address) -> byte;
+  [[nodiscard]] auto read(word address) const -> byte;
   void write(word address, byte value);
 
  private:
-  auto readNoMBC(word address) -> byte;
+  [[nodiscard]] auto readNoMBC(word address) const -> byte;
   void writeNoMBC(word address, byte value);
 
-  auto readMBC1(word address) -> byte;
+  [[nodiscard]] auto readMBC1(word address) const -> byte;
   void writeMBC1(word address, byte value);
 
   void incrementBankingNumber();
 
   std::vector<byte> rom;
-  std::array<byte, MEMORY_ERAM_END - MEMORY_ERAM_START + 1> eram;
+  std::vector<byte> eram;
   Mapper mapper;
   byte bankingNumber;
-  byte bankingMode;
+  byte bankingMode{CARTRIDGE_ROM_BANKING_MODE};
   bool eRamEnabled;
 };
 }  // namespace gbdmge

@@ -87,16 +87,22 @@ static constexpr word MEMORY_HRAM_START = 0xFF80;
 static constexpr word MEMORY_HRAM_END = 0xFFFE;
 static constexpr word MEMORY_IO_AUDIO_START = 0xFF10;
 static constexpr word MEMORY_IO_AUDIO_END = 0xFF26;
-static constexpr word MEMORY_ROM_BANK_SIZE = 0x4000;
-static constexpr word MEMORY_ERAM_BANK_SIZE = 0x2000;
-static constexpr word MEMORY_ERAM_BANK_NUMBER_START = 0x4000;
-static constexpr word MEMORY_ERAM_BANK_NUMBER_END = 0x5FFF;
-static constexpr word MEMORY_ROM_BANK_NUMBER_START = 0x2000;
-static constexpr word MEMORY_ROM_BANK_NUMBER_END = 0x3FFF;
-static constexpr word MEMORY_ROM_ERAM_MODE_SELECT_START = 0x6000;
-static constexpr word MEMORY_ROM_ERAM_MODE_SELECT_END = 0x7FFF;
-static constexpr byte MEMORY_ERAM_ENABLE_VALUE = 0x0A;
-static constexpr word MEMORY_RAM_ERAM_ENABLE_END = 0x1FFF;
+
+static constexpr word CARTRIDGE_ROM_BANK_SIZE = 0x4000;
+static constexpr word CARTRIDGE_ERAM_BANK_SIZE = 0x2000;
+static constexpr word CARTRIDGE_ERAM_BANK_NUMBER_START = 0x4000;
+static constexpr word CARTRIDGE_ERAM_BANK_NUMBER_END = 0x5FFF;
+static constexpr word CARTRIDGE_ROM_BANK_NUMBER_START = 0x2000;
+static constexpr word CARTRIDGE_ROM_BANK_NUMBER_END = 0x3FFF;
+static constexpr word CARTRIDGE_ROM_ERAM_MODE_SELECT_START = 0x6000;
+static constexpr word CARTRIDGE_ROM_ERAM_MODE_SELECT_END = 0x7FFF;
+static constexpr byte CARTRIDGE_ERAM_ENABLE_VALUE = 0x0A;
+static constexpr word CARTRIDGE_ERAM_ENABLE_END = 0x1FFF;
+static constexpr byte CARTRIDGE_ERAM_BANKING_MODE = 1;
+static constexpr byte CARTRIDGE_ROM_BANKING_MODE = 0;
+static constexpr word CARTRIDGE_TYPE_START = 0x147;
+static constexpr word CARTRIDGE_ROM_SIZE_START = 0x148;
+static constexpr word CARTRIDGE_ERAM_SIZE_START = 0x149;
 
 // IO Registers
 static constexpr word MEMORY_IO_JOYPAD_INPUT = 0xFF00;
