@@ -43,6 +43,7 @@ void Bus::write(word address, byte value) {
 
   if (MEMORY_VRAM_START <= address && address <= MEMORY_VRAM_END) {
     console->ppu.write(address, value);
+    return;
   }
 
   if (address == MEMORY_IO_JOYPAD_INPUT) {
