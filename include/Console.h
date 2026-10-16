@@ -23,6 +23,7 @@ class Console {
   Joypad joypad;
   Audio audio;
   PPU ppu;
+  std::array<byte, MEMORY_SWITCH_WRAM_END - MEMORY_WRAM_START + 1> wram;
   friend class Bus;
 };
 }  // namespace gbdmge
