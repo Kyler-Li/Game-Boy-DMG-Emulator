@@ -11,13 +11,21 @@ class Cartridge {
   enum class Mapper {
     None,
     /*
-       MBC 1
-       7 bit banking number register - index into rom.
-       2 bit eram number register - index into eram.
-       Index means it indexes the bank to use. For example,
-       to read a byte in eram the address calculation would be:
-       (address - 0xA000) + (eram banking number * (0xBFFF - 0xA000 + 1)).
+       MBC1: The foundation for other mappers.
 
+       7 bit rom banking number register: indexes into rom. Set to 1 on boot. Interpreted as 5 or 7 bits, more on that below.
+       2 bit eram banking number register: indexes into eram. Set to 0 on boot. Interpreted as 0 or 2 bits, more on that below.
+
+       Example using banking number:
+       To read a byte in eram the address calculation would be (into a flat sequence of eram bytes):
+       (address - 0xA000) + (eram banking number * (0xBFFF - 0xA000 + 1)).
+       Note that 0xA000, 0xBFFF are the starting and ending addresses for the eram banks.
+       *Think of banking number telling you how many blocks of bytes can be mapped into the starting to ending address range.
+       The banking number just helps you find the correct block of bytes.
+
+       eram is disabled on boot.
+
+       Two banking modes:
        Banking mode = 0
        ROM is limited to 7 bits of rom banking number, banks 0x0 - 0x7F - for READING.
        ERAM is limited to 0 bits of eram banking number, banks 0x0 ONLY - for READING and WRITING.
