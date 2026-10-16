@@ -99,7 +99,8 @@ auto Cartridge::load(const std::filesystem::path& romPath) -> bool {
       rom.resize(CARTRIDGE_ROM_BANK_SIZE * (1 << (romSize + 1)));
       break;
     default:
-      throw std::runtime_error("Cannot determine ROM size!");
+      std::cerr << "Failed to load cartridge: Unrecognized ROM size\n";
+      return false;
   }
 
   switch (const byte eRamSize = rom[CARTRIDGE_ERAM_SIZE_START]) {
@@ -112,7 +113,8 @@ auto Cartridge::load(const std::filesystem::path& romPath) -> bool {
       eRam.resize(CARTRIDGE_ERAM_BANK_SIZE * (1 << (2 * eRamSize - 4)));
       break;
     default:
-      throw std::runtime_error("Cannot determine ERAM size!");
+      std::cerr << "Failed to load cartridge: Unrecognized ERAM size\n";
+      return false;
   }
 
   return true;
@@ -125,8 +127,8 @@ auto Cartridge::read(const word address) const -> byte {
     case Mapper::MBC1:
       return readMBC1(address);
     default:
-      throw std::runtime_error(
-          "Failed to read from cartridge, unimplemented mapper!");
+      std::cerr << "Bus read failed: Unrecgonized mapper\n";
+      return false;
   }
 }
 
@@ -139,8 +141,8 @@ void Cartridge::write(const word address, const byte value) {
       writeMBC1(address, value);
       return;
     default:
-      throw std::runtime_error(
-          "Failed to read from cartridge, unimplemented mapper!");
+      std::cerr << "Bus write failed: unrecognized MBC\n";
+      return;
   }
 }
 
