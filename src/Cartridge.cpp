@@ -27,6 +27,12 @@ auto Cartridge::load(const std::filesystem::path& romPath) -> bool {
   rom.resize(fileSize);
   f.read(reinterpret_cast<char*>(rom.data()), fileSize);
 
+  // Ensure that the ROM size (which was already loaded) matches the one specified in the file
+  if (fileSize != rom[CARTRIDGE_ROM_SIZE_START]) {
+    std::cerr << "Failed to load cartridge: ROM has invalid size\n";
+    return false;
+  }
+
   if (NINTENDO_LOGO_START < 0 || NINTENDO_LOGO_END >= rom.size()) {
     std::cerr << "Failed to load cartridge: ROM is invalid (too small)\n";
     return false;
@@ -85,24 +91,7 @@ auto Cartridge::load(const std::filesystem::path& romPath) -> bool {
       return false;
   }
 
-  // Set rom and eram size
-  switch (const byte romSize = rom[CARTRIDGE_ROM_SIZE_START]) {
-    case 0x00:
-    case 0x01:
-    case 0x02:
-    case 0x03:
-    case 0x04:
-    case 0x05:
-    case 0x06:
-    case 0x07:
-    case 0x08:
-      rom.resize(CARTRIDGE_ROM_BANK_SIZE * (1 << (romSize + 1)));
-      break;
-    default:
-      std::cerr << "Failed to load cartridge: Unrecognized ROM size\n";
-      return false;
-  }
-
+  // Set eram size
   switch (const byte eRamSize = rom[CARTRIDGE_ERAM_SIZE_START]) {
     case 0x00:
       break;
