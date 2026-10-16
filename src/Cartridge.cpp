@@ -11,7 +11,7 @@ namespace gbdmge {
 Cartridge::Cartridge()
     : mapper{Mapper::None},
       eRamBankingNumber{0},
-      romBankingNumber{0},
+      romBankingNumber{1},
       bankingMode{CARTRIDGE_ROM_BANKING_MODE},
       eRamEnabled{false} {}
 
@@ -125,9 +125,8 @@ auto Cartridge::read(const word address) const -> byte {
     case Mapper::MBC1:
       return readMBC1(address);
     default:
-      std::cerr << "Failed to read " << std::hex << address
-                << " from cartridge: Unimplemented mapper\n";
-      return 0xFF;
+      throw std::runtime_error(
+          "Failed to read from cartridge, unimplemented mapper!");
   }
 }
 
@@ -140,7 +139,8 @@ void Cartridge::write(const word address, const byte value) {
       writeMBC1(address, value);
       return;
     default:
-      return;
+      throw std::runtime_error(
+          "Failed to read from cartridge, unimplemented mapper!");
   }
 }
 
@@ -163,24 +163,30 @@ void Cartridge::writeNoMBC(const word address, const byte value) {
 }
 
 auto Cartridge::readMBC1(const word address) const -> byte {
+  // 0x3FFF
   if (address <= MEMORY_FIXED_BANK_END) {
     return rom[address];
   }
 
+  // 0x4000 -  0x7FFF
   if (address >= MEMORY_SWITCH_BANK_START &&
       address <= MEMORY_SWITCH_BANK_END) {
-    const byte romBank = bankingMode == CARTRIDGE_ERAM_BANKING_MODE
-                             ? romBankingNumber & MASK_5_LOWER_BYTE
-                             : romBankingNumber & MASK_7_LOWER_BYTE;
+    const byte romBank =
+        bankingMode == CARTRIDGE_ERAM_BANKING_MODE
+            ? romBankingNumber & MASK_5_LOWER_BYTE   // Address 512KB of ROM
+            : romBankingNumber & MASK_7_LOWER_BYTE;  // Address 2MB of ROM
+    // 0x4000, 0x4000
     return rom[address - MEMORY_SWITCH_BANK_START +
                romBank * CARTRIDGE_ROM_BANK_SIZE];
   }
 
-  // External RAM
+  // 0xA000 - 0xBFFF
   if (eRamEnabled && address >= MEMORY_ERAM_START &&
       address <= MEMORY_ERAM_END) {
-    const byte ramBank =
-        bankingMode == CARTRIDGE_ERAM_BANKING_MODE ? eRamBankingNumber : 0;
+    const byte ramBank = bankingMode == CARTRIDGE_ERAM_BANKING_MODE
+                             ? eRamBankingNumber & MASK_2_LOWER_BYTE
+                             : 0;
+    // 0xA000, 0x2000
     return eRam[address - MEMORY_ERAM_START +
                 ramBank * CARTRIDGE_ERAM_BANK_SIZE];
   }
@@ -191,13 +197,16 @@ auto Cartridge::readMBC1(const word address) const -> byte {
 }
 
 void Cartridge::writeMBC1(const word address, const byte value) {
+  // 0x1FFF
   if (address <= CARTRIDGE_ERAM_ENABLE_END) {
     eRamEnabled = (value & MASK_4_LOWER_BYTE) == CARTRIDGE_ERAM_ENABLE_VALUE;
+    // 0x2000 - 0x3FFF
   } else if (address >= CARTRIDGE_ROM_BANK_NUMBER_START &&
              address <= CARTRIDGE_ROM_BANK_NUMBER_END) {
     romBankingNumber =
         romBankingNumber & MASK_5_6_BYTE | value & MASK_5_LOWER_BYTE;
     incrementBankingNumber();
+    // 0x4000 - 0x5FFF
   } else if (address >= CARTRIDGE_ERAM_BANK_NUMBER_START &&
              address <= CARTRIDGE_ERAM_BANK_NUMBER_END) {
     if (eRamEnabled) {
@@ -207,13 +216,17 @@ void Cartridge::writeMBC1(const word address, const byte value) {
           romBankingNumber & ~MASK_5_6_BYTE | (value & MASK_2_LOWER_BYTE) << 5;
       incrementBankingNumber();
     }
+    // 0x6000 - 0x7FFF
   } else if (address >= CARTRIDGE_ROM_ERAM_MODE_SELECT_START &&
              address <= CARTRIDGE_ROM_ERAM_MODE_SELECT_END) {
     bankingMode = value & MASK_1_LOWER_BYTE;
+    // 0xA000 - 0xBFFF
   } else if (eRamEnabled && address >= MEMORY_ERAM_START &&
              address <= MEMORY_ERAM_END) {
-    const byte ramBank =
-        bankingMode == CARTRIDGE_ERAM_BANKING_MODE ? eRamBankingNumber : 0;
+    const byte ramBank = bankingMode == CARTRIDGE_ERAM_BANKING_MODE
+                             ? eRamBankingNumber & MASK_2_LOWER_BYTE
+                             : 0;
+    // 0xA000, 0x2000
     eRam[address - MEMORY_ERAM_START + ramBank * CARTRIDGE_ERAM_BANK_SIZE] =
         value;
   }
