@@ -6,6 +6,7 @@
 #include "Cartridge.h"
 #include "CPU.h"
 #include "Joypad.h"
+#include "PPU.h"
 
 namespace gbdmge {
 class Console {
@@ -21,6 +22,7 @@ class Console {
   Cartridge cartridge;
   Joypad joypad;
   Audio audio;
+  PPU ppu;
   friend class Bus;
 };
 }  // namespace gbdmge

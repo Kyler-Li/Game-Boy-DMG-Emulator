@@ -11,6 +11,10 @@ auto Bus::read(word address) -> byte {
     return console->cartridge.read(address);
   }
 
+  if (MEMORY_VRAM_START <= address && address <= MEMORY_VRAM_END) {
+    return console->ppu.read(address);
+  }
+
   if (address == MEMORY_IO_JOYPAD_INPUT) {
     return console->joypad.read(address);
   }
@@ -35,6 +39,10 @@ void Bus::write(word address, byte value) {
       (MEMORY_ERAM_START <= address && address <= MEMORY_ERAM_END)) {
     console->cartridge.write(address, value);
     return;
+  }
+
+  if (MEMORY_VRAM_START <= address && address <= MEMORY_VRAM_END) {
+    console->ppu.write(address, value);
   }
 
   if (address == MEMORY_IO_JOYPAD_INPUT) {

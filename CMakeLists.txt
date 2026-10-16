@@ -34,6 +34,7 @@ set(SOURCES
         src/Disassembler.cpp
         src/Joypad.cpp
         src/main.cpp
+        src/PPU.cpp
 )
 
 target_sources(${PROJECT_NAME}
