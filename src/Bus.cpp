@@ -6,7 +6,7 @@ namespace gbdmge {
 Bus::Bus(Console& console) : console{&console} {}
 
 auto Bus::read(word address) -> byte {
-  if ((MEMORY_FIXED_BANK_START <= address && MEMORY_SWITCH_BANK_END) ||
+  if ((MEMORY_FIXED_BANK_START <= address && address <= MEMORY_SWITCH_BANK_END) ||
       (MEMORY_ERAM_START <= address && address <= MEMORY_ERAM_END)) {
     return console->cartridge.read(address);
   }
