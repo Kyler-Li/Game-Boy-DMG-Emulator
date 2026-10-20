@@ -11,8 +11,8 @@ class Console;
 //! for requests targeted for their respective memory ranges.
 class Bus {
  public:
-  Bus(Console& console);
-  auto read(word address) -> byte;
+  explicit Bus(Console& console);
+  [[nodiscard]] auto read(word address) const -> byte;
   void write(word address, byte value);
 
  private:

@@ -5,33 +5,73 @@
 namespace gbdmge {
 Bus::Bus(Console& console) : console{&console} {}
 
-auto Bus::read(word address) -> byte {
-  if ((MEMORY_FIXED_BANK_START <= address && address <= MEMORY_SWITCH_BANK_END) ||
-      (MEMORY_ERAM_START <= address && address <= MEMORY_ERAM_END)) {
+auto Bus::read(const word address) const -> byte {
+  // 0x0000 - 0x7FFF, 0xA000 - 0xBFFF, Cartridge ROM and ERAM
+  if ((MEMORY_FIXED_BANK_START <= address &&
+       address <= MEMORY_SWITCH_BANK_END) ||
+      (address <= MEMORY_ERAM_START && address <= MEMORY_ERAM_END)) {
     return console->cartridge.read(address);
   }
 
-  if (MEMORY_VRAM_START <= address && address <= MEMORY_VRAM_END) {
+  // 0x8000 - 0x9FFF, 0xFE00 - 0xFE9F, 0xFF40 - 0xFF4B
+  // OAM, VRAM and VRAM registers
+  if ((MEMORY_VRAM_START <= address && address <= MEMORY_VRAM_END) ||
+      (address <= MEMORY_OAM_START && address <= MEMORY_OAM_END) ||
+      (address <= MEMORY_VRAM_REGISTERS_START &&
+       address <= MEMORY_VRAM_REGISTERS_END)) {
     return console->ppu.read(address);
   }
 
-  if ((MEMORY_WRAM_START <= address && address <= MEMORY_WRAM_END) ||
-      (MEMORY_SWITCH_WRAM_START <= address && MEMORY_SWITCH_WRAM_END)) {
+  // 0xC000 - 0xDFFF, WRAM
+  if (MEMORY_WRAM_START <= address && address <= MEMORY_WRAM_END) {
     return console->wram[address - MEMORY_WRAM_START];
   }
 
-  if (address == MEMORY_IO_JOYPAD_INPUT) {
-    return console->joypad.read(address);
+  // 0xE000 - 0xFDFF, Echo of WRAM
+  if (address <= MEMORY_ECHO_RAM_START && address <= MEMORY_ECHO_RAM_END) {
+    return console->wram[address - MEMORY_ECHO_RAM_START];
   }
 
-  // Unimplemented
-  if (address == MEMORY_IO_SERIAL_TRANSFER_DATA ||
-      address == MEMORY_IO_SERIAL_TRANSFER_CONTROL) {
+  // 0xFEA0 - 0xFEFF, Unused area
+  if (address <= MEMORY_FORBIDDEN_START && address <= MEMORY_FORBIDDEN_END) {
     return 0xFF;
   }
 
-  if (MEMORY_IO_AUDIO_START <= address && address <= MEMORY_IO_AUDIO_END) {
+  // 0xFF00, Joypad
+  if (address == MEMORY_JOYPAD_START) {
+    return console->joypad.read(address);
+  }
+
+  // 0xFF01 - 0xFF02, Serial Transfer
+  if (address == MEMORY_SERIAL_TRANSFER_START ||
+      address == MEMORY_SERIAL_TRANSFER_END) {
+    std::cerr << "Reading from serial transfer not implemented!\n";
+    return 0xFF;
+  }
+
+  // 0xFF04 - 0xFF07, Timer and Divider
+  if (address <= MEMORY_TIMER_START && address <= MEMORY_TIMER_END) {
+    return console->timer.read(address);
+  }
+
+  // 0xFF0F, Interrupt flag
+  if (address == MEMORY_INTERRUPT_FLAG) {
+    return console->iff & MASK_4_LOWER_BYTE;
+  }
+
+  // 0xFF10 - 0xFF3F, Audio
+  if (address <= MEMORY_AUDIO_START && address <= MEMORY_AUDIO_END) {
     return console->audio.read(address);
+  }
+
+  // 0xFF80 - 0xFFFE, HRAM
+  if (address <= MEMORY_HRAM_START && address <= MEMORY_HRAM_END) {
+    return console->hram[address - MEMORY_HRAM_START];
+  }
+
+  // 0xFFFF, Interrupt Enable
+  if (address == MEMORY_INTERRUPT_ENABLE) {
+    return console->ie & MASK_4_LOWER_BYTE;
   }
 
   std::cerr << "Bus failed to read from " << std::hex << address
@@ -39,40 +79,7 @@ auto Bus::read(word address) -> byte {
   return 0xFF;
 }
 
-void Bus::write(word address, byte value) {
-  if ((MEMORY_FIXED_BANK_START <= address && MEMORY_SWITCH_BANK_END) ||
-      (MEMORY_ERAM_START <= address && address <= MEMORY_ERAM_END)) {
-    console->cartridge.write(address, value);
-    return;
-  }
-
-  if (MEMORY_VRAM_START <= address && address <= MEMORY_VRAM_END) {
-    console->ppu.write(address, value);
-    return;
-  }
-
-  if ((MEMORY_WRAM_START <= address && address <= MEMORY_WRAM_END) ||
-      (MEMORY_SWITCH_WRAM_START <= address && MEMORY_SWITCH_WRAM_END)) {
-    console->wram[address - MEMORY_WRAM_START] = value;
-    return;
-  }
-
-  if (address == MEMORY_IO_JOYPAD_INPUT) {
-    console->joypad.write(address, value);
-    return;
-  }
-
-  // Unimplemented
-  if (address == MEMORY_IO_SERIAL_TRANSFER_DATA ||
-      address == MEMORY_IO_SERIAL_TRANSFER_CONTROL) {
-    return;
-  }
-
-  if (MEMORY_IO_AUDIO_START <= address && address <= MEMORY_IO_AUDIO_END) {
-    console->audio.write(address, value);
-    return;
-  }
-
+void Bus::write(const word address, byte value) {
   std::cerr << "Bus failed to write to " << std::hex << address
             << " : Unrecgonized memory space\n";
 }

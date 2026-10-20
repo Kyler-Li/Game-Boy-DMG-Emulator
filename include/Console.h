@@ -3,10 +3,11 @@
 
 #include "Audio.h"
 #include "Bus.h"
-#include "Cartridge.h"
 #include "CPU.h"
+#include "Cartridge.h"
 #include "Joypad.h"
 #include "PPU.h"
+#include "Timer.h"
 
 namespace gbdmge {
 class Console {
@@ -23,7 +24,11 @@ class Console {
   Joypad joypad;
   Audio audio;
   PPU ppu;
-  std::array<byte, MEMORY_SWITCH_WRAM_END - MEMORY_WRAM_START + 1> wram;
+  Timer timer;
+  word iff;  // Interrupt flag
+  word ie;   // Interrupt enable
+  std::array<byte, MEMORY_WRAM_END - MEMORY_WRAM_START + 1> wram;
+  std::array<byte, MEMORY_HRAM_END - MEMORY_HRAM_START + 1> hram;
   friend class Bus;
 };
 }  // namespace gbdmge
