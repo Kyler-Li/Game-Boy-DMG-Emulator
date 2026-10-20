@@ -12,7 +12,7 @@ class Console;
 class Bus {
  public:
   explicit Bus(Console& console);
-  [[nodiscard]] auto read(word address) const -> byte;
+  auto read(word address) const -> byte;
   void write(word address, byte value);
 
  private:

@@ -16,7 +16,7 @@ class Console {
 
   auto load(const std::filesystem::path& romPath) -> bool;
   void step();
-
+  void reset();
  private:
   Bus bus;
   CPU cpu;

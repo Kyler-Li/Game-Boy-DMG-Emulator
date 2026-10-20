@@ -13,16 +13,20 @@ Console::Console()
       hram{} {}
 
 auto Console::load(const std::filesystem::path& romPath) -> bool {
-  cpu.reset();
-  ppu.reset();
-  audio.reset();
-  joypad.reset();
-  timer.reset();
+  reset();
   return cartridge.load(romPath);
 }
 
 void Console::step() {
   cpu.cycle();
+}
+
+void Console::reset() {
+  cpu.reset();
+  ppu.reset();
+  audio.reset();
+  joypad.reset();
+  timer.reset();
 }
 
 }  // namespace gbdmge

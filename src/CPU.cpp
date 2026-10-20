@@ -34,7 +34,13 @@ qword CPU::cycle() {
     // CPU is stopped until an interrupt is pending but still consumes 4 T-cycles
     cycles = 4;
   } else {
-    printCurrentInstruction();  // Remove later, for debugging
+    // Debug print
+    std::cout << "pc=" << "0x" << std::uppercase << std::hex << std::setw(4)
+              << std::setfill('0') << static_cast<int>(pc) << ", inst=";
+    std::cout << Disassembler::decode(bus->read(pc), bus->read(pc + 1),
+                                      bus->read(pc + 2))
+              << '\n';
+
     const byte opcode = fetchByte();
     cycles = execute(opcode);
   }
@@ -42,14 +48,6 @@ qword CPU::cycle() {
   updateIME();
   cycles += handleInterrupts();
   return cycles;
-}
-
-void CPU::printCurrentInstruction() const {
-  std::cout << "pc=" << "0x" << std::uppercase << std::hex << std::setw(4)
-            << std::setfill('0') << static_cast<int>(pc) << ", inst=";
-  std::cout << Disassembler::decode(bus->read(pc), bus->read(pc + 1),
-                                    bus->read(pc + 2))
-            << '\n';
 }
 
 void CPU::reset() {

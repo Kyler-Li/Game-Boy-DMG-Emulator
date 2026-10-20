@@ -12,7 +12,6 @@ class CPU {
  public:
   explicit CPU(Bus& bus);
   qword cycle();
-  void printCurrentInstruction() const;
   void reset(); // Initialize to post boot rom state
 
  private:
