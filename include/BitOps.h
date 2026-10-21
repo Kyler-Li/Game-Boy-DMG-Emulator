@@ -15,3 +15,4 @@ void addToPair(byte& high, byte& low, sbyte value);
 }  // namespace gbdmge
 
 #endif
+

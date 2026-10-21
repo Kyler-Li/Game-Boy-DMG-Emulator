@@ -1508,3 +1508,4 @@ void CPU::bit(const byte src, const byte pos) {
   setBit(f, CPU_HALF_CARRY_FLAG, true);
 }
 }  // namespace gbdmge
+

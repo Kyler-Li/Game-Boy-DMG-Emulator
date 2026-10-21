@@ -256,3 +256,4 @@ std::string Disassembler::decode(const byte opcode, const byte byte1,
   }
 }
 }  // namespace gbdmge
+

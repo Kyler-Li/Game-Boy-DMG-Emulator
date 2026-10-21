@@ -12,7 +12,8 @@ void Audio::write(word address, byte value) {
 }
 
 void Audio::reset() {
-  // TODO
+  // TODO: Implement
 }
 
 }  // namespace gbdmge
+

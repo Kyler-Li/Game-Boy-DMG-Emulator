@@ -35,12 +35,12 @@ auto Bus::read(const word address) const -> byte {
     return 0xFF;
   }
 
-  if (address == MEMORY_JOYPAD_START) {
+  if (address == MEMORY_IO_JOYPAD_INPUT) {
     return console->joypad.read(address);
   }
 
-  if (address == MEMORY_SERIAL_TRANSFER_START ||
-      address == MEMORY_SERIAL_TRANSFER_END) {
+  if (address == MEMORY_IO_SERIAL_TRANSFER_SB ||
+      address == MEMORY_IO_SERIAL_TRANSFER_SC) {
     std::cerr << "Reading from serial transfer not implemented!\n";
     return 0xFF;
   }
@@ -49,7 +49,7 @@ auto Bus::read(const word address) const -> byte {
     return console->timer.read(address);
   }
 
-  if (address == MEMORY_INTERRUPT_FLAG) {
+  if (address == MEMORY_IO_IF) {
     return console->iff & MASK_4_LOWER_BYTE;
   }
 
@@ -61,7 +61,7 @@ auto Bus::read(const word address) const -> byte {
     return console->hram[address - MEMORY_HRAM_START];
   }
 
-  if (address == MEMORY_INTERRUPT_ENABLE) {
+  if (address == MEMORY_IO_IE) {
     return console->ie & MASK_4_LOWER_BYTE;
   }
 
@@ -104,13 +104,13 @@ void Bus::write(const word address, const byte value) {
     return;
   }
 
-  if (address == MEMORY_JOYPAD_START) {
+  if (address == MEMORY_IO_JOYPAD_INPUT) {
     console->joypad.write(address, value);
     return;
   }
 
-  if (address == MEMORY_SERIAL_TRANSFER_START ||
-    address == MEMORY_SERIAL_TRANSFER_END) {
+  if (address == MEMORY_IO_SERIAL_TRANSFER_SB ||
+    address == MEMORY_IO_SERIAL_TRANSFER_SC) {
     std::cerr << "Reading from serial transfer not implemented!\n";
     return;
   }
@@ -120,7 +120,7 @@ void Bus::write(const word address, const byte value) {
     return;
   }
 
-  if (address == MEMORY_INTERRUPT_FLAG) {
+  if (address == MEMORY_IO_IF) {
     console->iff = value & MASK_4_LOWER_BYTE;
     return;
   }
@@ -144,7 +144,7 @@ void Bus::write(const word address, const byte value) {
     return;
   }
 
-  if (address == MEMORY_INTERRUPT_ENABLE) {
+  if (address == MEMORY_IO_IE) {
     console->ie = value & MASK_4_LOWER_BYTE;
     return;
   }

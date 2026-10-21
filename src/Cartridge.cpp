@@ -169,30 +169,25 @@ void Cartridge::writeNoMBC(const word address, const byte value) {
 }
 
 auto Cartridge::readMBC1(const word address) const -> byte {
-  // 0x0000 - 0x3FFF
   if (address <= MEMORY_FIXED_BANK_END) {
     return rom[address];
   }
 
-  // 0x4000 -  0x7FFF
   if (address >= MEMORY_SWITCH_BANK_START &&
       address <= MEMORY_SWITCH_BANK_END) {
     const byte romBank =
         bankingMode == CARTRIDGE_ERAM_BANKING_MODE
             ? romBankingNumber & MASK_5_LOWER_BYTE   // Address 512KB of ROM
             : romBankingNumber & MASK_7_LOWER_BYTE;  // Address 2MB of ROM
-    // 0x4000, 0x4000
     return rom[address - MEMORY_SWITCH_BANK_START +
                romBank * CARTRIDGE_ROM_BANK_SIZE];
   }
 
-  // 0xA000 - 0xBFFF
   if (eRamEnabled && address >= MEMORY_ERAM_START &&
       address <= MEMORY_ERAM_END) {
     const byte ramBank = bankingMode == CARTRIDGE_ERAM_BANKING_MODE
                              ? eRamBankingNumber & MASK_2_LOWER_BYTE
                              : 0;
-    // 0xA000, 0x2000
     return eRam[address - MEMORY_ERAM_START +
                 ramBank * CARTRIDGE_ERAM_BANK_SIZE];
   }
@@ -203,18 +198,15 @@ auto Cartridge::readMBC1(const word address) const -> byte {
 }
 
 void Cartridge::writeMBC1(const word address, const byte value) {
-  // 0x1FFF
   if (address <= CARTRIDGE_ERAM_ENABLE_END) {
     eRamEnabled = (value & MASK_4_LOWER_BYTE) == CARTRIDGE_ERAM_ENABLE_VALUE;
 
-    // 0x2000 - 0x3FFF
   } else if (address >= CARTRIDGE_ROM_BANK_NUMBER_START &&
              address <= CARTRIDGE_ROM_BANK_NUMBER_END) {
     romBankingNumber =
         romBankingNumber & MASK_5_6_BYTE | value & MASK_5_LOWER_BYTE;
     incrementBankingNumber();
 
-    // 0x4000 - 0x5FFF
   } else if (address >= CARTRIDGE_ERAM_BANK_NUMBER_START &&
              address <= CARTRIDGE_ERAM_BANK_NUMBER_END) {
     if (eRamEnabled) {
@@ -225,38 +217,31 @@ void Cartridge::writeMBC1(const word address, const byte value) {
       incrementBankingNumber();
     }
 
-    // 0x6000 - 0x7FFF
   } else if (address >= CARTRIDGE_ROM_ERAM_MODE_SELECT_START &&
              address <= CARTRIDGE_ROM_ERAM_MODE_SELECT_END) {
     bankingMode = value & MASK_1_LOWER_BYTE;
 
-    // 0xA000 - 0xBFFF
   } else if (eRamEnabled && address >= MEMORY_ERAM_START &&
              address <= MEMORY_ERAM_END) {
     const byte ramBank = bankingMode == CARTRIDGE_ERAM_BANKING_MODE
                              ? eRamBankingNumber & MASK_2_LOWER_BYTE
                              : 0;
-    // 0xA000, 0x2000
     eRam[address - MEMORY_ERAM_START + ramBank * CARTRIDGE_ERAM_BANK_SIZE] =
         value;
   }
 }
 
 auto Cartridge::readMBC3(const word address) const -> byte {
-  // 0x0000 - 0x3FFF
   if (address <= MEMORY_FIXED_BANK_END) {
     return rom[address];
   }
 
-  // 0x4000 -  0x7FFF
   if (address >= MEMORY_SWITCH_BANK_START &&
     address <= MEMORY_SWITCH_BANK_END) {
-    // 0x4000, 0x4000
     return rom[address - MEMORY_SWITCH_BANK_START +
                romBankingNumber * CARTRIDGE_ROM_BANK_SIZE];
   }
 
-  // 0xA000 - 0xBFFF
   if (eRamEnabled && address >= MEMORY_ERAM_START &&
       address <= MEMORY_ERAM_END) {
       switch (eRamBankingNumber) {
@@ -280,12 +265,10 @@ auto Cartridge::readMBC3(const word address) const -> byte {
 }
 
 void Cartridge::writeMBC3(const word address, const byte value) {
-  // 0x0000 - 0x1FFF
   // If eram is enabled, so is RTC
   if (address <= CARTRIDGE_ERAM_ENABLE_END) {
     eRamEnabled = (value & MASK_4_LOWER_BYTE) == CARTRIDGE_ERAM_ENABLE_VALUE;
 
-    // 0x2000 - 0x3FFF
   }else if (address >= CARTRIDGE_ROM_BANK_NUMBER_START &&
              address <= CARTRIDGE_ROM_BANK_NUMBER_END) {
     romBankingNumber = value & MASK_7_LOWER_BYTE;
@@ -293,19 +276,16 @@ void Cartridge::writeMBC3(const word address, const byte value) {
       romBankingNumber = 1;
     }
 
-    // 0x4000 - 0x5FFF
   }else if (address >= CARTRIDGE_ERAM_BANK_NUMBER_START &&
              address <= CARTRIDGE_ERAM_BANK_NUMBER_END) {
     eRamBankingNumber = value & MASK_4_LOWER_BYTE;
 
-  // 0x6000 - 0x7FFF
   }else if (address >= CARTRIDGE_ROM_ERAM_MODE_SELECT_START &&
                         address <= CARTRIDGE_ROM_ERAM_MODE_SELECT_END) {
     if (rtcLatch == 0 && value == 1) {
       updateRtcLatchMBC3();
     }
     rtcLatch = value;
-  // 0xA000 - 0xBFFF
   }else if (eRamEnabled && address >= MEMORY_ERAM_START &&
                  address <= MEMORY_ERAM_END) {
       switch (eRamBankingNumber) {

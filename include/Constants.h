@@ -93,17 +93,12 @@ static constexpr word MEMORY_OAM_START = 0xFE00;
 static constexpr word MEMORY_OAM_END = 0xFE9F;
 static constexpr word MEMORY_FORBIDDEN_START = 0xFEA0;
 static constexpr word MEMORY_FORBIDDEN_END = 0xFEFF;
-static constexpr word MEMORY_JOYPAD_START = 0xFF00;
 static constexpr word MEMORY_TIMER_START = 0xFF04;
 static constexpr word MEMORY_TIMER_END = 0xFF07;
-static constexpr word MEMORY_INTERRUPT_FLAG = 0xFF0F;
 static constexpr word MEMORY_AUDIO_START = 0xFF10;
 static constexpr word MEMORY_AUDIO_END = 0xFF3F;
 static constexpr word MEMORY_HRAM_START = 0xFF80;
 static constexpr word MEMORY_HRAM_END = 0xFFFE;
-static constexpr word MEMORY_INTERRUPT_ENABLE = 0xFFFF;
-static constexpr word MEMORY_SERIAL_TRANSFER_START = 0xFF01;
-static constexpr word MEMORY_SERIAL_TRANSFER_END = 0xFF02;
 static constexpr word MEMORY_OAM_DMA_START = 0xFF46;
 
 static constexpr word CARTRIDGE_ROM_BANK_SIZE = 0x4000;
@@ -124,8 +119,8 @@ static constexpr word CARTRIDGE_ERAM_SIZE_START = 0x149;
 
 // IO Registers
 static constexpr word MEMORY_IO_JOYPAD_INPUT = 0xFF00;
-static constexpr word MEMORY_IO_SERIAL_TRANSFER_DATA = 0xFF01;
-static constexpr word MEMORY_IO_SERIAL_TRANSFER_CONTROL = 0xFF0;
+static constexpr word MEMORY_IO_SERIAL_TRANSFER_SB = 0xFF01;
+static constexpr word MEMORY_IO_SERIAL_TRANSFER_SC = 0xFF02;
 static constexpr word MEMORY_IO_IF = 0xFF0F;
 static constexpr word MEMORY_IO_NR10 = 0xFF10;
 static constexpr word MEMORY_IO_NR11 = 0xFF11;

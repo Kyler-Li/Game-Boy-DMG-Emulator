@@ -16,3 +16,4 @@ class Timer {
 }  // namespace gbdmge
 
 #endif
+
