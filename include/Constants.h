@@ -99,7 +99,7 @@ static constexpr word MEMORY_AUDIO_START = 0xFF10;
 static constexpr word MEMORY_AUDIO_END = 0xFF3F;
 static constexpr word MEMORY_HRAM_START = 0xFF80;
 static constexpr word MEMORY_HRAM_END = 0xFFFE;
-static constexpr word MEMORY_OAM_DMA_START = 0xFF46;
+static constexpr word MEMORY_OAM_DMA = 0xFF46;
 
 static constexpr word CARTRIDGE_ROM_BANK_SIZE = 0x4000;
 static constexpr word CARTRIDGE_ERAM_BANK_SIZE = 0x2000;

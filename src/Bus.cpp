@@ -130,7 +130,7 @@ void Bus::write(const word address, const byte value) {
     return;
   }
 
-  if (address == MEMORY_OAM_DMA_START) {
+  if (address == MEMORY_OAM_DMA) {
     const word srcBase = static_cast<word>(value) << 8;
     for (word dest = MEMORY_OAM_START; dest <= MEMORY_OAM_END; ++dest) {
       const word src = srcBase + dest - MEMORY_OAM_START;
