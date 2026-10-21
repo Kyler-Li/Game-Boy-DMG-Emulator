@@ -104,6 +104,7 @@ static constexpr word MEMORY_HRAM_END = 0xFFFE;
 static constexpr word MEMORY_INTERRUPT_ENABLE = 0xFFFF;
 static constexpr word MEMORY_SERIAL_TRANSFER_START = 0xFF01;
 static constexpr word MEMORY_SERIAL_TRANSFER_END = 0xFF02;
+static constexpr word MEMORY_OAM_DMA_START = 0xFF46;
 
 static constexpr word CARTRIDGE_ROM_BANK_SIZE = 0x4000;
 static constexpr word CARTRIDGE_ERAM_BANK_SIZE = 0x2000;

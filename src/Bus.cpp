@@ -7,30 +7,31 @@ Bus::Bus(Console& console) : console{&console} {}
 
 auto Bus::read(const word address) const -> byte {
   // Cartridge ROM and ERAM
-  if ((MEMORY_FIXED_BANK_START <= address &&
+  if ((address >= MEMORY_FIXED_BANK_START &&
        address <= MEMORY_SWITCH_BANK_END) ||
-      (address <= MEMORY_ERAM_START && address <= MEMORY_ERAM_END)) {
+      (address >= MEMORY_ERAM_START && address <= MEMORY_ERAM_END)) {
     return console->cartridge.read(address);
   }
 
   // OAM, VRAM and VRAM registers
-  if ((MEMORY_VRAM_START <= address && address <= MEMORY_VRAM_END) ||
-      (address <= MEMORY_OAM_START && address <= MEMORY_OAM_END) ||
-      (address <= MEMORY_VRAM_REGISTERS_START &&
+  if ((address >= MEMORY_VRAM_START && address <= MEMORY_VRAM_END) ||
+      (address >= MEMORY_OAM_START && address <= MEMORY_OAM_END) ||
+      (address >= MEMORY_VRAM_REGISTERS_START &&
        address <= MEMORY_VRAM_REGISTERS_END)) {
     return console->ppu.read(address);
   }
 
-  if (MEMORY_WRAM_START <= address && address <= MEMORY_WRAM_END) {
+  if (address >= MEMORY_WRAM_START && address <= MEMORY_WRAM_END) {
     return console->wram[address - MEMORY_WRAM_START];
   }
 
   // Echo RAM is a mirror of WRAM
-  if (address <= MEMORY_ECHO_RAM_START && address <= MEMORY_ECHO_RAM_END) {
+  if (address >= MEMORY_ECHO_RAM_START && address <= MEMORY_ECHO_RAM_END) {
     return console->wram[address - MEMORY_ECHO_RAM_START];
   }
 
-  if (address <= MEMORY_FORBIDDEN_START && address <= MEMORY_FORBIDDEN_END) {
+  if (address >= MEMORY_FORBIDDEN_START && address <= MEMORY_FORBIDDEN_END) {
+    std::cerr << "Reading from forbidden memory space.\n";
     return 0xFF;
   }
 
@@ -44,7 +45,7 @@ auto Bus::read(const word address) const -> byte {
     return 0xFF;
   }
 
-  if (address <= MEMORY_TIMER_START && address <= MEMORY_TIMER_END) {
+  if (address >= MEMORY_TIMER_START && address <= MEMORY_TIMER_END) {
     return console->timer.read(address);
   }
 
@@ -52,11 +53,11 @@ auto Bus::read(const word address) const -> byte {
     return console->iff & MASK_4_LOWER_BYTE;
   }
 
-  if (address <= MEMORY_AUDIO_START && address <= MEMORY_AUDIO_END) {
+  if (address >= MEMORY_AUDIO_START && address <= MEMORY_AUDIO_END) {
     return console->audio.read(address);
   }
 
-  if (address <= MEMORY_HRAM_START && address <= MEMORY_HRAM_END) {
+  if (address >= MEMORY_HRAM_START && address <= MEMORY_HRAM_END) {
     return console->hram[address - MEMORY_HRAM_START];
   }
 
@@ -69,7 +70,85 @@ auto Bus::read(const word address) const -> byte {
   return 0xFF;
 }
 
-void Bus::write(const word address, byte value) {
+void Bus::write(const word address, const byte value) {
+  // Cartridge ROM and ERAM
+  if ((address >= MEMORY_FIXED_BANK_START &&
+       address <= MEMORY_SWITCH_BANK_END) ||
+      (address >= MEMORY_ERAM_START && address <= MEMORY_ERAM_END)) {
+    console->cartridge.write(address, value);
+    return;
+  }
+
+  // OAM, VRAM and VRAM registers
+  if ((address >= MEMORY_VRAM_START && address <= MEMORY_VRAM_END) ||
+      (address >= MEMORY_OAM_START && address <= MEMORY_OAM_END) ||
+      (address >= MEMORY_VRAM_REGISTERS_START &&
+       address <= MEMORY_VRAM_REGISTERS_END)) {
+    console->ppu.write(address, value);
+    return;
+  }
+
+  if (address >= MEMORY_WRAM_START && address <= MEMORY_WRAM_END) {
+    console->wram[address - MEMORY_WRAM_START] = value;
+    return;
+  }
+
+  // Echo RAM is a mirror of WRAM
+  if (address >= MEMORY_ECHO_RAM_START && address <= MEMORY_ECHO_RAM_END) {
+    console->wram[address - MEMORY_ECHO_RAM_START] = value;
+    return;
+  }
+
+  if (address >= MEMORY_FORBIDDEN_START && address <= MEMORY_FORBIDDEN_END) {
+    std::cerr << "Reading from forbidden memory space.\n";
+    return;
+  }
+
+  if (address == MEMORY_JOYPAD_START) {
+    console->joypad.write(address, value);
+    return;
+  }
+
+  if (address == MEMORY_SERIAL_TRANSFER_START ||
+    address == MEMORY_SERIAL_TRANSFER_END) {
+    std::cerr << "Reading from serial transfer not implemented!\n";
+    return;
+  }
+
+  if (address >= MEMORY_TIMER_START && address <= MEMORY_TIMER_END) {
+    console->timer.write(address, value);
+    return;
+  }
+
+  if (address == MEMORY_INTERRUPT_FLAG) {
+    console->iff = value & MASK_4_LOWER_BYTE;
+    return;
+  }
+
+  if (address >= MEMORY_AUDIO_START && address <= MEMORY_AUDIO_END) {
+    console->audio.write(address, value);
+    return;
+  }
+
+  if (address == MEMORY_OAM_DMA_START) {
+    const word srcBase = value << 8;
+    for (word dest = MEMORY_OAM_START; dest <= MEMORY_OAM_END; dest++) {
+      const word src = srcBase + dest - MEMORY_OAM_START;
+      console->ppu.write(dest, read(src));
+    }
+    return;
+  }
+
+  if (address >= MEMORY_HRAM_START && address <= MEMORY_HRAM_END) {
+    console->hram[address - MEMORY_HRAM_START] = value;
+    return;
+  }
+
+  if (address == MEMORY_INTERRUPT_ENABLE) {
+    console->ie = value & MASK_4_LOWER_BYTE;
+    return;
+  }
+
   std::cerr << "Bus failed to write to " << std::hex << address
             << " : Unrecgonized memory space\n";
 }
