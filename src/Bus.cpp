@@ -131,8 +131,8 @@ void Bus::write(const word address, const byte value) {
   }
 
   if (address == MEMORY_OAM_DMA_START) {
-    const word srcBase = value << 8;
-    for (word dest = MEMORY_OAM_START; dest <= MEMORY_OAM_END; dest++) {
+    const word srcBase = static_cast<word>(value) << 8;
+    for (word dest = MEMORY_OAM_START; dest <= MEMORY_OAM_END; ++dest) {
       const word src = srcBase + dest - MEMORY_OAM_START;
       console->ppu.write(dest, read(src));
     }
