@@ -16,4 +16,8 @@ void Joypad::write(word address, byte value) {
   p1 = (value & MASK_4_UPPER_BYTE) | (p1 & MASK_4_LOWER_BYTE);
 }
 
+void Joypad::reset() {
+  // TODO
+}
+
 }  // namespace gbdmge

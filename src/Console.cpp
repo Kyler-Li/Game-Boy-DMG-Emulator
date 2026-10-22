@@ -1,16 +1,32 @@
 #include "Console.h"
-#include <iostream>
 
 namespace gbdmge {
-Console::Console() : bus{*this}, cpu{bus} {}
+Console::Console()
+    : bus{*this},
+      cpu{bus},
+      joypad{},
+      audio{},
+      ppu{},
+      iff{0},
+      ie{0},
+      wram{},
+      hram{} {}
 
 auto Console::load(const std::filesystem::path& romPath) -> bool {
-  cpu.reset();
+  reset();
   return cartridge.load(romPath);
 }
 
 void Console::step() {
   cpu.cycle();
+}
+
+void Console::reset() {
+  cpu.reset();
+  ppu.reset();
+  audio.reset();
+  joypad.reset();
+  timer.reset();
 }
 
 }  // namespace gbdmge

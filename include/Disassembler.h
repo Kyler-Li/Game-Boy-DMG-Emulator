@@ -25,3 +25,4 @@ class Disassembler {
 }  // namespace gbdmge
 
 #endif
+

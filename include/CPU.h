@@ -12,7 +12,7 @@ class CPU {
  public:
   explicit CPU(Bus& bus);
   qword cycle();
-  void reset();
+  void reset(); // Initialize to post boot rom state
 
  private:
   IME ime;
@@ -169,3 +169,4 @@ class CPU {
 }  // namespace gbdmge
 
 #endif
+
