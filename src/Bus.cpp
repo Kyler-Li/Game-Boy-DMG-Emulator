@@ -16,8 +16,8 @@ auto Bus::read(const word address) const -> byte {
   // OAM, VRAM and VRAM registers
   if ((address >= MEMORY_VRAM_START && address <= MEMORY_VRAM_END) ||
       (address >= MEMORY_OAM_START && address <= MEMORY_OAM_END) ||
-      (address >= MEMORY_VRAM_REGISTERS_START &&
-       address <= MEMORY_VRAM_REGISTERS_END)) {
+      (address >= MEMORY_LCD_START &&
+       address <= MEMORY_LCD_END)) {
     return console->ppu.read(address);
   }
 
@@ -82,8 +82,8 @@ void Bus::write(const word address, const byte value) {
   // OAM, VRAM and VRAM registers
   if ((address >= MEMORY_VRAM_START && address <= MEMORY_VRAM_END) ||
       (address >= MEMORY_OAM_START && address <= MEMORY_OAM_END) ||
-      (address >= MEMORY_VRAM_REGISTERS_START &&
-       address <= MEMORY_VRAM_REGISTERS_END)) {
+      (address >= MEMORY_LCD_START &&
+       address <= MEMORY_LCD_END)) {
     console->ppu.write(address, value);
     return;
   }
