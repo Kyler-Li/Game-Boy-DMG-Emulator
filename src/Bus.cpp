@@ -6,14 +6,12 @@ namespace gbdmge {
 Bus::Bus(Console& console) : console{&console} {}
 
 auto Bus::read(const word address) const -> byte {
-  // Cartridge ROM and ERAM
   if ((address >= MEMORY_FIXED_BANK_START &&
        address <= MEMORY_SWITCH_BANK_END) ||
       (address >= MEMORY_EXT_RAM_START && address <= MEMORY_EXT_RAM_END)) {
     return console->cartridge.read(address);
   }
 
-  // VRAM, OAM, and LCD registers
   if ((address >= MEMORY_VRAM_START && address <= MEMORY_VRAM_END) ||
       (address >= MEMORY_OAM_START && address <= MEMORY_OAM_END) ||
       (address >= MEMORY_LCD_START && address <= MEMORY_LCD_END)) {
@@ -69,7 +67,6 @@ auto Bus::read(const word address) const -> byte {
 }
 
 void Bus::write(const word address, const byte value) {
-  // Cartridge ROM and ERAM
   if ((address >= MEMORY_FIXED_BANK_START &&
        address <= MEMORY_SWITCH_BANK_END) ||
       (address >= MEMORY_EXT_RAM_START && address <= MEMORY_EXT_RAM_END)) {
@@ -77,7 +74,6 @@ void Bus::write(const word address, const byte value) {
     return;
   }
 
-  // OAM, VRAM and VRAM registers
   if ((address >= MEMORY_VRAM_START && address <= MEMORY_VRAM_END) ||
       (address >= MEMORY_OAM_START && address <= MEMORY_OAM_END) ||
       (address >= MEMORY_LCD_START && address <= MEMORY_LCD_END)) {
