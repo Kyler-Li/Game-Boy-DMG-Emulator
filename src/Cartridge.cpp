@@ -155,7 +155,7 @@ auto Cartridge::readNoMBC(const word address) const -> byte {
     return rom[address];
   }
 
-  if (MEMORY_ERAM_START <= address && address <= MEMORY_ERAM_END) {
+  if (address >= MEMORY_EXT_RAM_START && address <= MEMORY_EXT_RAM_END) {
     return eRam[address & MASK_13_LOWER_WORD];
   }
 
@@ -163,7 +163,7 @@ auto Cartridge::readNoMBC(const word address) const -> byte {
 }
 
 void Cartridge::writeNoMBC(const word address, const byte value) {
-  if (MEMORY_ERAM_START <= address && address <= MEMORY_ERAM_END) {
+  if (address >= MEMORY_EXT_RAM_START && address <= MEMORY_EXT_RAM_END) {
     eRam[address & MASK_13_LOWER_WORD] = value;
   }
 }
@@ -183,12 +183,12 @@ auto Cartridge::readMBC1(const word address) const -> byte {
                romBank * CARTRIDGE_ROM_BANK_SIZE];
   }
 
-  if (eRamEnabled && address >= MEMORY_ERAM_START &&
-      address <= MEMORY_ERAM_END) {
+  if (eRamEnabled && address >= MEMORY_EXT_RAM_START &&
+      address <= MEMORY_EXT_RAM_END) {
     const byte ramBank = bankingMode == CARTRIDGE_ERAM_BANKING_MODE
                              ? eRamBankingNumber & MASK_2_LOWER_BYTE
                              : 0;
-    return eRam[address - MEMORY_ERAM_START +
+    return eRam[address - MEMORY_EXT_RAM_START +
                 ramBank * CARTRIDGE_ERAM_BANK_SIZE];
   }
 
@@ -221,12 +221,12 @@ void Cartridge::writeMBC1(const word address, const byte value) {
              address <= CARTRIDGE_ROM_ERAM_MODE_SELECT_END) {
     bankingMode = value & MASK_1_LOWER_BYTE;
 
-  } else if (eRamEnabled && address >= MEMORY_ERAM_START &&
-             address <= MEMORY_ERAM_END) {
+  } else if (eRamEnabled && address >= MEMORY_EXT_RAM_START &&
+             address <= MEMORY_EXT_RAM_END) {
     const byte ramBank = bankingMode == CARTRIDGE_ERAM_BANKING_MODE
                              ? eRamBankingNumber & MASK_2_LOWER_BYTE
                              : 0;
-    eRam[address - MEMORY_ERAM_START + ramBank * CARTRIDGE_ERAM_BANK_SIZE] =
+    eRam[address - MEMORY_EXT_RAM_START + ramBank * CARTRIDGE_ERAM_BANK_SIZE] =
         value;
   }
 }
@@ -242,14 +242,14 @@ auto Cartridge::readMBC3(const word address) const -> byte {
                romBankingNumber * CARTRIDGE_ROM_BANK_SIZE];
   }
 
-  if (eRamEnabled && address >= MEMORY_ERAM_START &&
-      address <= MEMORY_ERAM_END) {
+  if (eRamEnabled && address >= MEMORY_EXT_RAM_START &&
+      address <= MEMORY_EXT_RAM_END) {
       switch (eRamBankingNumber) {
         case 0x0:
         case 0x1:
         case 0x2:
         case 0x3:
-          return eRam[address - MEMORY_ERAM_START +
+          return eRam[address - MEMORY_EXT_RAM_START +
                 eRamBankingNumber * CARTRIDGE_ERAM_BANK_SIZE];
         case 0x8: return rtcSeconds;
         case 0x9: return rtcMinutes;
@@ -286,14 +286,14 @@ void Cartridge::writeMBC3(const word address, const byte value) {
       updateRtcLatchMBC3();
     }
     rtcLatch = value;
-  }else if (eRamEnabled && address >= MEMORY_ERAM_START &&
-                 address <= MEMORY_ERAM_END) {
+  }else if (eRamEnabled && address >= MEMORY_EXT_RAM_START &&
+                 address <= MEMORY_EXT_RAM_END) {
       switch (eRamBankingNumber) {
         case 0x0:
         case 0x1:
         case 0x2:
         case 0x3:
-          eRam[address - MEMORY_ERAM_START +
+          eRam[address - MEMORY_EXT_RAM_START +
                eRamBankingNumber * CARTRIDGE_ERAM_BANK_SIZE] = value & MASK_4_LOWER_BYTE;
           break;
         case 0x8: rtcSeconds = value & MASK_6_LOWER_BYTE; break;

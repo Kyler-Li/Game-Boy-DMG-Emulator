@@ -56,35 +56,22 @@ static constexpr byte INTERRUPT_TIMER_FLAG = 2;
 static constexpr byte INTERRUPT_SERIAL_FLAG = 3;
 static constexpr byte INTERRUPT_JOYPAD_FLAG = 4;
 
-// Addresses for interrupt handlers
-static constexpr word MEMORY_INTERRUPT_VBLANK = 0x0040;
-static constexpr word MEMORY_INTERRUPT_LCD = 0x0048;
-static constexpr word MEMORY_INTERRUPT_TIMER = 0x0050;
-static constexpr word MEMORY_INTERRUPT_SERIAL = 0x0058;
-static constexpr word MEMORY_INTERRUPT_JOYPAD = 0x0060;
+// Source values for interrupt handlers
+static constexpr word INTERRUPT_VBLANK_VALUE = 0x0040;
+static constexpr word INTERRUPT_LCD_VALUE = 0x0048;
+static constexpr word INTERRUPT_TIMER_VALUE = 0x0050;
+static constexpr word INTERRUPT_SERIAL_VALUE = 0x0058;
+static constexpr word INTERRUPT_JOYPAD_VALUE = 0x0060;
 
-// Nintendo Logo
-static constexpr word NINTENDO_LOGO_START = 0x0104;
-static constexpr word NINTENDO_LOGO_END = 0x0133;
-
-static constexpr std::array<byte, NINTENDO_LOGO_END - NINTENDO_LOGO_START + 1>
-    NINTENDO_LOGO = {0xCE, 0xED, 0x66, 0x66, 0xCC, 0x0D, 0x00, 0x0B, 0x03, 0x73,
-                     0x00, 0x83, 0x00, 0x0C, 0x00, 0x0D, 0x00, 0x08, 0x11, 0x1F,
-                     0x88, 0x89, 0x00, 0x0E, 0xDC, 0xCC, 0x6E, 0xE6, 0xDD, 0xDD,
-                     0xD9, 0x99, 0xBB, 0xBB, 0x67, 0x63, 0x6E, 0x0E, 0xEC, 0xCC,
-                     0xDD, 0xDC, 0x99, 0x9F, 0xBB, 0xB9, 0x33, 0x3E};
-
-// Memory spaces
-static constexpr word MEMORY_FIXED_BANK_START = 0x0000;
+// General memory ranges
+static constexpr word MEMORY_FIXED_BANK_START = 0x000;
 static constexpr word MEMORY_FIXED_BANK_END = 0x3FFF;
 static constexpr word MEMORY_SWITCH_BANK_START = 0x4000;
 static constexpr word MEMORY_SWITCH_BANK_END = 0x7FFF;
 static constexpr word MEMORY_VRAM_START = 0x8000;
 static constexpr word MEMORY_VRAM_END = 0x9FFF;
-static constexpr word MEMORY_LCD_START = 0xFF40;
-static constexpr word MEMORY_LCD_END = 0xFF4B;
-static constexpr word MEMORY_ERAM_START = 0xA000;
-static constexpr word MEMORY_ERAM_END = 0xBFFF;
+static constexpr word MEMORY_EXT_RAM_START = 0xA000;
+static constexpr word MEMORY_EXT_RAM_END = 0xBFFF;
 static constexpr word MEMORY_WRAM_START = 0xC000;
 static constexpr word MEMORY_WRAM_END = 0xDFFF;
 static constexpr word MEMORY_ECHO_RAM_START = 0xE000;
@@ -93,14 +80,68 @@ static constexpr word MEMORY_OAM_START = 0xFE00;
 static constexpr word MEMORY_OAM_END = 0xFE9F;
 static constexpr word MEMORY_FORBIDDEN_START = 0xFEA0;
 static constexpr word MEMORY_FORBIDDEN_END = 0xFEFF;
-static constexpr word MEMORY_TIMER_START = 0xFF04;
-static constexpr word MEMORY_TIMER_END = 0xFF07;
-static constexpr word MEMORY_AUDIO_START = 0xFF10;
-static constexpr word MEMORY_AUDIO_END = 0xFF3F;
+static constexpr word MEMORY_IO_START = 0xFF00;
+static constexpr word MEMORY_IO_END = 0xFF7F;
 static constexpr word MEMORY_HRAM_START = 0xFF80;
 static constexpr word MEMORY_HRAM_END = 0xFFFE;
-static constexpr word MEMORY_OAM_DMA = 0xFF46;
 
+// Memory addresses for I/O registers
+static constexpr word MEMORY_P1_JOYP_ADDRESS = 0xFF00;
+static constexpr word MEMORY_SB_ADDRESS = 0xFF01;
+static constexpr word MEMORY_SC_ADDRESS = 0xFF02;
+static constexpr word MEMORY_TIMER_DIV_START = 0xFF04;
+static constexpr word MEMORY_DIV_ADDRESS = 0xFF04;
+static constexpr word MEMORY_TIMA_ADDRESS = 0xFF05;
+static constexpr word MEMORY_TAC_ADDRESS = 0xFF07;
+static constexpr word MEMORY_TIMER_DIV_END = 0xFF07;
+static constexpr word MEMORY_IF_ADDRESS = 0xFF0F;
+static constexpr word MEMORY_AUDIO_START = 0xFF10;
+static constexpr word MEMORY_NR10_ADDRESS = 0xFF10;
+static constexpr word MEMORY_NR11_ADDRESS = 0xFF11;
+static constexpr word MEMORY_NR12_ADDRESS = 0xFF12;
+static constexpr word MEMORY_NR13_ADDRESS = 0xFF13;
+static constexpr word MEMORY_NR14_ADDRESS = 0xFF14;
+static constexpr word MEMORY_NR21_ADDRESS = 0xFF16;
+static constexpr word MEMORY_NR22_ADDRESS = 0xFF17;
+static constexpr word MEMORY_NR23_ADDRESS = 0xFF18;
+static constexpr word MEMORY_NR24_ADDRESS = 0xFF19;
+static constexpr word MEMORY_NR30_ADDRESS = 0xFF1A;
+static constexpr word MEMORY_NR31_ADDRESS = 0xFF1B;
+static constexpr word MEMORY_NR32_ADDRESS = 0xFF1C;
+static constexpr word MEMORY_NR33_ADDRESS = 0xFF1D;
+static constexpr word MEMORY_NR34_ADDRESS = 0xFF1E;
+static constexpr word MEMORY_NR41_ADDRESS = 0xFF20;
+static constexpr word MEMORY_NR42_ADDRESS = 0xFF21;
+static constexpr word MEMORY_NR43_ADDRESS = 0xFF22;
+static constexpr word MEMORY_NR44_ADDRESS = 0xFF23;
+static constexpr word MEMORY_NR50_ADDRESS = 0xFF24;
+static constexpr word MEMORY_NR51_ADDRESS = 0xFF25;
+static constexpr word MEMORY_NR52_ADDRESS = 0xFF26;
+static constexpr word MEMORY_AUDIO_END = 0xFF26;
+static constexpr word MEMORY_WAVE_RAM_START = 0xFF30;
+static constexpr word MEMORY_WAVE_RAM_END = 0xFF3F;
+static constexpr word MEMORY_LCD_START = 0xFF40;
+static constexpr word MEMORY_LCDC_ADDRESS = 0xFF40;
+static constexpr word MEMORY_STAT_ADDRESS = 0xFF41;
+static constexpr word MEMORY_SCY_ADDRESS = 0xFF42;
+static constexpr word MEMORY_SCX_ADDRESS = 0xFF43;
+static constexpr word MEMORY_LY_ADDRESS = 0xFF44;
+static constexpr word MEMORY_LYC_ADDRESS = 0xFF45;
+static constexpr word MEMORY_DMA_ADDRESS = 0xFF46;
+static constexpr word MEMORY_BGP_ADDRESS = 0xFF47;
+static constexpr word MEMORY_OPB0_ADDRESS = 0xFF48;
+static constexpr word MEMORY_OPB1_ADDRESS = 0xFF49;
+static constexpr word MEMORY_WY_ADDRESS = 0xFF4A;
+static constexpr word MEMORY_WX_ADDRESS = 0xFF4B;
+static constexpr word MEMORY_LCD_END = 0xFF4B;
+static constexpr word MEMORY_KEY0_SYS_ADDRESS = 0xFF4C;
+static constexpr word MEMORY_KEY1_SPD_ADDRESS = 0xFF4D;
+static constexpr word MEMORY_VBK_ADDRESS = 0xFF4F;
+static constexpr word MEMORY_PCM12_ADDRESS = 0xFF76;
+static constexpr word MEMORY_PCM34_ADDRESS = 0xFF77;
+static constexpr word MEMORY_IE_ADDRESS = 0xFFFF;
+
+// Constants for Cartridge
 static constexpr word CARTRIDGE_ROM_BANK_SIZE = 0x4000;
 static constexpr word CARTRIDGE_ERAM_BANK_SIZE = 0x2000;
 static constexpr word CARTRIDGE_ERAM_BANK_NUMBER_START = 0x4000;
@@ -117,33 +158,16 @@ static constexpr word CARTRIDGE_TYPE_START = 0x147;
 static constexpr word CARTRIDGE_ROM_SIZE_VALUE = 0x148;
 static constexpr word CARTRIDGE_ERAM_SIZE_START = 0x149;
 
-// IO Registers
-static constexpr word MEMORY_IO_JOYPAD_INPUT = 0xFF00;
-static constexpr word MEMORY_IO_SERIAL_TRANSFER_SB = 0xFF01;
-static constexpr word MEMORY_IO_SERIAL_TRANSFER_SC = 0xFF02;
-static constexpr word MEMORY_IO_IF = 0xFF0F;
-static constexpr word MEMORY_IO_NR10 = 0xFF10;
-static constexpr word MEMORY_IO_NR11 = 0xFF11;
-static constexpr word MEMORY_IO_NR12 = 0xFF12;
-static constexpr word MEMORY_IO_NR13 = 0xFF13;
-static constexpr word MEMORY_IO_NR14 = 0xFF14;
-static constexpr word MEMORY_IO_NR21 = 0xFF16;
-static constexpr word MEMORY_IO_NR22 = 0xFF17;
-static constexpr word MEMORY_IO_NR23 = 0xFF18;
-static constexpr word MEMORY_IO_NR24 = 0xFF19;
-static constexpr word MEMORY_IO_NR30 = 0xFF1A;
-static constexpr word MEMORY_IO_NR31 = 0xFF1B;
-static constexpr word MEMORY_IO_NR32 = 0xFF1C;
-static constexpr word MEMORY_IO_NR33 = 0xFF1D;
-static constexpr word MEMORY_IO_NR34 = 0xFF1E;
-static constexpr word MEMORY_IO_NR41 = 0xFF20;
-static constexpr word MEMORY_IO_NR42 = 0xFF21;
-static constexpr word MEMORY_IO_NR43 = 0xFF22;
-static constexpr word MEMORY_IO_NR44 = 0xFF23;
-static constexpr word MEMORY_IO_NR50 = 0xFF24;
-static constexpr word MEMORY_IO_NR51 = 0xFF25;
-static constexpr word MEMORY_IO_NR52 = 0xFF26;
-static constexpr word MEMORY_IO_IE = 0xFFFF;
+// Nintendo Logo
+static constexpr word NINTENDO_LOGO_START = 0x0104;
+static constexpr word NINTENDO_LOGO_END = 0x0133;
+
+static constexpr std::array<byte, NINTENDO_LOGO_END - NINTENDO_LOGO_START + 1>
+    NINTENDO_LOGO = {0xCE, 0xED, 0x66, 0x66, 0xCC, 0x0D, 0x00, 0x0B, 0x03, 0x73,
+                     0x00, 0x83, 0x00, 0x0C, 0x00, 0x0D, 0x00, 0x08, 0x11, 0x1F,
+                     0x88, 0x89, 0x00, 0x0E, 0xDC, 0xCC, 0x6E, 0xE6, 0xDD, 0xDD,
+                     0xD9, 0x99, 0xBB, 0xBB, 0x67, 0x63, 0x6E, 0x0E, 0xEC, 0xCC,
+                     0xDD, 0xDC, 0x99, 0x9F, 0xBB, 0xB9, 0x33, 0x3E};
 
 }  // namespace gbdmge
 
