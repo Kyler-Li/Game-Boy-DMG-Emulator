@@ -25,7 +25,7 @@ FetchContent_MakeAvailable(SDL3)
 add_executable(${PROJECT_NAME})
 
 set(SOURCES
-        src/Audio.cpp
+        src/APU.cpp
         src/BitOps.cpp
         src/Bus.cpp
         src/Cartridge.cpp

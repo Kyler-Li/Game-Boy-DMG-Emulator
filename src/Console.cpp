@@ -5,7 +5,7 @@ Console::Console()
     : bus{*this},
       cpu{bus},
       joypad{},
-      audio{},
+      apu{},
       ppu{},
       iff{0},
       ie{0},
@@ -24,7 +24,7 @@ void Console::step() {
 void Console::reset() {
   cpu.reset();
   ppu.reset();
-  audio.reset();
+  apu.reset();
   joypad.reset();
   timer.reset();
 }
