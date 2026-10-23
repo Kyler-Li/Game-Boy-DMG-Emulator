@@ -29,6 +29,7 @@ set(SOURCES
     src/cpu.cpp
     src/memory.cpp
     src/types.cpp
+    src/ppu.cpp
 )
 
 target_sources(${PROJECT_NAME}
