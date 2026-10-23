@@ -1,11 +1,11 @@
 #include "Cartridge.h"
 #include <algorithm>
 #include <cassert>
+#include <chrono>
 #include <cstring>
 #include <fstream>
 #include <iostream>
 #include <span>
-#include <chrono>
 #include "Constants.h"
 
 namespace gbdmge {
@@ -237,28 +237,33 @@ auto Cartridge::readMBC3(const word address) const -> byte {
   }
 
   if (address >= MEMORY_SWITCH_BANK_START &&
-    address <= MEMORY_SWITCH_BANK_END) {
+      address <= MEMORY_SWITCH_BANK_END) {
     return rom[address - MEMORY_SWITCH_BANK_START +
                romBankingNumber * CARTRIDGE_ROM_BANK_SIZE];
   }
 
   if (eRamEnabled && address >= MEMORY_EXT_RAM_START &&
       address <= MEMORY_EXT_RAM_END) {
-      switch (eRamBankingNumber) {
-        case 0x0:
-        case 0x1:
-        case 0x2:
-        case 0x3:
-          return eRam[address - MEMORY_EXT_RAM_START +
-                eRamBankingNumber * CARTRIDGE_ERAM_BANK_SIZE];
-        case 0x8: return rtcSeconds;
-        case 0x9: return rtcMinutes;
-        case 0xA: return rtcHours;
-        case 0xB: return rtcDaysLow;
-        case 0xC: return rtcDaysHigh;
-        default:
-          return 0xFF;
-      }
+    switch (eRamBankingNumber) {
+      case 0x0:
+      case 0x1:
+      case 0x2:
+      case 0x3:
+        return eRam[address - MEMORY_EXT_RAM_START +
+                    eRamBankingNumber * CARTRIDGE_ERAM_BANK_SIZE];
+      case 0x8:
+        return rtcSeconds;
+      case 0x9:
+        return rtcMinutes;
+      case 0xA:
+        return rtcHours;
+      case 0xB:
+        return rtcDaysLow;
+      case 0xC:
+        return rtcDaysHigh;
+      default:
+        return 0xFF;
+    }
   }
 
   return 0xFF;
@@ -269,49 +274,61 @@ void Cartridge::writeMBC3(const word address, const byte value) {
   if (address <= CARTRIDGE_ERAM_ENABLE_END) {
     eRamEnabled = (value & MASK_4_LOWER_BYTE) == CARTRIDGE_ERAM_ENABLE_VALUE;
 
-  }else if (address >= CARTRIDGE_ROM_BANK_NUMBER_START &&
+  } else if (address >= CARTRIDGE_ROM_BANK_NUMBER_START &&
              address <= CARTRIDGE_ROM_BANK_NUMBER_END) {
     romBankingNumber = value & MASK_7_LOWER_BYTE;
     if (romBankingNumber == 0) {
       romBankingNumber = 1;
     }
 
-  }else if (address >= CARTRIDGE_ERAM_BANK_NUMBER_START &&
+  } else if (address >= CARTRIDGE_ERAM_BANK_NUMBER_START &&
              address <= CARTRIDGE_ERAM_BANK_NUMBER_END) {
     eRamBankingNumber = value & MASK_4_LOWER_BYTE;
 
-  }else if (address >= CARTRIDGE_ROM_ERAM_MODE_SELECT_START &&
-                        address <= CARTRIDGE_ROM_ERAM_MODE_SELECT_END) {
+  } else if (address >= CARTRIDGE_ROM_ERAM_MODE_SELECT_START &&
+             address <= CARTRIDGE_ROM_ERAM_MODE_SELECT_END) {
     if (rtcLatch == 0 && value == 1) {
       updateRtcLatchMBC3();
     }
     rtcLatch = value;
-  }else if (eRamEnabled && address >= MEMORY_EXT_RAM_START &&
-                 address <= MEMORY_EXT_RAM_END) {
-      switch (eRamBankingNumber) {
-        case 0x0:
-        case 0x1:
-        case 0x2:
-        case 0x3:
-          eRam[address - MEMORY_EXT_RAM_START +
-               eRamBankingNumber * CARTRIDGE_ERAM_BANK_SIZE] = value & MASK_4_LOWER_BYTE;
-          break;
-        case 0x8: rtcSeconds = value & MASK_6_LOWER_BYTE; break;
-        case 0x9: rtcMinutes = value & MASK_6_LOWER_BYTE; break;
-        case 0xA: rtcHours = value & MASK_5_LOWER_BYTE; break;
-        case 0xB: rtcDaysLow = value; break;
-        case 0xC: rtcDaysHigh = value; break;
-        default:
-          assert(false && "Unknown eram banking number found when writing with MBC3.");
-      }
-   }
+  } else if (eRamEnabled && address >= MEMORY_EXT_RAM_START &&
+             address <= MEMORY_EXT_RAM_END) {
+    switch (eRamBankingNumber) {
+      case 0x0:
+      case 0x1:
+      case 0x2:
+      case 0x3:
+        eRam[address - MEMORY_EXT_RAM_START +
+             eRamBankingNumber * CARTRIDGE_ERAM_BANK_SIZE] =
+            value & MASK_4_LOWER_BYTE;
+        break;
+      case 0x8:
+        rtcSeconds = value & MASK_6_LOWER_BYTE;
+        break;
+      case 0x9:
+        rtcMinutes = value & MASK_6_LOWER_BYTE;
+        break;
+      case 0xA:
+        rtcHours = value & MASK_5_LOWER_BYTE;
+        break;
+      case 0xB:
+        rtcDaysLow = value;
+        break;
+      case 0xC:
+        rtcDaysHigh = value;
+        break;
+      default:
+        assert(false &&
+               "Unknown eram banking number found when writing with MBC3.");
+    }
+  }
 }
 
-void Cartridge::updateRtcLatchMBC3(){
+void Cartridge::updateRtcLatchMBC3() {
   // Uses time since epoch, update later with an accurate counter
   const auto now = std::chrono::duration_cast<std::chrono::seconds>(
-      std::chrono::system_clock::now().time_since_epoch()
-  ).count();
+                       std::chrono::system_clock::now().time_since_epoch())
+                       .count();
 
   rtcSeconds = static_cast<byte>(now % 60);
   rtcMinutes = static_cast<byte>(now / 60 % 60);
@@ -321,9 +338,10 @@ void Cartridge::updateRtcLatchMBC3(){
   rtcDaysLow = static_cast<byte>(days & MASK_8_LOWER_WORD);
 
   // Upper bits and flags in rtcDaysHigh.
-  rtcDaysHigh = rtcDaysHigh & MASK_8_UPPER_BYTE  | static_cast<byte>(days >> 8 & MASK_1_LOWER_WORD);
+  rtcDaysHigh = rtcDaysHigh & MASK_8_UPPER_BYTE |
+                static_cast<byte>(days >> 8 & MASK_1_LOWER_WORD);
 
-  if (days > 511){
+  if (days > 511) {
     rtcDaysHigh |= MASK_1_UPPER_BYTE;
   }
 }
