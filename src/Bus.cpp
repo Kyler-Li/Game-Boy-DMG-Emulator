@@ -8,7 +8,7 @@ Bus::Bus(Console& console) : console{&console} {}
 auto Bus::read(const word address) const -> byte {
   if ((address >= MEMORY_FIXED_BANK_START &&
        address <= MEMORY_SWITCH_BANK_END) ||
-      (address >= MEMORY_EXT_RAM_START && address <= MEMORY_EXT_RAM_END)) {
+      (address >= MEMORY_ERAM_START && address <= MEMORY_ERAM_END)) {
     return console->cartridge.read(address);
   }
 
@@ -69,7 +69,7 @@ auto Bus::read(const word address) const -> byte {
 void Bus::write(const word address, const byte value) {
   if ((address >= MEMORY_FIXED_BANK_START &&
        address <= MEMORY_SWITCH_BANK_END) ||
-      (address >= MEMORY_EXT_RAM_START && address <= MEMORY_EXT_RAM_END)) {
+      (address >= MEMORY_ERAM_START && address <= MEMORY_ERAM_END)) {
     console->cartridge.write(address, value);
     return;
   }

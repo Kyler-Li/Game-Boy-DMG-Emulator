@@ -70,8 +70,8 @@ static constexpr word MEMORY_SWITCH_BANK_START = 0x4000;
 static constexpr word MEMORY_SWITCH_BANK_END = 0x7FFF;
 static constexpr word MEMORY_VRAM_START = 0x8000;
 static constexpr word MEMORY_VRAM_END = 0x9FFF;
-static constexpr word MEMORY_EXT_RAM_START = 0xA000;
-static constexpr word MEMORY_EXT_RAM_END = 0xBFFF;
+static constexpr word MEMORY_ERAM_START = 0xA000;
+static constexpr word MEMORY_ERAM_END = 0xBFFF;
 static constexpr word MEMORY_WRAM_START = 0xC000;
 static constexpr word MEMORY_WRAM_END = 0xDFFF;
 static constexpr word MEMORY_ECHO_RAM_START = 0xE000;
@@ -143,20 +143,20 @@ static constexpr word MEMORY_IE_ADDRESS = 0xFFFF;
 
 // Constants for Cartridge
 static constexpr word CARTRIDGE_ROM_BANK_SIZE = 0x4000;
-static constexpr word CARTRIDGE_EXT_RAM_BANK_SIZE = 0x2000;
-static constexpr word CARTRIDGE_EXT_RAM_BANK_NUMBER_START = 0x4000;
-static constexpr word CARTRIDGE_EXT_RAM_BANK_NUMBER_END = 0x5FFF;
+static constexpr word CARTRIDGE_ERAM_BANK_SIZE = 0x2000;
+static constexpr word CARTRIDGE_ERAM_BANK_NUMBER_START = 0x4000;
+static constexpr word CARTRIDGE_ERAM_BANK_NUMBER_END = 0x5FFF;
 static constexpr word CARTRIDGE_ROM_BANK_NUMBER_START = 0x2000;
 static constexpr word CARTRIDGE_ROM_BANK_NUMBER_END = 0x3FFF;
 static constexpr word CARTRIDGE_ROM_ERAM_MODE_SELECT_START = 0x6000;
 static constexpr word CARTRIDGE_ROM_ERAM_MODE_SELECT_END = 0x7FFF;
-static constexpr byte CARTRIDGE_EXT_RAM_ENABLE_VALUE = 0x0A;
-static constexpr word CARTRIDGE_EXT_RAM_ENABLE_END = 0x1FFF;
-static constexpr byte CARTRIDGE_EXT_RAM_BANKING_MODE = 1;
+static constexpr byte CARTRIDGE_ERAM_ENABLE_VALUE = 0x0A;
+static constexpr word CARTRIDGE_ERAM_ENABLE_END = 0x1FFF;
+static constexpr byte CARTRIDGE_ERAM_BANKING_MODE = 1;
 static constexpr byte CARTRIDGE_ROM_BANKING_MODE = 0;
 static constexpr word CARTRIDGE_TYPE_START = 0x147;
 static constexpr word CARTRIDGE_ROM_SIZE_VALUE = 0x148;
-static constexpr word CARTRIDGE_EXT_RAM_SIZE_START = 0x149;
+static constexpr word CARTRIDGE_ERAM_SIZE_START = 0x149;
 
 // Nintendo Logo
 static constexpr word NINTENDO_LOGO_START = 0x0104;
