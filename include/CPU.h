@@ -11,7 +11,7 @@ enum class IME { DISABLED, DELAYED, PENDING, ENABLED };
 class CPU {
  public:
   explicit CPU(Bus& bus);
-  qword cycle();
+  qword tick();
   void reset(); // Initialize to post boot rom state
 
  private:

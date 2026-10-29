@@ -15,7 +15,7 @@ int main(const int argc, const char* argv[]) {
   }
 
   while (true) {
-    console.step();
+    console.tick();
   }
 
   return 0;
