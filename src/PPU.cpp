@@ -28,7 +28,9 @@ void PPU::tick(qword cycles) {
 
   if (cycleCounter >= numScanlineCycles) {
     cycleCounter -= numScanlineCycles;
-    if (++ly >= numScanlines) {
+    ++ly;
+
+    if (ly == numScanlines) {
       ly = 0;
     }
   }
