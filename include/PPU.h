@@ -12,8 +12,11 @@ class PPU {
   byte read(word address);
   void write(word address, byte value);
   void reset();  // Initialize to post boot rom state
+  void tick(qword cycles);
 
  private:
+  byte ly{};
+  qword cycleCounter{};
   std::array<byte, MEMORY_VRAM_END - MEMORY_VRAM_START + 1> vram;
 };
 }  // namespace gbdmge
