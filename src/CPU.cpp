@@ -28,7 +28,7 @@ CPU::CPU(Bus& bus)
       pc{0},
       clockSpeed{4194304} {}
 
-qword CPU::cycle() {
+qword CPU::tick() {
   qword cycles;
   if (isHalted) {
     // CPU is stopped until an interrupt is pending but still consumes 4 T-cycles

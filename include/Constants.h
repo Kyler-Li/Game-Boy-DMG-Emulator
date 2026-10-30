@@ -169,6 +169,13 @@ static constexpr std::array<byte, NINTENDO_LOGO_END - NINTENDO_LOGO_START + 1>
                      0xD9, 0x99, 0xBB, 0xBB, 0x67, 0x63, 0x6E, 0x0E, 0xEC, 0xCC,
                      0xDD, 0xDC, 0x99, 0x9F, 0xBB, 0xB9, 0x33, 0x3E};
 
+
+// The number of dots (T-cycles) needed to draw one scanline
+static constexpr qword PPU_DOTS_PER_SCANLINE = 456;
+
+// The total number of scanlines
+static constexpr qword PPU_SCANLINE_COUNT = 154;
+
 }  // namespace gbdmge
 
 #endif

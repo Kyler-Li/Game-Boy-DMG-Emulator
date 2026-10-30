@@ -2,7 +2,10 @@
 
 namespace gbdmge {
 byte PPU::read(word address) {
-  // TODO: Implement
+  if (address == MEMORY_LY_ADDRESS) {
+    return ly;
+  }
+
   return 0xFF;
 }
 
@@ -11,7 +14,20 @@ void PPU::write(word address, byte value) {
 }
 
 void PPU::reset() {
-  // TODO
+  // TODO: Implement
+}
+
+void PPU::tick(qword cycles) {
+  cycleCounter += cycles;
+
+  while (cycleCounter >= PPU_DOTS_PER_SCANLINE) {
+    cycleCounter -= PPU_DOTS_PER_SCANLINE;
+    ++ly;
+
+    if (ly == PPU_SCANLINE_COUNT) {
+      ly = 0;
+    }
+  }
 }
 
 }  // namespace gbdmge

@@ -17,8 +17,9 @@ auto Console::load(const std::filesystem::path& romPath) -> bool {
   return cartridge.load(romPath);
 }
 
-void Console::step() {
-  cpu.cycle();
+void Console::tick() {
+  const qword cycles = cpu.tick();
+  ppu.tick(cycles);
 }
 
 void Console::reset() {
