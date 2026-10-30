@@ -20,17 +20,11 @@ void PPU::reset() {
 void PPU::tick(qword cycles) {
   cycleCounter += cycles;
 
-  // The number of T-cycles needed to draw one scanline
-  constexpr qword numScanlineCycles = 456;
-
-  // The total number of scanlines
-  constexpr qword numScanlines = 154;
-
-  if (cycleCounter >= numScanlineCycles) {
-    cycleCounter -= numScanlineCycles;
+  if (cycleCounter >= PPU_NUM_SCANLINE_CYCLES) {
+    cycleCounter -= PPU_NUM_SCANLINE_CYCLES;
     ++ly;
 
-    if (ly == numScanlines) {
+    if (ly == PPU_NUM_SCANLINES) {
       ly = 0;
     }
   }
