@@ -20,11 +20,11 @@ void PPU::reset() {
 void PPU::tick(qword cycles) {
   cycleCounter += cycles;
 
-  while (cycleCounter >= PPU_NUM_SCANLINE_CYCLES) {
-    cycleCounter -= PPU_NUM_SCANLINE_CYCLES;
+  while (cycleCounter >= PPU_DOTS_PER_SCANLINE) {
+    cycleCounter -= PPU_DOTS_PER_SCANLINE;
     ++ly;
 
-    if (ly == PPU_NUM_SCANLINES) {
+    if (ly == PPU_SCANLINE_COUNT) {
       ly = 0;
     }
   }
