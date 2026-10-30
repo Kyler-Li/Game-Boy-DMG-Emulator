@@ -41,7 +41,9 @@ class PPU {
   void hblank();
   void vblank();
   void setState(PPUState s);
+  void enterOamScan();
   void checkLycInterrupt();
+  void setStatLCD(byte statPos) const;
 
  private:
   Bus& bus;

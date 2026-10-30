@@ -178,6 +178,7 @@ static constexpr byte PPU_LCDC_OBJ_SIZE_FLAG = 2;
 
 // Positions for bits in the STAT register
 static constexpr qword PPU_STAT_LYC_INT_FLAG = 6;
+static constexpr qword PPU_STAT_MODE_2_INT_FLAG = 5;
 static constexpr qword PPU_STAT_MODE_1_INT_FLAG = 4;
 static constexpr byte PPU_STAT_LYC_LY_FLAG = 2;
 

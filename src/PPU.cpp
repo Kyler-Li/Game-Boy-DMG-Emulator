@@ -1,13 +1,12 @@
 #include "PPU.h"
-#include "bitops.h"
-
 #include <assert.h>
+#include "bitops.h"
 
 namespace gbdmge {
 PPU::PPU(Bus& bus)
     : bus{bus},
       state{PPUState::OAM_SCAN},
-      dots{0},
+      dots{1},
       oamScanIndex{0},
       lcdc{0},
       stat{0},
@@ -33,27 +32,54 @@ void PPU::write(word address, byte value) {
 }
 
 void PPU::reset() {
-  // TODO: Implement
-  // Intialize PPU to state post boot rom
+  // TODO: Keep working on this, may need to change
+  // Reset PPU, and initialize registers to post boot values
+
+  dots = 1;
+
+  lcdc = 0x91;
+  stat = 0x85;
+  scy = 0x00;
+  scx = 0x00;
+  ly = 0x00;
+  lyc = 0x00;
+  wx = 0x00;
+  wy = 0x00;
+  obp0 = 0xFF;
+  obp1 = 0xFF;
+  bgp = 0xFC;
+
+  oamScanIndex = 0;
+  objectAttributes.clear();
+
+  setState(PPUState::OAM_SCAN);
 }
 
-void PPU::tick(qword cycles) {
-  switch (state) {
-    case PPUState::OAM_SCAN:
-      oamScan();
-      break;
-    case PPUState::DRAW_PIXELS:
-      break;
-    case PPUState::H_BLANK:
-      hblank();
-      break;
-    case PPUState::V_BLANK:
-      vblank();
-      break;
-    default:
-      assert(false && "Impossible PPU state reached.");
+void PPU::tick(const qword cycles) {
+  for (qword i = 0; i < cycles; ++i) {
+    switch (state) {
+      case PPUState::OAM_SCAN:
+        oamScan();
+        break;
+
+      case PPUState::DRAW_PIXELS:
+        // TODO: Implement pixel transfer
+        break;
+
+      case PPUState::H_BLANK:
+        hblank();
+        break;
+
+      case PPUState::V_BLANK:
+        vblank();
+        break;
+
+      default:
+        assert(false && "Impossible PPU state reached.");
+    }
+
+    ++dots;
   }
-  dots++;
 }
 
 void PPU::oamScan() {
@@ -97,25 +123,22 @@ void PPU::hblank() {
   }
 
   ++ly;
-  checkLycInterrupt();
 
   if (ly < PPU_SCANLINE_VBLANK_START) {
-    oamScanIndex = 0;
-    objectAttributes.clear();
-    setState(PPUState::OAM_SCAN);
+    enterOamScan();
   } else {
     // Request vblank interrupt
     byte iff = bus.read(MEMORY_IF_ADDRESS);
-
     setBit(iff, INTERRUPT_VBLANK_FLAG, true);
-
-    if (bitIsSet(stat, PPU_STAT_MODE_1_INT_FLAG)) {
-      setBit(iff, INTERRUPT_LCD_FLAG, true);
-    }
-
     bus.write(MEMORY_IF_ADDRESS, iff);
+
+    setStatLCD(PPU_STAT_MODE_1_INT_FLAG);
+
     setState(PPUState::V_BLANK);
   }
+
+  checkLycInterrupt();
+  dots = 0;
 }
 
 void PPU::vblank() {
@@ -127,8 +150,7 @@ void PPU::vblank() {
     ++ly;
   } else {
     ly = 0;
-    objectAttributes.clear();
-    setState(PPUState::OAM_SCAN);
+    enterOamScan();
   }
 
   checkLycInterrupt();
@@ -143,6 +165,14 @@ void PPU::setState(PPUState s) {
   state = s;
 }
 
+void PPU::enterOamScan() {
+  oamScanIndex = 0;
+  objectAttributes.clear();
+
+  setState(PPUState::OAM_SCAN);
+  setStatLCD(PPU_STAT_MODE_2_INT_FLAG);
+}
+
 // When LYC = LY, bit 2 of the STAT register is set
 // This should be run everytime LY or LYC is changed
 void PPU::checkLycInterrupt() {
@@ -151,7 +181,13 @@ void PPU::checkLycInterrupt() {
   setBit(stat, PPU_STAT_LYC_LY_FLAG, coincidence);
 
   // Request STAT interrupt if LYC interrupt is enabled
-  if (coincidence && bitIsSet(stat, PPU_STAT_LYC_INT_FLAG)) {
+  if (coincidence) {
+    setStatLCD(PPU_STAT_LYC_INT_FLAG);
+  }
+}
+
+void PPU::setStatLCD(const byte statPos) const {
+  if (bitIsSet(stat, statPos)) {
     byte iff = bus.read(MEMORY_IF_ADDRESS);
     setBit(iff, INTERRUPT_LCD_FLAG, true);
     bus.write(MEMORY_IF_ADDRESS, iff);
