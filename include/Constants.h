@@ -174,13 +174,18 @@ static constexpr qword PPU_DOTS_PER_SCANLINE = 456;
 static constexpr qword PPU_DOTS_OAM_SCAN = 80;
 
 // Positions for bits in LCDC register
-static constexpr byte PPU_LCDC_OBJ_SIZE = 2;
+static constexpr byte PPU_LCDC_OBJ_SIZE_FLAG = 2;
+
+// Positions for bits in the STAT register
+static constexpr qword PPU_STAT_LYC_INT_FLAG = 6;
+static constexpr qword PPU_STAT_MODE_1_INT_FLAG = 4;
+static constexpr byte PPU_STAT_LYC_LY_FLAG = 2;
 
 // Positions for bits in oject attributes
-static constexpr byte PPU_OA_PRIORITY = 7;
-static constexpr byte PPU_OA_Y_FLIP = 6;
-static constexpr byte PPU_OA_X_FLIP = 5;
-static constexpr byte PPU_OA_PALETTE = 4;
+static constexpr byte PPU_OA_PRIORITY_FLAG = 7;
+static constexpr byte PPU_OA_Y_FLIP_FLAG = 6;
+static constexpr byte PPU_OA_X_FLIP_FLAG = 5;
+static constexpr byte PPU_OA_PALETTE_FLAG = 4;
 
 // The total number of scanlines
 static constexpr qword PPU_SCANLINE_VBLANK_START = 144;

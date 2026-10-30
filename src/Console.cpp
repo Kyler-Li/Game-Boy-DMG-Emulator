@@ -6,7 +6,7 @@ Console::Console()
       cpu{bus},
       joypad{},
       audio{},
-      ppu{},
+      ppu{bus},
       iff{0},
       ie{0},
       wram{},

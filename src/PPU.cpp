@@ -4,8 +4,9 @@
 #include <assert.h>
 
 namespace gbdmge {
-PPU::PPU()
-    : state{PPUState::OAM_SCAN},
+PPU::PPU(Bus& bus)
+    : bus{bus},
+      state{PPUState::OAM_SCAN},
       dots{0},
       oamScanIndex{0},
       lcdc{0},
@@ -63,7 +64,7 @@ void PPU::oamScan() {
       const byte objectY = oam[oamAddress];
 
       const byte objectHeightPixels =
-          bitIsSet(lcdc, PPU_LCDC_OBJ_SIZE) ? 16 : 8;
+          bitIsSet(lcdc, PPU_LCDC_OBJ_SIZE_FLAG) ? 16 : 8;
 
       // Check if object overlaps the current scanline
       if (ly >= static_cast<int>(objectY) - 16 &&
@@ -72,12 +73,12 @@ void PPU::oamScan() {
 
         const byte objectAtts = oam[oamAddress + 3];
 
-        objectAttributes.emplace_back(objectY, oam[oamAddress + 1],
-                                      oam[oamAddress + 2],
-                                      bitIsSet(objectAtts, PPU_OA_PRIORITY),
-                                      bitIsSet(objectAtts, PPU_OA_Y_FLIP),
-                                      bitIsSet(objectAtts, PPU_OA_X_FLIP),
-                                      bitIsSet(objectAtts, PPU_OA_PALETTE));
+        objectAttributes.emplace_back(
+            objectY, oam[oamAddress + 1], oam[oamAddress + 2],
+            bitIsSet(objectAtts, PPU_OA_PRIORITY_FLAG),
+            bitIsSet(objectAtts, PPU_OA_Y_FLIP_FLAG),
+            bitIsSet(objectAtts, PPU_OA_X_FLIP_FLAG),
+            bitIsSet(objectAtts, PPU_OA_PALETTE_FLAG));
       }
 
       ++oamScanIndex;
@@ -95,12 +96,24 @@ void PPU::hblank() {
     return;
   }
 
-  // Drop down to next scanline
   ++ly;
+  checkLycInterrupt();
 
   if (ly < PPU_SCANLINE_VBLANK_START) {
+    oamScanIndex = 0;
+    objectAttributes.clear();
     setState(PPUState::OAM_SCAN);
   } else {
+    // Request vblank interrupt
+    byte iff = bus.read(MEMORY_IF_ADDRESS);
+
+    setBit(iff, INTERRUPT_VBLANK_FLAG, true);
+
+    if (bitIsSet(stat, PPU_STAT_MODE_1_INT_FLAG)) {
+      setBit(iff, INTERRUPT_LCD_FLAG, true);
+    }
+
+    bus.write(MEMORY_IF_ADDRESS, iff);
     setState(PPUState::V_BLANK);
   }
 }
@@ -114,9 +127,11 @@ void PPU::vblank() {
     ++ly;
   } else {
     ly = 0;
+    objectAttributes.clear();
     setState(PPUState::OAM_SCAN);
   }
 
+  checkLycInterrupt();
   dots = 0;
 }
 
@@ -126,6 +141,21 @@ void PPU::setState(PPUState s) {
   stat &= ~MASK_2_LOWER_BYTE;
   stat |= statBits;
   state = s;
+}
+
+// When LYC = LY, bit 2 of the STAT register is set
+// This should be run everytime LY or LYC is changed
+void PPU::checkLycInterrupt() {
+  const bool coincidence = ly == lyc;
+
+  setBit(stat, PPU_STAT_LYC_LY_FLAG, coincidence);
+
+  // Request STAT interrupt if LYC interrupt is enabled
+  if (coincidence && bitIsSet(stat, PPU_STAT_LYC_INT_FLAG)) {
+    byte iff = bus.read(MEMORY_IF_ADDRESS);
+    setBit(iff, INTERRUPT_LCD_FLAG, true);
+    bus.write(MEMORY_IF_ADDRESS, iff);
+  }
 }
 
 }  // namespace gbdmge

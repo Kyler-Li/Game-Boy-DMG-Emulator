@@ -4,6 +4,7 @@
 #include <array>
 #include <vector>
 
+#include "Bus.h"
 #include "Constants.h"
 #include "Types.h"
 
@@ -31,7 +32,7 @@ enum class PPUState {
 
 class PPU {
  public:
-  PPU();
+  explicit PPU(Bus& bus);
   byte read(word address);
   void write(word address, byte value);
   void reset();  // Initialize to post boot rom state
@@ -40,8 +41,10 @@ class PPU {
   void hblank();
   void vblank();
   void setState(PPUState s);
+  void checkLycInterrupt();
 
  private:
+  Bus& bus;
   PPUState state;
   // 1 dot = 1 T-cycle
   qword dots;
