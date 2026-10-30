@@ -1,11 +1,25 @@
 #include "PPU.h"
 
-namespace gbdmge {
-byte PPU::read(word address) {
-  if (address == MEMORY_LY_ADDRESS) {
-    return ly;
-  }
+#include <assert.h>
 
+namespace gbdmge {
+PPU::PPU()
+    : state{PPUState::OAM_SCAN},
+      dots{0},
+      lcdc{},
+      stat{},
+      ly{},
+      lyc{},
+      scx{},
+      scy{},
+      wx{},
+      wy{},
+      bgp{},
+      obp0{},
+      obp1{},
+      vram{} {}
+
+byte PPU::read(const word address) {
   return 0xFF;
 }
 
@@ -18,16 +32,59 @@ void PPU::reset() {
 }
 
 void PPU::tick(qword cycles) {
-  cycleCounter += cycles;
-
-  while (cycleCounter >= PPU_DOTS_PER_SCANLINE) {
-    cycleCounter -= PPU_DOTS_PER_SCANLINE;
-    ++ly;
-
-    if (ly == PPU_SCANLINE_COUNT) {
-      ly = 0;
-    }
+  switch (state) {
+    case PPUState::OAM_SCAN:
+      break;
+    case PPUState::DRAW_PIXELS:
+      break;
+    case PPUState::H_BLANK:
+      hblank();
+      break;
+    case PPUState::V_BLANK:
+      vblank();
+      break;
+    default:
+      assert(false && "Impossible PPU state reached.");
   }
+  dots++;
+}
+
+void PPU::hblank() {
+  if (dots != PPU_DOTS_PER_SCANLINE) {
+    return;
+  }
+
+  // Drop down to next scanline
+  ++ly;
+
+  if (ly < PPU_SCANLINE_VBLANK_START) {
+    setState(PPUState::OAM_SCAN);
+  } else {
+    setState(PPUState::V_BLANK);
+  }
+}
+
+void PPU::vblank() {
+  if (dots != PPU_DOTS_PER_SCANLINE) {
+    return;
+  }
+
+  if (ly < PPU_SCANLINE_VBLANK_END) {
+    ++ly;
+  } else {
+    ly = 0;
+    setState(PPUState::OAM_SCAN);
+  }
+
+  dots = 0;
+}
+
+// Sets the state of the PPU, and the lower 2 bits of the STAT register
+void PPU::setState(PPUState s) {
+  const byte statBits = static_cast<byte>(s) & MASK_2_LOWER_BYTE;
+  stat &= ~MASK_2_LOWER_BYTE;
+  stat |= statBits;
+  state = s;
 }
 
 }  // namespace gbdmge
