@@ -171,10 +171,22 @@ static constexpr std::array<byte, NINTENDO_LOGO_END - NINTENDO_LOGO_START + 1>
 
 // The number of dots (T-cycles) needed to draw one scanline
 static constexpr qword PPU_DOTS_PER_SCANLINE = 456;
+static constexpr qword PPU_DOTS_OAM_SCAN = 80;
+
+// Positions for bits in LCDC register
+static constexpr byte PPU_LCDC_OBJ_SIZE = 2;
+
+// Positions for bits in oject attributes
+static constexpr byte PPU_OA_PRIORITY = 7;
+static constexpr byte PPU_OA_Y_FLIP = 6;
+static constexpr byte PPU_OA_X_FLIP = 5;
+static constexpr byte PPU_OA_PALETTE = 4;
 
 // The total number of scanlines
 static constexpr qword PPU_SCANLINE_VBLANK_START = 144;
 static constexpr qword PPU_SCANLINE_VBLANK_END = 153;
+
+static constexpr byte PPU_MAX_OBJECTS_PER_SCANLINE = 10;
 
 }  // namespace gbdmge
 
