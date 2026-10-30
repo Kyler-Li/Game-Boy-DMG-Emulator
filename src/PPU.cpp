@@ -24,15 +24,17 @@ PPU::PPU(Bus& bus)
       objectAttributes{} {}
 
 byte PPU::read(const word address) {
+  // Read from vram, registers, etc
   return 0xFF;
 }
 
 void PPU::write(word address, byte value) {
   // TODO: Implement
+  // Write to vram, registers, etc
 }
 
 void PPU::reset() {
-  // TODO: Keep working on this, may need to change
+  // TODO: Keep working on this, may need to change / extend
   // Reset PPU, and initialize registers to post boot values
 
   dots = 1;
