@@ -7,6 +7,7 @@
 namespace gbdmge {
 // Masks upper bits from MSB to LSB
 static constexpr byte MASK_1_UPPER_BYTE = 0x80;
+static constexpr byte MASK_3_UPPER_BYTE = 0xE0;
 static constexpr word MASK_4_UPPER_WORD = 0xF000;
 static constexpr byte MASK_4_UPPER_BYTE = 0xF0;
 static constexpr byte MASK_8_UPPER_BYTE = 0xFE;

@@ -15,6 +15,7 @@ namespace gbdmge {
 CPU::CPU(Bus& bus)
     : ime{IME::DISABLED},
       isHalted{false},
+      haltBug{false},
       bus{&bus},
       a{0},
       f{0},
@@ -41,7 +42,14 @@ qword CPU::tick() {
                                       bus->read(pc + 2))
               << '\n';
 
-    const byte opcode = fetchByte();
+    byte opcode;
+    if (haltBug) {
+      opcode = bus->read(pc);
+      haltBug = false;
+    } else {
+      opcode = fetchByte();
+    }
+
     cycles = execute(opcode);
   }
 
@@ -54,6 +62,7 @@ void CPU::reset() {
   // Initialize to post boot ROM values
   ime = IME::DISABLED;
   isHalted = false;
+  haltBug = false;
 
   a = 0x01;
   f = 0xB0;
@@ -1161,8 +1170,9 @@ void CPU::ret() {
 }
 
 void CPU::halt() {
-  // This may need to change down the line
-  if (ime == IME::ENABLED) {
+  if (ime != IME::ENABLED && interruptsPending()) {
+    haltBug = true;
+  } else {
     isHalted = true;
   }
 }
