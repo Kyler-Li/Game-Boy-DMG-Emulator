@@ -17,6 +17,7 @@ class CPU {
  private:
   IME ime;
   bool isHalted;
+  bool haltBug;
   Bus* bus;
 
   // For each register, the rightmost letter represents low byte,

@@ -46,10 +46,10 @@ auto Bus::read(const word address) const -> byte {
   }
 
   if (address == MEMORY_IF_ADDRESS) {
-    return console->iff & MASK_4_LOWER_BYTE;
+    return console->iff | MASK_3_UPPER_BYTE;
   }
 
-  if (address >= MEMORY_AUDIO_START && address <= MEMORY_AUDIO_END) {
+  if (address >= MEMORY_AUDIO_START && address <= MEMORY_WAVE_RAM_END) {
     return console->audio.read(address);
   }
 
@@ -58,7 +58,7 @@ auto Bus::read(const word address) const -> byte {
   }
 
   if (address == MEMORY_IE_ADDRESS) {
-    return console->ie & MASK_4_LOWER_BYTE;
+    return console->ie | MASK_3_UPPER_BYTE;
   }
 
   std::cerr << "Bus failed to read from " << std::hex << address
@@ -113,11 +113,11 @@ void Bus::write(const word address, const byte value) {
   }
 
   if (address == MEMORY_IF_ADDRESS) {
-    console->iff = value & MASK_4_LOWER_BYTE;
+    console->iff = value & MASK_5_LOWER_BYTE;
     return;
   }
 
-  if (address >= MEMORY_AUDIO_START && address <= MEMORY_AUDIO_END) {
+  if (address >= MEMORY_AUDIO_START && address <= MEMORY_WAVE_RAM_END) {
     console->audio.write(address, value);
     return;
   }
@@ -139,7 +139,7 @@ void Bus::write(const word address, const byte value) {
   }
 
   if (address == MEMORY_IE_ADDRESS) {
-    console->ie = value & MASK_4_LOWER_BYTE;
+    console->ie = value & MASK_5_LOWER_BYTE;
     return;
   }
 
