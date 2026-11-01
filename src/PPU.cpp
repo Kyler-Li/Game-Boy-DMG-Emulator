@@ -1,5 +1,5 @@
 #include "PPU.h"
-#include <assert.h>
+#include <cassert>
 #include "bitops.h"
 
 namespace gbdmge {
