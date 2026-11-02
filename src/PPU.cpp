@@ -130,14 +130,15 @@ void PPU::oamScan() {
 
   // Transition after 80 dots
   if (dots == PPU_DOTS_OAM_SCAN) {
-    // Put lowest x as last element, and preserve ordering between ties
+    // Put lowest x as first element, and preserve ordering between ties
     std::ranges::stable_sort(
         objectAttributes,
         [](const ObjectAttribute& a, const ObjectAttribute& b) {
-            return a.x > b.x;
+            return a.x < b.x;
         }
     );
 
+    tileMapColumn = 0;
     tileMapSource = PPUTileMapSource::BACKGROUND;
     pixelTransferState = PPUPixelTransferState::GET_TILE_INDEX;
     setState(PPUState::PIXEL_TRANSFER);
@@ -150,7 +151,7 @@ void PPU::pixelTransfer() {
       getTileIndex();
       break;
     case PPUPixelTransferState::GET_TILE_DATA_LOW:
-      // TODO implement
+      getTileDataLow();
       break;
     case PPUPixelTransferState::GET_TILE_DATA_HIGH:
       // TODO implement
@@ -166,7 +167,7 @@ void PPU::pixelTransfer() {
 void PPU::getTileIndex() {
 
   if (tileMapSource == PPUTileMapSource::OBJECT) {
-    const ObjectAttribute objectAttribute = objectAttributes.back();
+    const ObjectAttribute& objectAttribute = objectAttributes.front();
     currentTileIndex = objectAttribute.tileIndex;
 
     if (bitIsSet(lcdc, PPU_LCDC_OBJ_SIZE_FLAG)) {
@@ -204,6 +205,10 @@ void PPU::getTileIndex() {
   pixelTransferState = PPUPixelTransferState::GET_TILE_DATA_LOW;
 }
 
+void PPU::getTileDataLow() {
+  // TODO implement
+}
+
 void PPU::hblank() {
   if (dots != PPU_DOTS_PER_SCANLINE) {
     return;
@@ -237,6 +242,7 @@ void PPU::vblank() {
     ++ly;
   } else {
     ly = 0;
+    windowRowPixel = 0;
     enterOamScan();
   }
 

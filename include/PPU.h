@@ -53,6 +53,7 @@ class PPU {
   void oamScan();
   void pixelTransfer();
   void getTileIndex();
+  void getTileDataLow();
   void hblank();
   void vblank();
   void setState(PPUState s);
