@@ -1,13 +1,22 @@
 #include "PPU.h"
+
+#include <algorithm>
 #include <cassert>
+#include <stdexcept>
+
 #include "bitops.h"
 
 namespace gbdmge {
 PPU::PPU(Bus& bus)
     : bus{bus},
       state{PPUState::OAM_SCAN},
-      dots{1},
+      tileMapSource{PPUTileMapSource::BACKGROUND},
+      pixelTransferState{PPUPixelTransferState::GET_TILE_INDEX},
+      dots{0},
       oamScanIndex{0},
+      tileMapColumn{0},
+      windowRowPixel{0},
+      currentTileIndex{0},
       lcdc{0},
       stat{0},
       ly{0},
@@ -37,7 +46,7 @@ void PPU::reset() {
   // TODO: Keep working on this, may need to change / extend
   // Reset PPU, and initialize registers to post boot values
 
-  dots = 1;
+  dots = 0;
 
   lcdc = 0x91;
   stat = 0x85;
@@ -54,6 +63,12 @@ void PPU::reset() {
   oamScanIndex = 0;
   objectAttributes.clear();
 
+  tileMapColumn = 0;
+  tileMapSource = PPUTileMapSource::BACKGROUND;
+  pixelTransferState = PPUPixelTransferState::GET_TILE_INDEX;
+  windowRowPixel = 0;
+  currentTileIndex = 0;
+
   setState(PPUState::OAM_SCAN);
 }
 
@@ -64,8 +79,8 @@ void PPU::tick(const qword cycles) {
         oamScan();
         break;
 
-      case PPUState::DRAW_PIXELS:
-        // TODO: Implement pixel transfer
+      case PPUState::PIXEL_TRANSFER:
+        pixelTransfer();
         break;
 
       case PPUState::H_BLANK:
@@ -86,7 +101,7 @@ void PPU::tick(const qword cycles) {
 
 void PPU::oamScan() {
   // Process two OAM entries every 4 dots
-  if (dots % 4 == 0) {
+  if (dots > 0 && dots % 4 == 0) {
     for (byte i = 0; i < 2; ++i) {
       const word oamAddress = oamScanIndex * 4;
       const byte objectY = oam[oamAddress];
@@ -115,8 +130,78 @@ void PPU::oamScan() {
 
   // Transition after 80 dots
   if (dots == PPU_DOTS_OAM_SCAN) {
-    setState(PPUState::DRAW_PIXELS);
+    // Put lowest x as last element, and preserve ordering between ties
+    std::ranges::stable_sort(
+        objectAttributes,
+        [](const ObjectAttribute& a, const ObjectAttribute& b) {
+            return a.x > b.x;
+        }
+    );
+
+    tileMapSource = PPUTileMapSource::BACKGROUND;
+    pixelTransferState = PPUPixelTransferState::GET_TILE_INDEX;
+    setState(PPUState::PIXEL_TRANSFER);
   }
+}
+
+void PPU::pixelTransfer() {
+  switch (pixelTransferState) {
+    case PPUPixelTransferState::GET_TILE_INDEX:
+      getTileIndex();
+      break;
+    case PPUPixelTransferState::GET_TILE_DATA_LOW:
+      // TODO implement
+      break;
+    case PPUPixelTransferState::GET_TILE_DATA_HIGH:
+      // TODO implement
+      break;
+    case PPUPixelTransferState::PUSH:
+      // TODO implement
+      break;
+    default:
+      assert(false && "Impossible pixel transfer state reached.");
+  }
+}
+
+void PPU::getTileIndex() {
+
+  if (tileMapSource == PPUTileMapSource::OBJECT) {
+    const ObjectAttribute objectAttribute = objectAttributes.back();
+    currentTileIndex = objectAttribute.tileIndex;
+
+    if (bitIsSet(lcdc, PPU_LCDC_OBJ_SIZE_FLAG)) {
+      currentTileIndex &= MASK_8_UPPER_BYTE;
+    }
+
+    pixelTransferState = PPUPixelTransferState::GET_TILE_DATA_LOW;
+    return;
+  }
+
+  word tileMapAddress;
+  byte tileX;
+  byte tileY;
+
+  if (tileMapSource == PPUTileMapSource::WINDOW) {
+    tileMapAddress = bitIsSet(lcdc, PPU_LCDC_WINDOW_TILE_MAP_FLAG)
+        ? PPU_TILE_MAP_1_START : PPU_TILE_MAP_0_START;
+
+    tileX = tileMapColumn;
+    tileY = windowRowPixel;
+
+  } else if (tileMapSource == PPUTileMapSource::BACKGROUND) {
+    tileMapAddress = bitIsSet(lcdc, PPU_LCDC_BG_TILE_MAP_FLAG)
+        ? PPU_TILE_MAP_1_START : PPU_TILE_MAP_0_START;
+
+    tileX = ((scx / 8) + tileMapColumn) & MASK_5_LOWER_BYTE;
+    tileY = (ly + scy) & MASK_8_LOWER_BYTE;
+
+  } else {
+    assert(false && "Impossible PPU tile map source!");
+  }
+
+  tileMapAddress += tileX + ((tileY / 8) * 32);
+  currentTileIndex = vram[tileMapAddress - MEMORY_VRAM_START];
+  pixelTransferState = PPUPixelTransferState::GET_TILE_DATA_LOW;
 }
 
 void PPU::hblank() {

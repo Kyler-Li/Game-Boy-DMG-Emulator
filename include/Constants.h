@@ -176,6 +176,9 @@ static constexpr qword PPU_DOTS_OAM_SCAN = 80;
 
 // Positions for bits in LCDC register
 static constexpr byte PPU_LCDC_OBJ_SIZE_FLAG = 2;
+static constexpr byte PPU_LCDC_BG_TILE_MAP_FLAG = 3;
+static constexpr byte PPU_LCDC_WINDOW_TILE_MAP_FLAG = 6;
+
 
 // Positions for bits in the STAT register
 static constexpr qword PPU_STAT_LYC_INT_FLAG = 6;
@@ -194,6 +197,9 @@ static constexpr qword PPU_SCANLINE_VBLANK_START = 144;
 static constexpr qword PPU_SCANLINE_VBLANK_END = 153;
 
 static constexpr byte PPU_MAX_OBJECTS_PER_SCANLINE = 10;
+
+static constexpr word PPU_TILE_MAP_0_START = 0x9800;
+static constexpr word PPU_TILE_MAP_1_START = 0x9C00;
 
 }  // namespace gbdmge
 

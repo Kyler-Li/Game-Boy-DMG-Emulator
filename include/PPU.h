@@ -25,9 +25,22 @@ struct ObjectAttribute {
 
 enum class PPUState {
   OAM_SCAN = 2,
-  DRAW_PIXELS = 3,
+  PIXEL_TRANSFER = 3,
   H_BLANK = 0,
   V_BLANK = 1,
+};
+
+enum class PPUTileMapSource {
+  WINDOW,
+  BACKGROUND,
+  OBJECT
+};
+
+enum class PPUPixelTransferState {
+  GET_TILE_INDEX,
+  GET_TILE_DATA_LOW,
+  GET_TILE_DATA_HIGH,
+  PUSH
 };
 
 class PPU {
@@ -38,6 +51,8 @@ class PPU {
   void reset();  // Initialize to post boot rom state
   void tick(qword cycles);
   void oamScan();
+  void pixelTransfer();
+  void getTileIndex();
   void hblank();
   void vblank();
   void setState(PPUState s);
@@ -48,16 +63,21 @@ class PPU {
  private:
   Bus& bus;
   PPUState state;
+  PPUTileMapSource tileMapSource;
+  PPUPixelTransferState pixelTransferState;
   // 1 dot = 1 T-cycle
   qword dots;
   byte oamScanIndex;
+  byte tileMapColumn;
+  byte windowRowPixel;
+  byte currentTileIndex;
 
   byte lcdc;
   byte stat;
   byte ly;
   byte lyc;
-  byte scx;
-  byte scy;
+  byte scx; // in pixels
+  byte scy; // in pixels
   byte wx;
   byte wy;
   byte bgp;
