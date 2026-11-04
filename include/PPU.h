@@ -54,6 +54,7 @@ class PPU {
   void pixelTransfer();
   void getTileIndex();
   void getTileDataLow();
+  void getTileDataHigh();
   void hblank();
   void vblank();
   void setState(PPUState s);
@@ -72,6 +73,8 @@ class PPU {
   byte tileMapColumn;
   byte windowRowPixel;
   byte currentTileIndex;
+  word currentTileAddress;
+  byte currentTileLow;
 
   byte lcdc;
   byte stat;

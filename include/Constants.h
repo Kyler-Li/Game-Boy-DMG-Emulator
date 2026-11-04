@@ -170,20 +170,19 @@ static constexpr std::array<byte, NINTENDO_LOGO_END - NINTENDO_LOGO_START + 1>
                      0xD9, 0x99, 0xBB, 0xBB, 0x67, 0x63, 0x6E, 0x0E, 0xEC, 0xCC,
                      0xDD, 0xDC, 0x99, 0x9F, 0xBB, 0xB9, 0x33, 0x3E};
 
-// The number of dots (T-cycles) needed to draw one scanline
-static constexpr qword PPU_DOTS_PER_SCANLINE = 456;
+static constexpr qword PPU_DOTS_PER_SCANLINE = 456; // The number of dots (T-cycles) needed to draw one scanline
 static constexpr qword PPU_DOTS_OAM_SCAN = 80;
 
 // Positions for bits in LCDC register
 static constexpr byte PPU_LCDC_OBJ_SIZE_FLAG = 2;
 static constexpr byte PPU_LCDC_BG_TILE_MAP_FLAG = 3;
+static constexpr byte PPU_LCDC_BG_WINDOW_DATA_AREA_FLAG = 4;
 static constexpr byte PPU_LCDC_WINDOW_TILE_MAP_FLAG = 6;
 
-
 // Positions for bits in the STAT register
-static constexpr qword PPU_STAT_LYC_INT_FLAG = 6;
-static constexpr qword PPU_STAT_MODE_2_INT_FLAG = 5;
-static constexpr qword PPU_STAT_MODE_1_INT_FLAG = 4;
+static constexpr byte PPU_STAT_LYC_INT_FLAG = 6;
+static constexpr byte PPU_STAT_MODE_2_INT_FLAG = 5;
+static constexpr byte PPU_STAT_MODE_1_INT_FLAG = 4;
 static constexpr byte PPU_STAT_LYC_LY_FLAG = 2;
 
 // Positions for bits in oject attributes
@@ -200,6 +199,10 @@ static constexpr byte PPU_MAX_OBJECTS_PER_SCANLINE = 10;
 
 static constexpr word PPU_TILE_MAP_0_START = 0x9800;
 static constexpr word PPU_TILE_MAP_1_START = 0x9C00;
+static constexpr word PPU_TILE_DATA_BLOCK_0_START = 0x8000;
+static constexpr word PPU_TILE_DATA_BLOCK_1_START = 0x9000;
+
+static constexpr byte PPU_BYTES_PER_TILE = 16;
 
 }  // namespace gbdmge
 

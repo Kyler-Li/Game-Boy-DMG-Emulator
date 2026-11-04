@@ -17,6 +17,8 @@ PPU::PPU(Bus& bus)
       tileMapColumn{0},
       windowRowPixel{0},
       currentTileIndex{0},
+      currentTileAddress{0},
+      currentTileLow{0},
       lcdc{0},
       stat{0},
       ly{0},
@@ -68,52 +70,48 @@ void PPU::reset() {
   pixelTransferState = PPUPixelTransferState::GET_TILE_INDEX;
   windowRowPixel = 0;
   currentTileIndex = 0;
-
+  currentTileAddress = 0;
+  currentTileLow = 0;
   setState(PPUState::OAM_SCAN);
 }
 
 void PPU::tick(const qword cycles) {
   for (qword i = 0; i < cycles; ++i) {
+    ++dots;
+
     switch (state) {
       case PPUState::OAM_SCAN:
         oamScan();
         break;
-
       case PPUState::PIXEL_TRANSFER:
         pixelTransfer();
         break;
-
       case PPUState::H_BLANK:
         hblank();
         break;
-
       case PPUState::V_BLANK:
         vblank();
         break;
-
       default:
         assert(false && "Impossible PPU state reached.");
     }
-
-    ++dots;
   }
 }
 
 void PPU::oamScan() {
   // Process two OAM entries every 4 dots
-  if (dots > 0 && dots % 4 == 0) {
+  if (dots % 4 == 0) {
+    const byte objectHeightPixels =
+      bitIsSet(lcdc, PPU_LCDC_OBJ_SIZE_FLAG) ? 16 : 8;
+
     for (byte i = 0; i < 2; ++i) {
       const word oamAddress = oamScanIndex * 4;
       const byte objectY = oam[oamAddress];
 
-      const byte objectHeightPixels =
-          bitIsSet(lcdc, PPU_LCDC_OBJ_SIZE_FLAG) ? 16 : 8;
-
       // Check if object overlaps the current scanline
-      if (ly >= static_cast<int>(objectY) - 16 &&
-          ly < static_cast<int>(objectY) - 16 + objectHeightPixels &&
+      const int objectTop = objectY - 16;
+      if (ly >= objectTop && ly < objectTop + objectHeightPixels &&
           objectAttributes.size() < PPU_MAX_OBJECTS_PER_SCANLINE) {
-
         const byte objectAtts = oam[oamAddress + 3];
 
         objectAttributes.emplace_back(
@@ -122,7 +120,7 @@ void PPU::oamScan() {
             bitIsSet(objectAtts, PPU_OA_Y_FLIP_FLAG),
             bitIsSet(objectAtts, PPU_OA_X_FLIP_FLAG),
             bitIsSet(objectAtts, PPU_OA_PALETTE_FLAG));
-      }
+          }
 
       ++oamScanIndex;
     }
@@ -130,7 +128,7 @@ void PPU::oamScan() {
 
   // Transition after 80 dots
   if (dots == PPU_DOTS_OAM_SCAN) {
-    // Put lowest x as first element, and preserve ordering between ties
+    // Lowest x first, preserving OAM order between ties
     std::ranges::stable_sort(
         objectAttributes,
         [](const ObjectAttribute& a, const ObjectAttribute& b) {
@@ -154,7 +152,7 @@ void PPU::pixelTransfer() {
       getTileDataLow();
       break;
     case PPUPixelTransferState::GET_TILE_DATA_HIGH:
-      // TODO implement
+      getTileDataHigh();
       break;
     case PPUPixelTransferState::PUSH:
       // TODO implement
@@ -178,9 +176,9 @@ void PPU::getTileIndex() {
     return;
   }
 
-  word tileMapAddress;
-  byte tileX;
-  byte tileY;
+  word tileMapAddress = 0;
+  byte tileX = 0;
+  byte tileY = 0;
 
   if (tileMapSource == PPUTileMapSource::WINDOW) {
     tileMapAddress = bitIsSet(lcdc, PPU_LCDC_WINDOW_TILE_MAP_FLAG)
@@ -206,7 +204,36 @@ void PPU::getTileIndex() {
 }
 
 void PPU::getTileDataLow() {
-  // TODO implement
+  // Objects always use the $8000 addressing mode. BG/window use it only when
+  // LCDC bit 4 is set, otherwise they use $9000 with a signed tile index.
+  if (bitIsSet(lcdc, PPU_LCDC_BG_WINDOW_DATA_AREA_FLAG) || tileMapSource == PPUTileMapSource::OBJECT) {
+    currentTileAddress = PPU_TILE_DATA_BLOCK_0_START + currentTileIndex * PPU_BYTES_PER_TILE;
+  } else {
+    currentTileAddress = PPU_TILE_DATA_BLOCK_1_START + static_cast<sbyte>(currentTileIndex) * PPU_BYTES_PER_TILE;
+  }
+
+  word tileOffset;
+  if (tileMapSource == PPUTileMapSource::BACKGROUND) {
+    tileOffset = (ly + scy) & MASK_3_LOWER_BYTE;
+  } else if (tileMapSource == PPUTileMapSource::WINDOW) {
+    tileOffset = windowRowPixel & MASK_3_LOWER_BYTE;
+  } else {
+    const auto& objectAttribute = objectAttributes.front();
+    tileOffset = ly - objectAttribute.y - 16;
+
+    if (objectAttribute.yFlip) {
+      const byte objectHeightPixels = bitIsSet(lcdc, PPU_LCDC_OBJ_SIZE_FLAG) ? 16 : 8;
+      tileOffset = objectHeightPixels - 1 - tileOffset;
+    }
+  }
+
+  currentTileAddress += 2 * tileOffset;
+  currentTileLow = vram[currentTileAddress - MEMORY_VRAM_START];
+  pixelTransferState = PPUPixelTransferState::GET_TILE_DATA_HIGH;
+}
+
+void PPU::getTileDataHigh() {
+  // TODO Implement
 }
 
 void PPU::hblank() {
