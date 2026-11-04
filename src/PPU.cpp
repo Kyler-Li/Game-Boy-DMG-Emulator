@@ -204,8 +204,8 @@ void PPU::getTileIndex() {
 }
 
 void PPU::getTileDataLow() {
-  // Objects always use the $8000 addressing mode. BG/window use it only when
-  // LCDC bit 4 is set, otherwise they use $9000 with a signed tile index.
+  // Objects always use the 0x8000 addressing mode. BG/window use it only when
+  // LCDC bit 4 is set, otherwise they use 0x9000 with a signed tile index.
   if (bitIsSet(lcdc, PPU_LCDC_BG_WINDOW_DATA_AREA_FLAG) || tileMapSource == PPUTileMapSource::OBJECT) {
     currentTileAddress = PPU_TILE_DATA_BLOCK_0_START + currentTileIndex * PPU_BYTES_PER_TILE;
   } else {
