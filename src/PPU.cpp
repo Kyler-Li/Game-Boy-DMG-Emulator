@@ -35,13 +35,15 @@ PPU::PPU(Bus& bus)
       objectAttributes{} {}
 
 byte PPU::read(const word address) {
-  // Read from vram, registers, etc
+  // TODO Implement
+  // *Make sure to restrict reads during specific PPU modes*
   return 0xFF;
 }
 
 void PPU::write(const word address, byte value) {
-  // TODO: Implement
-  // Write to vram, registers, etc
+  // TODO Implement
+  // *Make sure to restrict writes during specific PPU modes*
+
   if (address == MEMORY_DMA_ADDRESS) {
     doDMA(value);
   }
