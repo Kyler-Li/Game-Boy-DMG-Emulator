@@ -61,7 +61,7 @@ class PPU {
   void enterOamScan();
   void checkLycInterrupt();
   void setStatLCD(byte statPos) const;
-
+  void doDMA(byte value);
  private:
   Bus& bus;
   PPUState state;

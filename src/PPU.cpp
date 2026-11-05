@@ -39,9 +39,12 @@ byte PPU::read(const word address) {
   return 0xFF;
 }
 
-void PPU::write(word address, byte value) {
+void PPU::write(const word address, byte value) {
   // TODO: Implement
   // Write to vram, registers, etc
+  if (address == MEMORY_DMA_ADDRESS) {
+    doDMA(value);
+  }
 }
 
 void PPU::reset() {
@@ -311,6 +314,17 @@ void PPU::setStatLCD(const byte statPos) const {
     byte iff = bus.read(MEMORY_IF_ADDRESS);
     setBit(iff, INTERRUPT_LCD_FLAG, true);
     bus.write(MEMORY_IF_ADDRESS, iff);
+  }
+}
+
+void PPU::doDMA(const byte value) {
+  const word srcBase = static_cast<word>(value) << 8;
+
+  for (word i = 0; i <= MEMORY_OAM_END - MEMORY_OAM_START; ++i) {
+    const word src = srcBase + i;
+    const word dest = MEMORY_OAM_START + i;
+
+    oam[dest - MEMORY_OAM_START] = bus.read(src);
   }
 }
 

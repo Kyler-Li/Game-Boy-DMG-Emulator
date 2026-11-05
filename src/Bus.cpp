@@ -122,17 +122,6 @@ void Bus::write(const word address, const byte value) {
     return;
   }
 
-  if (address == MEMORY_DMA_ADDRESS) {
-    // TODO: Processing should be handled within PPU and not Bus
-    // Bus should only be responsible for forwarding requests to and from components
-    const word srcBase = static_cast<word>(value) << 8;
-    for (word dest = MEMORY_OAM_START; dest <= MEMORY_OAM_END; ++dest) {
-      const word src = srcBase + dest - MEMORY_OAM_START;
-      console->ppu.write(dest, read(src));
-    }
-    return;
-  }
-
   if (address >= MEMORY_HRAM_START && address <= MEMORY_HRAM_END) {
     console->hram[address - MEMORY_HRAM_START] = value;
     return;
