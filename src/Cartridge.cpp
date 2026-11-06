@@ -323,7 +323,7 @@ void Cartridge::writeMBC1(const word address, const byte value) {
 }
 
 bool Cartridge::isMulticart() {
-  // TODO: implement
+  // TODO: implement heuristic to detect MBC1M cartridges
   return false;
 }
 
