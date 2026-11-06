@@ -81,9 +81,7 @@ auto Cartridge::load(const std::filesystem::path& romPath) -> bool {
         return false;
     }
 
-    if (const auto nintendoLogo = std::span{rom}.subspan(
-            NINTENDO_LOGO_START, NINTENDO_LOGO_END - NINTENDO_LOGO_START + 1);
-        !std::ranges::equal(NINTENDO_LOGO, nintendoLogo)) {
+    if (!hasNintendoLogo(NINTENDO_LOGO_START)) {
         std::cerr << "Failed to load cartridge: ROM is invalid (logo mismatch)\n";
         return false;
     }
@@ -208,6 +206,15 @@ void Cartridge::write(const word address, const byte value) {
   }
 }
 
+bool Cartridge::hasNintendoLogo(const std::size_t offset) {
+  if (offset + NINTENDO_LOGO.size() > rom.size()) {
+    return false;
+  }
+
+  return std::ranges::equal(NINTENDO_LOGO,
+    std::span{rom}.subspan(offset, NINTENDO_LOGO.size()));
+}
+
 auto Cartridge::readNoMBC(const word address) const -> byte {
     if (address >= MEMORY_FIXED_BANK_START && address <= MEMORY_SWITCH_BANK_END) {
         return address < rom.size() ? rom[address] : OPEN_BUS_VALUE;
@@ -254,13 +261,17 @@ auto Cartridge::readMBC1(const word address) const -> byte {
     // Switchable ROM bank: 0x4000 - 0x7FFF.
     if (address >= MEMORY_SWITCH_BANK_START &&
         address <= MEMORY_SWITCH_BANK_END) {
-        const std::size_t romBank = (romBankingNumber & lowerBankMask) |
-          (static_cast<std::size_t>(eRamBankingNumber) << upperBankShift);
 
-        const std::size_t effectiveBank = (romBank & lowerBankMask) == 0 ? romBank | 0x01 : romBank;
-        const std::size_t physicalBank = effectiveBank % numberOfRomBanks;
-        const std::size_t offset = physicalBank * CARTRIDGE_ROM_BANK_SIZE + (address - MEMORY_SWITCH_BANK_START);
-        return offset < rom.size() ? rom[offset] : OPEN_BUS_VALUE;
+      const bool bankZero = (romBankingNumber & MASK_5_LOWER_BYTE) == 0;
+      std::size_t romBank = (romBankingNumber & lowerBankMask) | (static_cast<std::size_t>(eRamBankingNumber) << upperBankShift);
+
+      if (bankZero) {
+        romBank |= 0x01;
+      }
+
+      const std::size_t physicalBank = romBank % numberOfRomBanks;
+      const std::size_t offset = physicalBank * CARTRIDGE_ROM_BANK_SIZE + (address - MEMORY_SWITCH_BANK_START);
+      return offset < rom.size() ? rom[offset] : OPEN_BUS_VALUE;
     }
 
     // External RAM: 0xA000 - 0xBFFF.
@@ -323,8 +334,16 @@ void Cartridge::writeMBC1(const word address, const byte value) {
 }
 
 bool Cartridge::isMulticart() {
-  // TODO: implement heuristic to detect MBC1M cartridges
-  return false;
+  if (mapper != Mapper::MBC1) {
+    return false;
+  }
+
+  int nintendoLogoCount = 0;
+  nintendoLogoCount += hasNintendoLogo(NINTENDO_LOGO_START) ? 1 : 0;
+  nintendoLogoCount += hasNintendoLogo(NINTENDO_LOGO_START + CARTRIDGE_ROM_SIZE) ? 1 : 0;
+  nintendoLogoCount += hasNintendoLogo(NINTENDO_LOGO_START + (CARTRIDGE_ROM_SIZE * 2)) ? 1 : 0;
+  nintendoLogoCount += hasNintendoLogo(NINTENDO_LOGO_START + (CARTRIDGE_ROM_SIZE * 3)) ? 1 : 0;
+  return nintendoLogoCount >= 2;
 }
 
 auto Cartridge::readMBC3(const word address) const -> byte {

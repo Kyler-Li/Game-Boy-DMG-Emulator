@@ -146,6 +146,7 @@ static constexpr word MEMORY_IE_ADDRESS = 0xFFFF;
 
 // Constants for Cartridge
 static constexpr word CARTRIDGE_ROM_BANK_SIZE = 0x4000;
+static constexpr qword CARTRIDGE_ROM_SIZE = 0x40000;
 static constexpr word CARTRIDGE_ERAM_BANK_SIZE = 0x2000;
 static constexpr word CARTRIDGE_ERAM_BANK_NUMBER_START = 0x4000;
 static constexpr word CARTRIDGE_ERAM_BANK_NUMBER_END = 0x5FFF;

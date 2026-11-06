@@ -30,6 +30,8 @@ public:
   void write(word address, byte value);
 
  private:
+  bool hasNintendoLogo(std::size_t offset);
+
   auto readNoMBC(word address) const -> byte;
   void writeNoMBC(word address, byte value);
 
