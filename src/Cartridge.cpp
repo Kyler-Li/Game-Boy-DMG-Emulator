@@ -343,10 +343,10 @@ bool Cartridge::isMulticart() {
   }
 
   int nintendoLogoCount = 0;
-  nintendoLogoCount += hasNintendoLogo(NINTENDO_LOGO_START) ? 1 : 0;
-  nintendoLogoCount += hasNintendoLogo(NINTENDO_LOGO_START + CARTRIDGE_ROM_SIZE) ? 1 : 0;
-  nintendoLogoCount += hasNintendoLogo(NINTENDO_LOGO_START + (CARTRIDGE_ROM_SIZE * 2)) ? 1 : 0;
-  nintendoLogoCount += hasNintendoLogo(NINTENDO_LOGO_START + (CARTRIDGE_ROM_SIZE * 3)) ? 1 : 0;
+  for (int i = 0; i < 4; ++i) {
+    nintendoLogoCount += hasNintendoLogo(NINTENDO_LOGO_START + (CARTRIDGE_ROM_SIZE * i)) ? 1 : 0;
+  }
+
   return nintendoLogoCount >= 2;
 }
 
