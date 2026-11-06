@@ -950,33 +950,33 @@ qword CPU::handleInterrupts() {
     return 0;
   }
 
-  const byte ie = bus->read(MEMORY_IO_IE);
-  byte iff = bus->read(MEMORY_IO_IF);
+  const byte ie = bus->read(MEMORY_IE_ADDRESS);
+  byte iff = bus->read(MEMORY_IF_ADDRESS);
 
   for (byte i = 0; i < 5; ++i) {
     if (bitIsSet(ie, i) && bitIsSet(iff, i)) {
       push(getHighByte(pc), getLowByte(pc));
 
       setBit(iff, i, false);
-      bus->write(MEMORY_IO_IF, iff);
+      bus->write(MEMORY_IF_ADDRESS, iff);
 
       ime = IME::DISABLED;
 
       switch (i) {
         case INTERRUPT_VBLANK_FLAG:
-          pc = MEMORY_INTERRUPT_VBLANK;
+          pc = INTERRUPT_VBLANK_VALUE;
           break;
         case INTERRUPT_LCD_FLAG:
-          pc = MEMORY_INTERRUPT_LCD;
+          pc = INTERRUPT_LCD_VALUE;
           break;
         case INTERRUPT_TIMER_FLAG:
-          pc = MEMORY_INTERRUPT_TIMER;
+          pc = INTERRUPT_TIMER_VALUE;
           break;
         case INTERRUPT_SERIAL_FLAG:
-          pc = MEMORY_INTERRUPT_SERIAL;
+          pc = INTERRUPT_SERIAL_VALUE;
           break;
         case INTERRUPT_JOYPAD_FLAG:
-          pc = MEMORY_INTERRUPT_JOYPAD;
+          pc = INTERRUPT_JOYPAD_VALUE;
           break;
         default:
           throw std::invalid_argument("Unknown interrupt flag!");
@@ -988,7 +988,7 @@ qword CPU::handleInterrupts() {
 }
 
 bool CPU::interruptsPending() const {
-  return (bus->read(MEMORY_IO_IE) & bus->read(MEMORY_IO_IF) &
+  return (bus->read(MEMORY_IE_ADDRESS) & bus->read(MEMORY_IF_ADDRESS) &
           MASK_5_LOWER_BYTE) != 0;
 }
 
