@@ -1,7 +1,7 @@
 #ifndef GBDMGE_CONSOLE_H
 #define GBDMGE_CONSOLE_H
 
-#include "Audio.h"
+#include "APU.h"
 #include "Bus.h"
 #include "CPU.h"
 #include "Cartridge.h"
@@ -22,7 +22,7 @@ class Console {
   CPU cpu;
   Cartridge cartridge;
   Joypad joypad;
-  Audio audio;
+  APU apu;
   PPU ppu;
   Timer timer;
   word iff;  // Interrupt flag

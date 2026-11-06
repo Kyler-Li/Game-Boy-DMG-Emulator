@@ -1,19 +1,18 @@
-#include "Audio.h"
+#include "APU.h"
 
 namespace gbdmge {
 
-byte Audio::read(word address) {
+byte APU::read(word address) {
   // TODO: Implement
   return 0xFF;
 }
 
-void Audio::write(word address, byte value) {
+void APU::write(word address, byte value) {
   // TODO: Implement
 }
 
-void Audio::reset() {
+void APU::reset() {
   // TODO: Implement
 }
 
 }  // namespace gbdmge
-

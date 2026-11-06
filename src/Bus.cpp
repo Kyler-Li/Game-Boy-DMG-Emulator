@@ -49,8 +49,8 @@ auto Bus::read(const word address) const -> byte {
     return console->iff | MASK_3_UPPER_BYTE;
   }
 
-  if (address >= MEMORY_AUDIO_START && address <= MEMORY_WAVE_RAM_END) {
-    return console->audio.read(address);
+  if (address >= MEMORY_AUDIO_START && address <= MEMORY_AUDIO_END) {
+    return console->apu.read(address);
   }
 
   if (address >= MEMORY_HRAM_START && address <= MEMORY_HRAM_END) {
@@ -117,8 +117,8 @@ void Bus::write(const word address, const byte value) {
     return;
   }
 
-  if (address >= MEMORY_AUDIO_START && address <= MEMORY_WAVE_RAM_END) {
-    console->audio.write(address, value);
+  if (address >= MEMORY_AUDIO_START && address <= MEMORY_AUDIO_END) {
+    console->apu.write(address, value);
     return;
   }
 
