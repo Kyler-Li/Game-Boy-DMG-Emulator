@@ -224,7 +224,7 @@ void PPU::getTileDataLow() {
     tileOffset = windowRowPixel & MASK_3_LOWER_BYTE;
   } else {
     const auto& objectAttribute = objectAttributes.front();
-    tileOffset = ly - objectAttribute.y - 16;
+    tileOffset = ly - objectAttribute.y + 16;
 
     if (objectAttribute.yFlip) {
       const byte objectHeightPixels = bitIsSet(lcdc, PPU_LCDC_OBJ_SIZE_FLAG) ? 16 : 8;
