@@ -63,7 +63,7 @@ auto Cartridge::load(const std::filesystem::path& romPath) -> bool {
     }
 
     // Determine mapper.
-    switch (rom[CARTRIDGE_TYPE_START]) {
+    switch (rom[CARTRIDGE_TYPE]) {
         case 0x00:
             mapper = Mapper::None;
             break;
@@ -109,17 +109,17 @@ auto Cartridge::load(const std::filesystem::path& romPath) -> bool {
     }
 
     // Determine ERAM size.
-    switch (rom[CARTRIDGE_ERAM_SIZE_START]) {
+    switch (rom[CARTRIDGE_ERAM_SIZE]) {
         case 0x00:
             break;
         case 0x01:
-            eRam.resize(2 * 1024);
+            eRam.resize(2 * CARTRIDGE_ERAM_BASE_SIZE_BYTES);
             break;
         case 0x02:
-            eRam.resize(8 * 1024);
+            eRam.resize(8 * CARTRIDGE_ERAM_BASE_SIZE_BYTES);
             break;
         case 0x03:
-            eRam.resize(32 * 1024);
+            eRam.resize(32 * CARTRIDGE_ERAM_BASE_SIZE_BYTES);
             break;
         case 0x04:
         case 0x05:
@@ -127,7 +127,7 @@ auto Cartridge::load(const std::filesystem::path& romPath) -> bool {
               std::cerr << "Failed to load cartridge: Unsupported MBC1 ERAM size\n";
               return false;
             }
-            eRam.resize(128 * 1024);
+            eRam.resize(128 * CARTRIDGE_ERAM_BASE_SIZE_BYTES);
             break;
         default:
             std::cerr << "Failed to load cartridge: Unrecognized ERAM size\n";
@@ -227,10 +227,8 @@ auto Cartridge::readMBC1(const word address) const -> byte {
     }
 
     // External RAM: 0xA000 - 0xBFFF.
-    if (address >= MEMORY_ERAM_START &&
-        address <= MEMORY_ERAM_END &&
-        eRamEnabled &&
-        !eRam.empty()) {
+    if (address >= MEMORY_ERAM_START && address <= MEMORY_ERAM_END &&
+        eRamEnabled && !eRam.empty()) {
 
         const byte ramBank =
             bankingMode == CARTRIDGE_ERAM_BANKING_MODE
@@ -243,7 +241,7 @@ auto Cartridge::readMBC1(const word address) const -> byte {
             (address - MEMORY_ERAM_START);
 
         // 2 KB RAM is mirrored throughout the 8 KB address range.
-        if (eRam.size() == 2 * 1024) {
+        if (eRam.size() == 2 * CARTRIDGE_ERAM_BASE_SIZE_BYTES) {
             offset %= eRam.size();
         }
 
@@ -286,7 +284,7 @@ void Cartridge::writeMBC1(const word address, const byte value) {
                 CARTRIDGE_ERAM_BANK_SIZE +
             (address - MEMORY_ERAM_START);
 
-        if (eRam.size() == 2 * 1024) {
+        if (eRam.size() == 2 * CARTRIDGE_ERAM_BASE_SIZE_BYTES) {
             offset %= eRam.size();
         }
 
