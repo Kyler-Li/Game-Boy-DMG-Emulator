@@ -80,14 +80,13 @@ auto Cartridge::load(const std::filesystem::path& romPath) -> bool {
         return false;
     }
 
-    const auto logo = std::span{rom}.subspan(NINTENDO_LOGO_START, NINTENDO_LOGO_END - NINTENDO_LOGO_START + 1);
-
-    if (!std::ranges::equal(NINTENDO_LOGO, logo)) {
+    if (const auto nintendoLogo = std::span{rom}.subspan(
+            NINTENDO_LOGO_START, NINTENDO_LOGO_END - NINTENDO_LOGO_START + 1);
+        !std::ranges::equal(NINTENDO_LOGO, nintendoLogo)) {
         std::cerr << "Failed to load cartridge: ROM is invalid (logo mismatch)\n";
         return false;
     }
 
-    // Determine mapper.
     switch (rom[CARTRIDGE_TYPE]) {
         case 0x00:
             mapper = Mapper::None;
@@ -133,7 +132,6 @@ auto Cartridge::load(const std::filesystem::path& romPath) -> bool {
             return false;
     }
 
-    // Determine ERAM size.
     switch (rom[CARTRIDGE_ERAM_SIZE_CODE]) {
         case 0x00:
             break;
@@ -210,25 +208,21 @@ void Cartridge::write(const word address, const byte value) {
 
 auto Cartridge::readNoMBC(const word address) const -> byte {
     if (address >= MEMORY_FIXED_BANK_START && address <= MEMORY_SWITCH_BANK_END) {
-        return address < rom.size() ? rom[address] : 0xFF;
+        return address < rom.size() ? rom[address] : OPEN_BUS_VALUE;
     }
 
-    if (address >= MEMORY_ERAM_START &&
-        address <= MEMORY_ERAM_END) {
-
+    if (address >= MEMORY_ERAM_START && address <= MEMORY_ERAM_END) {
         if (const auto offset = address & MASK_13_LOWER_WORD;
             offset < eRam.size()) {
             return eRam[offset];
         }
     }
 
-    return 0xFF;
+    return OPEN_BUS_VALUE;
 }
 
 void Cartridge::writeNoMBC(const word address, const byte value) {
-    if (address >= MEMORY_ERAM_START &&
-        address <= MEMORY_ERAM_END) {
-
+    if (address >= MEMORY_ERAM_START && address <= MEMORY_ERAM_END) {
         if (const std::size_t offset = address & MASK_13_LOWER_WORD;
             offset < eRam.size()) {
             eRam[offset] = value;
@@ -239,66 +233,50 @@ void Cartridge::writeNoMBC(const word address, const byte value) {
 auto Cartridge::readMBC1(const word address) const -> byte {
     const std::size_t numberOfRomBanks = rom.size() / CARTRIDGE_ROM_BANK_SIZE;
     if (numberOfRomBanks == 0) {
-        return 0xFF;
+        return OPEN_BUS_VALUE;
     }
 
     // Fixed ROM bank: 0x0000 - 0x3FFF.
     if (address <= MEMORY_FIXED_BANK_END) {
-        const std::size_t romBank =
-            bankingMode == CARTRIDGE_ERAM_BANKING_MODE
-                ? static_cast<std::size_t>(eRamBankingNumber) << 5
-                : 0;
+        const std::size_t romBank = bankingMode == CARTRIDGE_ERAM_BANKING_MODE ?
+          static_cast<std::size_t>(eRamBankingNumber) << 5 : 0;
 
         const std::size_t physicalBank = romBank % numberOfRomBanks;
         const std::size_t offset = physicalBank * CARTRIDGE_ROM_BANK_SIZE + address;
-        return offset < rom.size() ? rom[offset] : 0xFF;
+        return offset < rom.size() ? rom[offset] : OPEN_BUS_VALUE;
     }
 
     // Switchable ROM bank: 0x4000 - 0x7FFF.
     if (address >= MEMORY_SWITCH_BANK_START &&
         address <= MEMORY_SWITCH_BANK_END) {
-
-        const std::size_t romBank =
-            (romBankingNumber & MASK_5_LOWER_BYTE) |
-            (static_cast<std::size_t>(eRamBankingNumber) << 5);
+        const std::size_t romBank = (romBankingNumber & MASK_5_LOWER_BYTE) |
+          (static_cast<std::size_t>(eRamBankingNumber) << 5);
 
         // Bank 0 is inaccessible in the switchable ROM region.
         // Only the lower 5 bits determine whether the bank is zero.
-        const std::size_t effectiveBank =
-            (romBank & MASK_5_LOWER_BYTE) == 0
-                ? romBank | 0x01
-                : romBank;
-
+        const std::size_t effectiveBank = (romBank & MASK_5_LOWER_BYTE) == 0 ?
+          romBank | 0x01 : romBank;
         const std::size_t physicalBank = effectiveBank % numberOfRomBanks;
-        const std::size_t offset =
-            physicalBank * CARTRIDGE_ROM_BANK_SIZE +
-            (address - MEMORY_SWITCH_BANK_START);
-
-        return offset < rom.size() ? rom[offset] : 0xFF;
+        const std::size_t offset = physicalBank * CARTRIDGE_ROM_BANK_SIZE + (address - MEMORY_SWITCH_BANK_START);
+        return offset < rom.size() ? rom[offset] : OPEN_BUS_VALUE;
     }
 
     // External RAM: 0xA000 - 0xBFFF.
     if (address >= MEMORY_ERAM_START && address <= MEMORY_ERAM_END && eRamEnabled && !eRam.empty()) {
-        const std::size_t numberOfRamBanks =
-            (eRam.size() + CARTRIDGE_ERAM_BANK_SIZE - 1) /
-            CARTRIDGE_ERAM_BANK_SIZE;
+        const std::size_t numberOfRamBanks = (eRam.size() + CARTRIDGE_ERAM_BANK_SIZE - 1) / CARTRIDGE_ERAM_BANK_SIZE;
 
-        const std::size_t ramBank =
-            bankingMode == CARTRIDGE_ERAM_BANKING_MODE
-                ? eRamBankingNumber & MASK_2_LOWER_BYTE
-                : 0;
+        const std::size_t ramBank = bankingMode == CARTRIDGE_ERAM_BANKING_MODE ?
+          eRamBankingNumber & MASK_2_LOWER_BYTE : 0;
 
         const std::size_t physicalBank = ramBank % numberOfRamBanks;
-        std::size_t offset =
-            physicalBank * CARTRIDGE_ERAM_BANK_SIZE +
-            (address - MEMORY_ERAM_START);
+        std::size_t offset = physicalBank * CARTRIDGE_ERAM_BANK_SIZE + (address - MEMORY_ERAM_START);
 
         // Mirror RAM smaller than 8 KB.
         offset %= eRam.size();
         return eRam[offset];
     }
 
-    return 0xFF;
+    return OPEN_BUS_VALUE;
 }
 
 void Cartridge::writeMBC1(const word address, const byte value) {
@@ -307,7 +285,7 @@ void Cartridge::writeMBC1(const word address, const byte value) {
         eRamEnabled = (value & MASK_4_LOWER_BYTE) == CARTRIDGE_ERAM_ENABLE_VALUE;
 
     } else if (address >= CARTRIDGE_ROM_BANK_NUMBER_START &&
-               address <= CARTRIDGE_ROM_BANK_NUMBER_END) {
+      address <= CARTRIDGE_ROM_BANK_NUMBER_END) {
 
         // Store the raw lower 5 bits.
         // Bank-zero remapping happens when reading ROM.
@@ -325,24 +303,16 @@ void Cartridge::writeMBC1(const word address, const byte value) {
 
         bankingMode = value & MASK_1_LOWER_BYTE;
 
-    } else if (address >= MEMORY_ERAM_START &&
-               address <= MEMORY_ERAM_END &&
+    } else if (address >= MEMORY_ERAM_START && address <= MEMORY_ERAM_END &&
                eRamEnabled &&
                !eRam.empty()) {
 
-        const std::size_t numberOfRamBanks =
-            (eRam.size() + CARTRIDGE_ERAM_BANK_SIZE - 1) /
-            CARTRIDGE_ERAM_BANK_SIZE;
-
-        const std::size_t ramBank =
-            bankingMode == CARTRIDGE_ERAM_BANKING_MODE
-                ? eRamBankingNumber & MASK_2_LOWER_BYTE
-                : 0;
+        const std::size_t numberOfRamBanks = (eRam.size() + CARTRIDGE_ERAM_BANK_SIZE - 1) / CARTRIDGE_ERAM_BANK_SIZE;
+        const std::size_t ramBank = bankingMode == CARTRIDGE_ERAM_BANKING_MODE ?
+          eRamBankingNumber & MASK_2_LOWER_BYTE : 0;
 
         const std::size_t physicalBank = ramBank % numberOfRamBanks;
-        std::size_t offset =
-            physicalBank * CARTRIDGE_ERAM_BANK_SIZE +
-            (address - MEMORY_ERAM_START);
+        std::size_t offset = physicalBank * CARTRIDGE_ERAM_BANK_SIZE + (address - MEMORY_ERAM_START);
 
         // Mirror RAM smaller than 8 KB.
         offset %= eRam.size();
@@ -353,19 +323,16 @@ void Cartridge::writeMBC1(const word address, const byte value) {
 auto Cartridge::readMBC3(const word address) const -> byte {
     // Fixed ROM bank.
     if (address <= MEMORY_FIXED_BANK_END) {
-        return address < rom.size() ? rom[address] : 0xFF;
+        return address < rom.size() ? rom[address] : OPEN_BUS_VALUE;
     }
 
     // Switchable ROM bank.
     if (address >= MEMORY_SWITCH_BANK_START &&
         address <= MEMORY_SWITCH_BANK_END) {
 
-        const std::size_t offset =
-            static_cast<std::size_t>(romBankingNumber) *
-                CARTRIDGE_ROM_BANK_SIZE +
-            (address - MEMORY_SWITCH_BANK_START);
-
-        return offset < rom.size() ? rom[offset] : 0xFF;
+        const std::size_t offset = static_cast<std::size_t>(romBankingNumber) * CARTRIDGE_ROM_BANK_SIZE +
+          (address - MEMORY_SWITCH_BANK_START);
+        return offset < rom.size() ? rom[offset] : OPEN_BUS_VALUE;
     }
 
     // External RAM or RTC.
@@ -378,12 +345,9 @@ auto Cartridge::readMBC3(const word address) const -> byte {
             case 0x1:
             case 0x2:
             case 0x3: {
-                const std::size_t offset =
-                    static_cast<std::size_t>(eRamBankingNumber) *
-                        CARTRIDGE_ERAM_BANK_SIZE +
+                const std::size_t offset = static_cast<std::size_t>(eRamBankingNumber) * CARTRIDGE_ERAM_BANK_SIZE +
                     (address - MEMORY_ERAM_START);
-
-                return offset < eRam.size() ? eRam[offset] : 0xFF;
+                return offset < eRam.size() ? eRam[offset] : OPEN_BUS_VALUE;
             }
             case 0x8:
                 return rtcSeconds;
@@ -396,11 +360,11 @@ auto Cartridge::readMBC3(const word address) const -> byte {
             case 0xC:
                 return rtcDaysHigh;
             default:
-                return 0xFF;
+                return OPEN_BUS_VALUE;
         }
     }
 
-    return 0xFF;
+    return OPEN_BUS_VALUE;
 }
 
 void Cartridge::writeMBC3(const word address, const byte value) {
@@ -435,9 +399,7 @@ void Cartridge::writeMBC3(const word address, const byte value) {
             case 0x1:
             case 0x2:
             case 0x3: {
-                const std::size_t offset =
-                    static_cast<std::size_t>(eRamBankingNumber) *
-                        CARTRIDGE_ERAM_BANK_SIZE +
+                const std::size_t offset = static_cast<std::size_t>(eRamBankingNumber) * CARTRIDGE_ERAM_BANK_SIZE +
                     (address - MEMORY_ERAM_START);
 
                 if (offset < eRam.size()) {
@@ -481,9 +443,8 @@ void Cartridge::updateRtcLatchMBC3() {
 
     rtcDaysLow = static_cast<byte>(days & MASK_8_LOWER_WORD);
 
-    rtcDaysHigh =
-        rtcDaysHigh & MASK_8_UPPER_BYTE |
-        static_cast<byte>(days >> 8 & MASK_1_LOWER_WORD);
+    rtcDaysHigh = rtcDaysHigh & MASK_8_UPPER_BYTE |
+      static_cast<byte>(days >> 8 & MASK_1_LOWER_WORD);
 
     if (days > 511) {
         rtcDaysHigh |= MASK_1_UPPER_BYTE;

@@ -41,6 +41,8 @@ static constexpr byte BCD_MAXIMUM_BYTE = 0x99;
 static constexpr byte BCD_ONES_PLACE_ADJUST_BYTE = 0x06;
 static constexpr byte BCD_TENS_PLACE_ADJUST_BYTE = 0x60;
 
+static constexpr byte OPEN_BUS_VALUE = 0xFF;
+
 // Positions for flags register in CPU
 // Flags register layout:
 // Bit:     |   7      |      6      |     5          |   4        |  3 - 0  |

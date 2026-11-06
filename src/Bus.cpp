@@ -29,7 +29,7 @@ auto Bus::read(const word address) const -> byte {
 
   if (address >= MEMORY_FORBIDDEN_START && address <= MEMORY_FORBIDDEN_END) {
     std::cerr << "Ignoring read from forbidden memory space.\n";
-    return 0xFF;
+    return OPEN_BUS_VALUE;
   }
 
   if (address == MEMORY_P1_JOYP_ADDRESS) {
@@ -38,7 +38,7 @@ auto Bus::read(const word address) const -> byte {
 
   if (address == MEMORY_SB_ADDRESS || address == MEMORY_SC_ADDRESS) {
     std::cerr << "Reading from serial transfer not implemented!\n";
-    return 0xFF;
+    return OPEN_BUS_VALUE;
   }
 
   if (address >= MEMORY_TIMER_DIV_START && address <= MEMORY_TIMER_DIV_END) {
@@ -63,7 +63,7 @@ auto Bus::read(const word address) const -> byte {
 
   std::cerr << "Bus failed to read from " << std::hex << address
             << " : Unrecgonized memory space\n";
-  return 0xFF;
+  return OPEN_BUS_VALUE;
 }
 
 void Bus::write(const word address, const byte value) {
