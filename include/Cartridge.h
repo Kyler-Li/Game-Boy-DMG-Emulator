@@ -43,13 +43,16 @@ public:
   void writeMBC3(word address, byte value);
   void updateRtcLatchMBC3();
 
+  auto readMBC5(word address) const -> byte;
+  void writeMBC5(word address, byte value);
+
   std::vector<byte> rom;
   std::vector<byte> eRam;
 
   Mapper mapper;
 
   byte eRamBankingNumber;
-  byte romBankingNumber;
+  word romBankingNumber;
   byte bankingMode;
 
   byte rtcSeconds;

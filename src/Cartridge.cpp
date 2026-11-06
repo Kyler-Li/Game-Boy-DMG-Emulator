@@ -185,6 +185,8 @@ auto Cartridge::read(const word address) const -> byte {
       return readMBC1(address);
     case Mapper::MBC3:
       return readMBC3(address);
+    case Mapper::MBC5:
+      return readMBC5(address);
     default:
       assert(false && "Cartridge read failed, unrecognized mapper");
   }
@@ -201,6 +203,8 @@ void Cartridge::write(const word address, const byte value) {
     case Mapper::MBC3:
       writeMBC3(address, value);
       return;
+    case Mapper::MBC5:
+      return writeMBC5(address, value);
     default:
       assert(false && "Cartridge write failed, unrecognized mapper");
   }
@@ -477,4 +481,81 @@ void Cartridge::updateRtcLatchMBC3() {
     }
 }
 
+auto Cartridge::readMBC5(const word address) const -> byte {
+  const std::size_t numberOfRomBanks = rom.size() / CARTRIDGE_ROM_BANK_SIZE;
+  if (numberOfRomBanks == 0) {
+    return OPEN_BUS_VALUE;
+  }
+
+  // Fixed ROM bank.
+  if (address <= MEMORY_FIXED_BANK_END) {
+    return address < rom.size() ? rom[address] : OPEN_BUS_VALUE;
+  }
+
+  // Switchable ROM bank.
+  if (address >= MEMORY_SWITCH_BANK_START &&
+      address <= MEMORY_SWITCH_BANK_END) {
+      const std::size_t physicalBank = romBankingNumber % numberOfRomBanks;
+      const std::size_t offset = physicalBank * CARTRIDGE_ROM_BANK_SIZE +
+          (address - MEMORY_SWITCH_BANK_START);
+
+      return offset < rom.size() ? rom[offset] : OPEN_BUS_VALUE;
+    }
+
+  // External RAM.
+  if (address >= MEMORY_ERAM_START &&
+      address <= MEMORY_ERAM_END &&
+      eRamEnabled &&
+      !eRam.empty()) {
+
+    const std::size_t numberOfRamBanks =
+        (eRam.size() + CARTRIDGE_ERAM_BANK_SIZE - 1) / CARTRIDGE_ERAM_BANK_SIZE;
+
+    const std::size_t physicalBank = eRamBankingNumber % numberOfRamBanks;
+    const std::size_t offset = physicalBank * CARTRIDGE_ERAM_BANK_SIZE +
+        (address - MEMORY_ERAM_START);
+
+    return offset < eRam.size() ? eRam[offset] : OPEN_BUS_VALUE;
+  }
+
+  return OPEN_BUS_VALUE;
+}
+
+void Cartridge::writeMBC5(const word address, const byte value) {
+  // RAM enable.
+  if (address <= CARTRIDGE_ERAM_ENABLE_END) {
+    eRamEnabled = (value & MASK_4_LOWER_BYTE) == CARTRIDGE_ERAM_ENABLE_VALUE;
+
+    // ROM bank bits 0-7.
+  } else if (address >= CARTRIDGE_ROM_BANK_NUMBER_START && address <= CARTRIDGE_ROM_BANK_NUMBER_LOWER_END) {
+    romBankingNumber = (romBankingNumber & MASK_9_WORD) | value;
+
+    // ROM bank bit 8.
+  } else if (address >= CARTRIDGE_ROM_BANK_NUMBER_UPPER_START && address <= CARTRIDGE_ROM_BANK_NUMBER_END) {
+    romBankingNumber = (romBankingNumber & MASK_8_LOWER_WORD) |
+        (static_cast<word>(value & MASK_1_LOWER_BYTE) << 8);
+
+    // RAM bank bits 0-3.
+  } else if (address >= CARTRIDGE_ERAM_BANK_NUMBER_START &&
+             address <= CARTRIDGE_ERAM_BANK_NUMBER_END) {
+    eRamBankingNumber = value & MASK_4_LOWER_BYTE;
+
+    // External RAM.
+   } else if (address >= MEMORY_ERAM_START &&
+              address <= MEMORY_ERAM_END &&
+              eRamEnabled &&
+              !eRam.empty()) {
+
+      const std::size_t numberOfRamBanks =
+         (eRam.size() + CARTRIDGE_ERAM_BANK_SIZE - 1) / CARTRIDGE_ERAM_BANK_SIZE;
+
+      const std::size_t physicalBank = eRamBankingNumber % numberOfRamBanks;
+      const std::size_t offset = physicalBank * CARTRIDGE_ERAM_BANK_SIZE +
+         (address - MEMORY_ERAM_START);
+
+      if (offset < eRam.size()) {
+       eRam[offset] = value;
+      }
+    }
+}
 }  // namespace gbdmge

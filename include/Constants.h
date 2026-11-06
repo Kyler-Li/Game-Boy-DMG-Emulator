@@ -24,12 +24,14 @@ static constexpr byte MASK_6_LOWER_BYTE = 0x3F;
 static constexpr byte MASK_7_LOWER_BYTE = 0x7F;
 static constexpr byte MASK_8_LOWER_BYTE = 0xFF;
 static constexpr word MASK_8_LOWER_WORD = 0x00FF;
+static constexpr word MASK_9_LOWER_WORD = 0x01FF;
 static constexpr word MASK_12_LOWER_WORD = 0x0FFF;
 static constexpr word MASK_13_LOWER_WORD = 0x1FFF;
 static constexpr word MASK_16_LOWER_WORD = 0x0000FFFF;
 
 // Mask for specific bits
 static constexpr byte MASK_5_6_BYTE = 0x60;
+static constexpr word MASK_9_WORD = 0x100;
 
 // Indexes for specific bits
 static constexpr byte BIT_0_BYTE = 0;
@@ -151,6 +153,8 @@ static constexpr word CARTRIDGE_ERAM_BANK_SIZE = 0x2000;
 static constexpr word CARTRIDGE_ERAM_BANK_NUMBER_START = 0x4000;
 static constexpr word CARTRIDGE_ERAM_BANK_NUMBER_END = 0x5FFF;
 static constexpr word CARTRIDGE_ROM_BANK_NUMBER_START = 0x2000;
+static constexpr word CARTRIDGE_ROM_BANK_NUMBER_LOWER_END = 0x2FFF;
+static constexpr word CARTRIDGE_ROM_BANK_NUMBER_UPPER_START = 0x3000;
 static constexpr word CARTRIDGE_ROM_BANK_NUMBER_END = 0x3FFF;
 static constexpr word CARTRIDGE_ROM_ERAM_MODE_SELECT_START = 0x6000;
 static constexpr word CARTRIDGE_ROM_ERAM_MODE_SELECT_END = 0x7FFF;
