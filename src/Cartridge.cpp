@@ -1,11 +1,12 @@
-#include "Cartridge.h"
 #include <algorithm>
 #include <cassert>
+#include <cerrno>
 #include <chrono>
 #include <cstring>
 #include <fstream>
 #include <iostream>
 #include <span>
+#include "Cartridge.h"
 #include "Constants.h"
 
 namespace gbdmge {
@@ -41,11 +42,37 @@ auto Cartridge::load(const std::filesystem::path& romPath) -> bool {
         return false;
     }
 
-    if (const std::size_t estimatedRomSize =
-            2 * CARTRIDGE_ROM_BANK_SIZE * (1 << rom[CARTRIDGE_ROM_SIZE_VALUE]);
-        fileSize < estimatedRomSize) {
-      std::cerr << "Failed to load cartridge: ROM has invalid size\n";
-      return false;
+    // Validate that the ROM contains the required header fields.
+    if (rom.size() <= CARTRIDGE_ROM_SIZE_VALUE || rom.size() <= CARTRIDGE_ERAM_SIZE_CODE) {
+        std::cerr << "Failed to load cartridge: ROM is invalid (too small)\n";
+        return false;
+    }
+
+    // Determine expected ROM size.
+    std::size_t estimatedRomSize = 0;
+    if (const byte romSizeCode = rom[CARTRIDGE_ROM_SIZE_VALUE];
+      romSizeCode <= CARTRIDGE_ROM_SIZE_VALUE_8MB) {
+        estimatedRomSize = 2 * CARTRIDGE_ROM_BANK_SIZE * (1 << romSizeCode);
+    } else {
+        switch (romSizeCode) {
+            case 0x52:
+                estimatedRomSize = 72 * CARTRIDGE_ROM_BANK_SIZE;
+                break;
+            case 0x53:
+                estimatedRomSize = 80 * CARTRIDGE_ROM_BANK_SIZE;
+                break;
+            case 0x54:
+                estimatedRomSize = 96 * CARTRIDGE_ROM_BANK_SIZE;
+                break;
+            default:
+                std::cerr << "Failed to load cartridge: Unrecognized ROM size\n";
+                return false;
+        }
+    }
+
+    if (fileSize < estimatedRomSize) {
+        std::cerr << "Failed to load cartridge: ROM has invalid size\n";
+        return false;
     }
 
     if (NINTENDO_LOGO_END >= rom.size()) {
@@ -53,9 +80,7 @@ auto Cartridge::load(const std::filesystem::path& romPath) -> bool {
         return false;
     }
 
-    const auto logo = std::span{rom}.subspan(
-        NINTENDO_LOGO_START,
-        NINTENDO_LOGO_END - NINTENDO_LOGO_START + 1);
+    const auto logo = std::span{rom}.subspan(NINTENDO_LOGO_START, NINTENDO_LOGO_END - NINTENDO_LOGO_START + 1);
 
     if (!std::ranges::equal(NINTENDO_LOGO, logo)) {
         std::cerr << "Failed to load cartridge: ROM is invalid (logo mismatch)\n";
@@ -109,7 +134,7 @@ auto Cartridge::load(const std::filesystem::path& romPath) -> bool {
     }
 
     // Determine ERAM size.
-    switch (rom[CARTRIDGE_ERAM_SIZE]) {
+    switch (rom[CARTRIDGE_ERAM_SIZE_CODE]) {
         case 0x00:
             break;
         case 0x01:
@@ -124,10 +149,15 @@ auto Cartridge::load(const std::filesystem::path& romPath) -> bool {
         case 0x04:
         case 0x05:
             if (mapper == Mapper::MBC1) {
-              std::cerr << "Failed to load cartridge: Unsupported MBC1 ERAM size\n";
-              return false;
+                std::cerr << "Failed to load cartridge: Unsupported MBC1 ERAM size\n";
+                return false;
             }
-            eRam.resize(128 * CARTRIDGE_ERAM_BASE_SIZE_BYTES);
+
+            if (rom[CARTRIDGE_ERAM_SIZE_CODE] == CARTRIDGE_ERAM_SIZE_CODE_128KB) {
+                eRam.resize(128 * CARTRIDGE_ERAM_BASE_SIZE_BYTES);
+            } else {
+                eRam.resize(64 * CARTRIDGE_ERAM_BASE_SIZE_BYTES);
+            }
             break;
         default:
             std::cerr << "Failed to load cartridge: Unrecognized ERAM size\n";
@@ -140,6 +170,12 @@ auto Cartridge::load(const std::filesystem::path& romPath) -> bool {
     bankingMode = CARTRIDGE_ROM_BANKING_MODE;
     eRamEnabled = false;
 
+    rtcSeconds = 0;
+    rtcMinutes = 0;
+    rtcHours = 0;
+    rtcDaysLow = 0;
+    rtcDaysHigh = 0;
+    rtcLatch = 0;
     return true;
 }
 
@@ -181,7 +217,7 @@ auto Cartridge::readNoMBC(const word address) const -> byte {
         address <= MEMORY_ERAM_END) {
 
         if (const auto offset = address & MASK_13_LOWER_WORD;
-          offset < eRam.size()) {
+            offset < eRam.size()) {
             return eRam[offset];
         }
     }
@@ -194,58 +230,72 @@ void Cartridge::writeNoMBC(const word address, const byte value) {
         address <= MEMORY_ERAM_END) {
 
         if (const std::size_t offset = address & MASK_13_LOWER_WORD;
-        offset < eRam.size()) {
+            offset < eRam.size()) {
             eRam[offset] = value;
         }
     }
 }
 
 auto Cartridge::readMBC1(const word address) const -> byte {
+    const std::size_t numberOfRomBanks = rom.size() / CARTRIDGE_ROM_BANK_SIZE;
+    if (numberOfRomBanks == 0) {
+        return 0xFF;
+    }
+
     // Fixed ROM bank: 0x0000 - 0x3FFF.
     if (address <= MEMORY_FIXED_BANK_END) {
-        const byte romBank =
+        const std::size_t romBank =
             bankingMode == CARTRIDGE_ERAM_BANKING_MODE
-                ? eRamBankingNumber << 5
+                ? static_cast<std::size_t>(eRamBankingNumber) << 5
                 : 0;
 
-        const std::size_t offset = static_cast<std::size_t>(romBank) * CARTRIDGE_ROM_BANK_SIZE + address;
+        const std::size_t physicalBank = romBank % numberOfRomBanks;
+        const std::size_t offset = physicalBank * CARTRIDGE_ROM_BANK_SIZE + address;
         return offset < rom.size() ? rom[offset] : 0xFF;
     }
 
     // Switchable ROM bank: 0x4000 - 0x7FFF.
     if (address >= MEMORY_SWITCH_BANK_START &&
         address <= MEMORY_SWITCH_BANK_END) {
-        const byte romBank =
-            (romBankingNumber & MASK_5_LOWER_BYTE) |
-            (bankingMode == CARTRIDGE_ROM_BANKING_MODE
-                 ? eRamBankingNumber << 5 : 0);
 
+        const std::size_t romBank =
+            (romBankingNumber & MASK_5_LOWER_BYTE) |
+            (static_cast<std::size_t>(eRamBankingNumber) << 5);
+
+        // Bank 0 is inaccessible in the switchable ROM region.
+        // Only the lower 5 bits determine whether the bank is zero.
+        const std::size_t effectiveBank =
+            (romBank & MASK_5_LOWER_BYTE) == 0
+                ? romBank | 0x01
+                : romBank;
+
+        const std::size_t physicalBank = effectiveBank % numberOfRomBanks;
         const std::size_t offset =
-            static_cast<std::size_t>(romBank) *
-                CARTRIDGE_ROM_BANK_SIZE + (address - MEMORY_SWITCH_BANK_START);
+            physicalBank * CARTRIDGE_ROM_BANK_SIZE +
+            (address - MEMORY_SWITCH_BANK_START);
+
         return offset < rom.size() ? rom[offset] : 0xFF;
     }
 
     // External RAM: 0xA000 - 0xBFFF.
-    if (address >= MEMORY_ERAM_START && address <= MEMORY_ERAM_END &&
-        eRamEnabled && !eRam.empty()) {
+    if (address >= MEMORY_ERAM_START && address <= MEMORY_ERAM_END && eRamEnabled && !eRam.empty()) {
+        const std::size_t numberOfRamBanks =
+            (eRam.size() + CARTRIDGE_ERAM_BANK_SIZE - 1) /
+            CARTRIDGE_ERAM_BANK_SIZE;
 
-        const byte ramBank =
+        const std::size_t ramBank =
             bankingMode == CARTRIDGE_ERAM_BANKING_MODE
                 ? eRamBankingNumber & MASK_2_LOWER_BYTE
                 : 0;
 
+        const std::size_t physicalBank = ramBank % numberOfRamBanks;
         std::size_t offset =
-            static_cast<std::size_t>(ramBank) *
-                CARTRIDGE_ERAM_BANK_SIZE +
+            physicalBank * CARTRIDGE_ERAM_BANK_SIZE +
             (address - MEMORY_ERAM_START);
 
-        // 2 KB RAM is mirrored throughout the 8 KB address range.
-        if (eRam.size() == 2 * CARTRIDGE_ERAM_BASE_SIZE_BYTES) {
-            offset %= eRam.size();
-        }
-
-        return offset < eRam.size() ? eRam[offset] : 0xFF;
+        // Mirror RAM smaller than 8 KB.
+        offset %= eRam.size();
+        return eRam[offset];
     }
 
     return 0xFF;
@@ -256,41 +306,47 @@ void Cartridge::writeMBC1(const word address, const byte value) {
     if (address <= CARTRIDGE_ERAM_ENABLE_END) {
         eRamEnabled = (value & MASK_4_LOWER_BYTE) == CARTRIDGE_ERAM_ENABLE_VALUE;
 
-    }else if (address >= CARTRIDGE_ROM_BANK_NUMBER_START &&
-             address <= CARTRIDGE_ROM_BANK_NUMBER_END) {
-        romBankingNumber = value & MASK_5_LOWER_BYTE;
-        incrementBankingNumber();
+    } else if (address >= CARTRIDGE_ROM_BANK_NUMBER_START &&
+               address <= CARTRIDGE_ROM_BANK_NUMBER_END) {
 
-    }else if (address >= CARTRIDGE_ERAM_BANK_NUMBER_START &&
-             address <= CARTRIDGE_ERAM_BANK_NUMBER_END) {
+        // Store the raw lower 5 bits.
+        // Bank-zero remapping happens when reading ROM.
+        romBankingNumber = value & MASK_5_LOWER_BYTE;
+
+    } else if (address >= CARTRIDGE_ERAM_BANK_NUMBER_START &&
+               address <= CARTRIDGE_ERAM_BANK_NUMBER_END) {
+
+        // These bits are used for ROM banking in mode 0
+        // and RAM banking / fixed ROM banking in mode 1.
         eRamBankingNumber = value & MASK_2_LOWER_BYTE;
 
-    }else if (address >= CARTRIDGE_ROM_ERAM_MODE_SELECT_START &&
-             address <= CARTRIDGE_ROM_ERAM_MODE_SELECT_END) {
+    } else if (address >= CARTRIDGE_ROM_ERAM_MODE_SELECT_START &&
+               address <= CARTRIDGE_ROM_ERAM_MODE_SELECT_END) {
+
         bankingMode = value & MASK_1_LOWER_BYTE;
 
-    }else if (address >= MEMORY_ERAM_START &&
-             address <= MEMORY_ERAM_END &&
-             eRamEnabled &&
-             !eRam.empty()) {
+    } else if (address >= MEMORY_ERAM_START &&
+               address <= MEMORY_ERAM_END &&
+               eRamEnabled &&
+               !eRam.empty()) {
 
-        const byte ramBank =
+        const std::size_t numberOfRamBanks =
+            (eRam.size() + CARTRIDGE_ERAM_BANK_SIZE - 1) /
+            CARTRIDGE_ERAM_BANK_SIZE;
+
+        const std::size_t ramBank =
             bankingMode == CARTRIDGE_ERAM_BANKING_MODE
                 ? eRamBankingNumber & MASK_2_LOWER_BYTE
                 : 0;
 
+        const std::size_t physicalBank = ramBank % numberOfRamBanks;
         std::size_t offset =
-            static_cast<std::size_t>(ramBank) *
-                CARTRIDGE_ERAM_BANK_SIZE +
+            physicalBank * CARTRIDGE_ERAM_BANK_SIZE +
             (address - MEMORY_ERAM_START);
 
-        if (eRam.size() == 2 * CARTRIDGE_ERAM_BASE_SIZE_BYTES) {
-            offset %= eRam.size();
-        }
-
-        if (offset < eRam.size()) {
-            eRam[offset] = value;
-        }
+        // Mirror RAM smaller than 8 KB.
+        offset %= eRam.size();
+        eRam[offset] = value;
     }
 }
 
@@ -358,13 +414,13 @@ void Cartridge::writeMBC3(const word address, const byte value) {
         if (romBankingNumber == 0) {
             romBankingNumber = 1;
         }
-
-    }else if (address >= CARTRIDGE_ERAM_BANK_NUMBER_START &&
-             address <= CARTRIDGE_ERAM_BANK_NUMBER_END) {
+    } else if (address >= CARTRIDGE_ERAM_BANK_NUMBER_START &&
+               address <= CARTRIDGE_ERAM_BANK_NUMBER_END) {
         eRamBankingNumber = value & MASK_4_LOWER_BYTE;
 
-    }else if (address >= CARTRIDGE_ROM_ERAM_MODE_SELECT_START &&
-             address <= CARTRIDGE_ROM_ERAM_MODE_SELECT_END) {
+    } else if (address >= CARTRIDGE_ROM_ERAM_MODE_SELECT_START &&
+               address <= CARTRIDGE_ROM_ERAM_MODE_SELECT_END) {
+
         if (rtcLatch == 0 && value == 1) {
             updateRtcLatchMBC3();
         }
@@ -373,6 +429,7 @@ void Cartridge::writeMBC3(const word address, const byte value) {
     }else if (address >= MEMORY_ERAM_START &&
              address <= MEMORY_ERAM_END &&
              eRamEnabled) {
+
         switch (eRamBankingNumber) {
             case 0x0:
             case 0x1:
@@ -430,14 +487,6 @@ void Cartridge::updateRtcLatchMBC3() {
 
     if (days > 511) {
         rtcDaysHigh |= MASK_1_UPPER_BYTE;
-    }
-}
-
-void Cartridge::incrementBankingNumber() {
-    // MBC1 bank 0 is inaccessible in the switchable ROM region.
-    // Only the lower 5 bits are forced to 1 when they are zero.
-    if ((romBankingNumber & MASK_5_LOWER_BYTE) == 0) {
-        romBankingNumber = 1;
     }
 }
 

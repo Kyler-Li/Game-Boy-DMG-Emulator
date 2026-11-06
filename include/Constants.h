@@ -157,8 +157,10 @@ static constexpr byte CARTRIDGE_ERAM_BANKING_MODE = 1;
 static constexpr byte CARTRIDGE_ROM_BANKING_MODE = 0;
 static constexpr word CARTRIDGE_TYPE = 0x147;
 static constexpr word CARTRIDGE_ROM_SIZE_VALUE = 0x148;
-static constexpr word CARTRIDGE_ERAM_SIZE = 0x149;
+static constexpr word CARTRIDGE_ERAM_SIZE_CODE = 0x149;
+static constexpr word CARTRIDGE_ERAM_SIZE_CODE_128KB = 0x04;
 static constexpr qword CARTRIDGE_ERAM_BASE_SIZE_BYTES = 1024;
+static constexpr byte CARTRIDGE_ROM_SIZE_VALUE_8MB = 0x08;
 
 // Nintendo Logo
 static constexpr word NINTENDO_LOGO_START = 0x0104;
