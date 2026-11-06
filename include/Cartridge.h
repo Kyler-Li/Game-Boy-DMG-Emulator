@@ -35,6 +35,7 @@ public:
 
   auto readMBC1(word address) const -> byte;
   void writeMBC1(word address, byte value);
+  bool isMulticart();
 
   auto readMBC3(word address) const -> byte;
   void writeMBC3(word address, byte value);
@@ -57,6 +58,7 @@ public:
   byte rtcLatch;
 
   bool eRamEnabled;
+  bool multicartEnabled;
 };
 }  // namespace gbdmge
 

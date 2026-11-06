@@ -22,7 +22,8 @@ Cartridge::Cartridge()
       rtcDaysLow{0},
       rtcDaysHigh{0},
       rtcLatch{0},
-      eRamEnabled{false} {}
+      eRamEnabled{false},
+      multicartEnabled{false} {}
 
 auto Cartridge::load(const std::filesystem::path& romPath) -> bool {
     auto f = std::ifstream{romPath, std::ios::binary};
@@ -167,6 +168,7 @@ auto Cartridge::load(const std::filesystem::path& romPath) -> bool {
     eRamBankingNumber = 0;
     bankingMode = CARTRIDGE_ROM_BANKING_MODE;
     eRamEnabled = false;
+    multicartEnabled = isMulticart();
 
     rtcSeconds = 0;
     rtcMinutes = 0;
@@ -236,10 +238,13 @@ auto Cartridge::readMBC1(const word address) const -> byte {
         return OPEN_BUS_VALUE;
     }
 
+    const byte upperBankShift = multicartEnabled ? 4 : 5;
+    const byte lowerBankMask = multicartEnabled ? MASK_4_LOWER_BYTE : MASK_5_LOWER_BYTE;
+
     // Fixed ROM bank: 0x0000 - 0x3FFF.
     if (address <= MEMORY_FIXED_BANK_END) {
         const std::size_t romBank = bankingMode == CARTRIDGE_ERAM_BANKING_MODE ?
-          static_cast<std::size_t>(eRamBankingNumber) << 5 : 0;
+          static_cast<std::size_t>(eRamBankingNumber) << upperBankShift : 0;
 
         const std::size_t physicalBank = romBank % numberOfRomBanks;
         const std::size_t offset = physicalBank * CARTRIDGE_ROM_BANK_SIZE + address;
@@ -249,13 +254,10 @@ auto Cartridge::readMBC1(const word address) const -> byte {
     // Switchable ROM bank: 0x4000 - 0x7FFF.
     if (address >= MEMORY_SWITCH_BANK_START &&
         address <= MEMORY_SWITCH_BANK_END) {
-        const std::size_t romBank = (romBankingNumber & MASK_5_LOWER_BYTE) |
-          (static_cast<std::size_t>(eRamBankingNumber) << 5);
+        const std::size_t romBank = (romBankingNumber & lowerBankMask) |
+          (static_cast<std::size_t>(eRamBankingNumber) << upperBankShift);
 
-        // Bank 0 is inaccessible in the switchable ROM region.
-        // Only the lower 5 bits determine whether the bank is zero.
-        const std::size_t effectiveBank = (romBank & MASK_5_LOWER_BYTE) == 0 ?
-          romBank | 0x01 : romBank;
+        const std::size_t effectiveBank = (romBank & lowerBankMask) == 0 ? romBank | 0x01 : romBank;
         const std::size_t physicalBank = effectiveBank % numberOfRomBanks;
         const std::size_t offset = physicalBank * CARTRIDGE_ROM_BANK_SIZE + (address - MEMORY_SWITCH_BANK_START);
         return offset < rom.size() ? rom[offset] : OPEN_BUS_VALUE;
@@ -318,6 +320,11 @@ void Cartridge::writeMBC1(const word address, const byte value) {
         offset %= eRam.size();
         eRam[offset] = value;
     }
+}
+
+bool Cartridge::isMulticart() {
+  // TODO: implement
+  return false;
 }
 
 auto Cartridge::readMBC3(const word address) const -> byte {
