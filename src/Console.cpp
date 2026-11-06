@@ -6,7 +6,7 @@ Console::Console()
       cpu{bus},
       joypad{},
       apu{},
-      ppu{},
+      ppu{bus},
       iff{0},
       ie{0},
       wram{},
@@ -17,8 +17,9 @@ auto Console::load(const std::filesystem::path& romPath) -> bool {
   return cartridge.load(romPath);
 }
 
-void Console::step() {
-  cpu.cycle();
+void Console::tick() {
+  const qword cycles = cpu.tick();
+  ppu.tick(cycles);
 }
 
 void Console::reset() {

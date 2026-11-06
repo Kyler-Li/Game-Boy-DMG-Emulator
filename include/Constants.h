@@ -7,6 +7,7 @@
 namespace gbdmge {
 // Masks upper bits from MSB to LSB
 static constexpr byte MASK_1_UPPER_BYTE = 0x80;
+static constexpr byte MASK_3_UPPER_BYTE = 0xE0;
 static constexpr word MASK_4_UPPER_WORD = 0xF000;
 static constexpr byte MASK_4_UPPER_BYTE = 0xF0;
 static constexpr byte MASK_8_UPPER_BYTE = 0xFE;
@@ -168,6 +169,31 @@ static constexpr std::array<byte, NINTENDO_LOGO_END - NINTENDO_LOGO_START + 1>
                      0x88, 0x89, 0x00, 0x0E, 0xDC, 0xCC, 0x6E, 0xE6, 0xDD, 0xDD,
                      0xD9, 0x99, 0xBB, 0xBB, 0x67, 0x63, 0x6E, 0x0E, 0xEC, 0xCC,
                      0xDD, 0xDC, 0x99, 0x9F, 0xBB, 0xB9, 0x33, 0x3E};
+
+// The number of dots (T-cycles) needed to draw one scanline
+static constexpr qword PPU_DOTS_PER_SCANLINE = 456;
+static constexpr qword PPU_DOTS_OAM_SCAN = 80;
+
+// Positions for bits in LCDC register
+static constexpr byte PPU_LCDC_OBJ_SIZE_FLAG = 2;
+
+// Positions for bits in the STAT register
+static constexpr qword PPU_STAT_LYC_INT_FLAG = 6;
+static constexpr qword PPU_STAT_MODE_2_INT_FLAG = 5;
+static constexpr qword PPU_STAT_MODE_1_INT_FLAG = 4;
+static constexpr byte PPU_STAT_LYC_LY_FLAG = 2;
+
+// Positions for bits in oject attributes
+static constexpr byte PPU_OA_PRIORITY_FLAG = 7;
+static constexpr byte PPU_OA_Y_FLIP_FLAG = 6;
+static constexpr byte PPU_OA_X_FLIP_FLAG = 5;
+static constexpr byte PPU_OA_PALETTE_FLAG = 4;
+
+// The total number of scanlines
+static constexpr qword PPU_SCANLINE_VBLANK_START = 144;
+static constexpr qword PPU_SCANLINE_VBLANK_END = 153;
+
+static constexpr byte PPU_MAX_OBJECTS_PER_SCANLINE = 10;
 
 }  // namespace gbdmge
 

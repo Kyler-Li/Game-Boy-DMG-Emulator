@@ -1,4 +1,4 @@
-# Game-Boy-DMG-Emulator-
+# Game-Boy-DMG-Emulator
 A GameBoy emulator for our Drexel Senior capstone project
 
 # Build Instructions
